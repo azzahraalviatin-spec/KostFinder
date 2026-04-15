@@ -1,0 +1,763 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\Booking;
+use App\Models\Kost;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\IOFactory;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use App\Notifications\BookingBaruNotification;
+use App\Notifications\BookingDibatalkanNotification;
+use App\Notifications\OwnerBaruNotification;
+use App\Notifications\ReviewBaruNotification;
+
+class AdminController extends Controller
+{
+    public function dashboard()
+    {
+        $summary = [
+            'total_users' => User::where('role', 'user')->count(),
+            'total_owners' => User::where('role', 'owner')->count(),
+            'total_kosts' => Kost::count(),
+            'total_bookings' => Booking::count(),
+        ];
+
+        $start = now()->subMonths(5)->startOfMonth();
+        $end = now()->endOfMonth();
+
+        $bookingsPerMonth = Booking::whereBetween('created_at', [$start, $end])
+            ->get(['created_at'])
+            ->groupBy(fn ($booking) => Carbon::parse($booking->created_at)->format('Y-m'))
+            ->map->count();
+
+        $monthlyLabels = [];
+        $monthlyTotals = [];
+        for ($cursor = $start->copy(); $cursor <= $end; $cursor->addMonth()) {
+            $key = $cursor->format('Y-m');
+            $monthlyLabels[] = $cursor->translatedFormat('M Y');
+            $monthlyTotals[] = (int) ($bookingsPerMonth[$key] ?? 0);
+        }
+
+        $topKosts = DB::table('bookings')
+            ->join('rooms', 'rooms.id_room', '=', 'bookings.room_id')
+            ->join('kosts', 'kosts.id_kost', '=', 'rooms.kost_id')
+            ->select('kosts.nama_kost', DB::raw('COUNT(bookings.id_booking) as total_booking'))
+            ->groupBy('kosts.id_kost', 'kosts.nama_kost')
+            ->orderByDesc('total_booking')
+            ->limit(5)
+            ->get();
+
+        $notifications = [
+            'unverified_kosts' => $this->hasKostVerificationColumn() ? Kost::where('is_verified', false)->count() : 0,
+            'inactive_users' => $this->hasUserStatusColumn() ? User::where('status_akun', 'nonaktif')->count() : 0,
+        ];
+
+        $recentBookings = Booking::with(['user:id,name,email', 'room.kost'])
+            ->latest()
+            ->limit(8)
+            ->get();
+
+        $recentActivities = $this->hasActivityLogTable()
+            ? ActivityLog::with('actor:id,name')->latest()->limit(8)->get()
+            : collect();
+
+        return view('admin.dashboard', compact(
+            'summary',
+            'recentBookings',
+            'monthlyLabels',
+            'monthlyTotals',
+            'topKosts',
+            'notifications',
+            'recentActivities'
+        ));
+    }
+
+    public function users(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $status = $request->query('status');
+
+        $users = User::where('role', 'user')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%")
+                        ->orWhere('no_hp', 'like', "%{$q}%");
+                });
+            })
+            ->when($this->hasUserStatusColumn() && in_array($status, ['aktif', 'nonaktif'], true), function ($query) use ($status) {
+                $query->where('status_akun', $status);
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.users', compact('users'));
+    }
+    public function showUser(User $user)
+    {
+        // pastikan role user
+        abort_unless($user->role === 'user', 404);
+    
+        // 🔥 ambil semua booking user
+        $bookings = Booking::with('room.kost')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+    
+        // 🔥 hitung total booking
+        $totalBooking = $bookings->count();
+    
+        // 🔥 kirim ke blade (INI YANG PENTING)
+        return view('admin.user-show', [
+            'user' => $user,
+            'bookings' => $bookings,
+            'totalBooking' => $totalBooking
+        ]);
+    }
+    public function verifyUser(Request $request, User $user)
+    {
+        abort_unless($user->role === 'user', 404);
+        $user->update(['status_verifikasi_identitas' => 'disetujui']);
+        return back()->with('status', '✅ Identitas user berhasil diverifikasi!');
+    }
+    
+    public function rejectUser(Request $request, User $user)
+    {
+        abort_unless($user->role === 'user', 404);
+        $request->validate(['catatan' => 'required|string|max:255']);
+        $user->update([
+            'status_verifikasi_identitas' => 'ditolak',
+            'catatan_verifikasi' => $request->catatan,
+        ]);
+        return back()->with('status', '❌ Identitas user ditolak.');
+    }
+    public function toggleUserStatus(Request $request, User $user)
+    {
+        abort_unless(in_array($user->role, ['user', 'owner'], true), 404);
+
+        if (! $this->hasUserStatusColumn()) {
+            return back()->withErrors(['status' => 'Kolom status_akun belum tersedia. Jalankan migrate.']);
+        }
+
+        $newStatus = $user->status_akun === 'aktif' ? 'nonaktif' : 'aktif';
+        $user->update(['status_akun' => $newStatus]);
+
+        $this->logActivity($request, 'toggle_user_status', 'user', $user->id, $user->id, [
+            'new_status' => $newStatus,
+            'role' => $user->role,
+        ]);
+
+        return back()->with('status', 'Status akun berhasil diperbarui.');
+    }
+
+    public function destroyUser(Request $request, User $user)
+    {
+        abort_unless(in_array($user->role, ['user', 'owner'], true), 404);
+        abort_if($request->user()->id === $user->id, 422, 'Tidak bisa menghapus akun sendiri.');
+
+        $deletedUser = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'role' => $user->role,
+        ];
+
+        $this->logActivity($request, 'delete_user', 'user', $deletedUser['id'], null, [
+            'name' => $deletedUser['name'],
+            'role' => $deletedUser['role'],
+        ]);
+
+        $user->delete();
+
+        return back()->with('status', 'Akun berhasil dihapus.');
+    }
+
+    public function owners(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $status = $request->query('status');
+        $verifikasi = $request->query('verifikasi');
+
+        $owners = User::where('role', 'owner')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%")
+                        ->orWhere('no_hp', 'like', "%{$q}%");
+                });
+            })
+            ->when($this->hasUserStatusColumn() && in_array($status, ['aktif', 'nonaktif'], true), function ($query) use ($status) {
+                $query->where('status_akun', $status);
+            })
+            ->when(in_array($verifikasi, ['belum', 'pending', 'disetujui', 'ditolak'], true), function ($query) use ($verifikasi) {
+                $query->where('status_verifikasi_identitas', $verifikasi);
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $kostCountByOwner = Kost::selectRaw('owner_id, COUNT(*) as total_kost')
+            ->groupBy('owner_id')
+            ->pluck('total_kost', 'owner_id');
+
+        return view('admin.owners', compact('owners', 'kostCountByOwner'));
+    }
+
+    public function showOwner(User $owner)
+    {
+        abort_unless($owner->role === 'owner', 404);
+
+        $ownerKosts = Kost::where('owner_id', $owner->id)
+            ->latest()
+            ->get();
+
+        return view('admin.owner-show', compact('owner', 'ownerKosts'));
+    }
+
+    public function verifyOwner(Request $request, User $owner)
+{
+    abort_unless($owner->role === 'owner', 404);
+
+    $owner->update([
+        'status_verifikasi_identitas' => 'disetujui',
+        'catatan_verifikasi' => null,
+    ]);
+
+    // ✅ Hapus notifikasi owner ini dari admin
+    auth()->user()->notifications()
+        ->where('type', App\Notifications\OwnerBaruNotification::class)
+        ->get()
+        ->filter(fn($n) => $n->data['owner_id'] === $owner->id)
+        ->each->delete();
+
+    $this->logActivity($request, 'verify_owner_identity', 'user', $owner->id, $owner->id, [
+        'name' => $owner->name,
+    ]);
+
+    return back()->with('status', '✅ Identitas owner berhasil diverifikasi!');
+}
+   
+
+    public function rejectOwner(Request $request, User $owner)
+    {
+        abort_unless($owner->role === 'owner', 404);
+
+        $request->validate([
+            'catatan' => 'required|string|max:255'
+        ]);
+
+        $owner->update([
+            'status_verifikasi_identitas' => 'ditolak',
+            'catatan_verifikasi' => $request->catatan,
+        ]);
+
+        $this->logActivity($request, 'reject_owner_identity', 'user', $owner->id, $owner->id, [
+            'name' => $owner->name,
+            'catatan' => $request->catatan,
+        ]);
+
+        return back()->with('status', '❌ Identitas owner ditolak.');
+    }
+
+    public function kosts(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $status = $request->query('status');
+        $verified = $request->query('verified');
+
+        $kosts = Kost::with('owner:id,name,email')
+            ->withCount('rooms')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('nama_kost', 'like', "%{$q}%")
+                        ->orWhere('kota', 'like', "%{$q}%")
+                        ->orWhere('alamat', 'like', "%{$q}%");
+                });
+            })
+            ->when(in_array($status, ['aktif', 'nonaktif'], true), function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->when($this->hasKostVerificationColumn() && in_array($verified, ['ya', 'tidak'], true), function ($query) use ($verified) {
+                $query->where('is_verified', $verified === 'ya');
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.kosts', compact('kosts'));
+    }
+
+    public function showKost(Kost $kost)
+    {
+        $kost->load(['owner:id,name,email,no_hp', 'rooms']);
+
+        $bookingCount = Booking::whereHas('room', function ($query) use ($kost) {
+            $query->where('kost_id', $kost->id_kost);
+        })->count();
+
+        return view('admin.kost-show', compact('kost', 'bookingCount'));
+    }
+
+    public function verifyKost(Request $request, Kost $kost)
+    {
+        if (! $this->hasKostVerificationColumn()) {
+            return back()->withErrors(['status' => 'Kolom is_verified belum tersedia. Jalankan migrate.']);
+        }
+
+        $kost->update(['is_verified' => true]);
+
+        $this->logActivity($request, 'verify_kost', 'kost', $kost->id_kost, $kost->owner_id, [
+            'nama_kost' => $kost->nama_kost,
+        ]);
+
+        return back()->with('status', 'Kos berhasil diverifikasi.');
+    }
+
+    public function toggleKostStatus(Request $request, Kost $kost)
+    {
+        $newStatus = $kost->status === 'aktif' ? 'nonaktif' : 'aktif';
+        $kost->update(['status' => $newStatus]);
+
+        $this->logActivity($request, 'toggle_kost_status', 'kost', $kost->id_kost, $kost->owner_id, [
+            'new_status' => $newStatus,
+            'nama_kost' => $kost->nama_kost,
+        ]);
+
+        return back()->with('status', 'Status kos berhasil diperbarui.');
+    }
+
+    public function destroyKost(Request $request, Kost $kost)
+    {
+        $deleted = [
+            'id' => $kost->id_kost,
+            'name' => $kost->nama_kost,
+            'owner_id' => $kost->owner_id,
+        ];
+
+        $this->logActivity($request, 'delete_kost', 'kost', $deleted['id'], null, [
+            'nama_kost' => $deleted['name'],
+        ]);
+
+        $kost->delete();
+
+        return back()->with('status', 'Kos berhasil dihapus.');
+    }
+
+    public function bookings(Request $request)
+    {
+        $status = $request->query('status');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+
+        $bookings = Booking::with(['user:id,name,email', 'room.kost'])
+            ->when(in_array($status, ['pending', 'diterima', 'ditolak', 'selesai'], true), function ($query) use ($status) {
+                $query->where('status_booking', $status);
+            })
+            ->when($startDate, function ($query) use ($startDate) {
+                $query->whereDate('tanggal_masuk', '>=', $startDate);
+            })
+            ->when($endDate, function ($query) use ($endDate) {
+                $query->whereDate('tanggal_masuk', '<=', $endDate);
+            })
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('admin.bookings', compact('bookings'));
+    }
+
+    public function reports()
+    {
+        $totalUsers = User::where('role', 'user')->count();
+        $totalOwners = User::where('role', 'owner')->count();
+        $totalKosts = Kost::count();
+        $totalBookings = Booking::count();
+
+        $bookingThisMonth = Booking::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        $totalPendapatanAdmin = Booking::where('status_pembayaran', '!=', 'belum')
+            ->sum('komisi_admin');
+
+        $statusStats = Booking::selectRaw('status_booking, COUNT(*) as total')
+            ->groupBy('status_booking')
+            ->pluck('total', 'status_booking');
+
+        $bookingByStatus = [
+            'pending'  => (int) ($statusStats['pending'] ?? 0),
+            'diterima' => (int) ($statusStats['diterima'] ?? 0),
+            'ditolak'  => (int) ($statusStats['ditolak'] ?? 0),
+            'selesai'  => (int) ($statusStats['selesai'] ?? 0),
+        ];
+
+        $start = now()->subMonths(5)->startOfMonth();
+        $end = now()->endOfMonth();
+
+        $recentBookingsChart = Booking::whereBetween('created_at', [$start, $end])
+            ->get(['created_at']);
+
+        $grouped = $recentBookingsChart->groupBy(function ($booking) {
+            return Carbon::parse($booking->created_at)->format('Y-m');
+        })->map->count();
+
+        $monthlyLabels = [];
+        $monthlyTotals = [];
+
+        for ($cursor = $start->copy(); $cursor <= $end; $cursor->addMonth()) {
+            $key = $cursor->format('Y-m');
+            $monthlyLabels[] = $cursor->translatedFormat('M Y');
+            $monthlyTotals[] = (int) ($grouped[$key] ?? 0);
+        }
+
+        $recentBookings = DB::table('bookings')
+            ->join('users as penyewa', 'penyewa.id', '=', 'bookings.user_id')
+            ->join('rooms', 'rooms.id_room', '=', 'bookings.room_id')
+            ->join('kosts', 'kosts.id_kost', '=', 'rooms.kost_id')
+            ->join('users as owner', 'owner.id', '=', 'kosts.owner_id')
+            ->select(
+                'bookings.id_booking',
+                'penyewa.name as nama_penyewa',
+                'owner.name as nama_owner',
+                'kosts.nama_kost',
+                DB::raw("COALESCE(kosts.alamat, '-') as daerah_kos"),
+                'rooms.nomor_kamar as nama_kamar',
+                'bookings.status_booking',
+                'bookings.status_pembayaran',
+                'bookings.total_bayar',
+                'bookings.komisi_admin',
+                'bookings.created_at'
+            )
+            ->latest('bookings.created_at')
+            ->limit(10)
+            ->get();
+
+        $topKostsThisMonth = DB::table('bookings')
+            ->join('rooms', 'rooms.id_room', '=', 'bookings.room_id')
+            ->join('kosts', 'kosts.id_kost', '=', 'rooms.kost_id')
+            ->join('users as owner', 'owner.id', '=', 'kosts.owner_id')
+            ->whereMonth('bookings.created_at', now()->month)
+            ->whereYear('bookings.created_at', now()->year)
+            ->where('bookings.status_pembayaran', '!=', 'belum')
+            ->select(
+                'kosts.nama_kost',
+                DB::raw("COALESCE(kosts.alamat, '-') as daerah_kos"),
+                'owner.name as nama_owner',
+                DB::raw('COUNT(bookings.id_booking) as total_booking'),
+                DB::raw('SUM(bookings.total_bayar) as total_pemasukan')
+            )
+            ->groupBy('kosts.id_kost', 'kosts.nama_kost', 'kosts.alamat', 'owner.name')
+            ->orderByDesc('total_booking')
+            ->limit(5)
+            ->get();
+
+        return view('admin.reports', compact(
+            'totalUsers',
+            'totalOwners',
+            'totalKosts',
+            'totalBookings',
+            'bookingThisMonth',
+            'totalPendapatanAdmin',
+            'bookingByStatus',
+            'monthlyLabels',
+            'monthlyTotals',
+            'recentBookings',
+            'topKostsThisMonth'
+        ));
+    }
+
+    public function exportReportsPdf(Request $request)
+    {
+        $data = $this->getReportExportData();
+
+        $this->logActivity($request, 'export_reports_pdf', 'report', null, null, [
+            'exported_at' => now()->toDateTimeString(),
+        ]);
+
+        $pdf = Pdf::loadView('admin.exports.reports-pdf', $data)
+            ->setPaper('A4', 'portrait');
+
+        return $pdf->download('laporan-admin-' . now()->format('Ymd-His') . '.pdf');
+    }
+
+    public function exportReportsWord(Request $request)
+    {
+        $data = $this->getReportExportData();
+
+        $this->logActivity($request, 'export_reports_word', 'report', null, null, [
+            'exported_at' => now()->toDateTimeString(),
+        ]);
+
+        $phpWord = new PhpWord();
+        $section = $phpWord->addSection();
+
+        $section->addText('LAPORAN ADMIN KOSTFINDER', ['bold' => true, 'size' => 16]);
+        $section->addText('Tanggal Export: ' . now()->translatedFormat('d F Y H:i'));
+        $section->addTextBreak(1);
+
+        $section->addText('RINGKASAN', ['bold' => true, 'size' => 13]);
+        $section->addText("Total User: " . $data['totalUsers']);
+        $section->addText("Total Owner: " . $data['totalOwners']);
+        $section->addText("Total Kost: " . $data['totalKosts']);
+        $section->addText("Total Booking: " . $data['totalBookings']);
+        $section->addText("Booking Bulan Ini: " . $data['bookingThisMonth']);
+        $section->addText("Pendapatan Admin: Rp " . number_format($data['totalPendapatanAdmin'], 0, ',', '.'));
+        $section->addTextBreak(1);
+
+        $section->addText('STATISTIK STATUS BOOKING', ['bold' => true, 'size' => 13]);
+        $section->addText("Pending: " . ($data['bookingByStatus']['pending'] ?? 0));
+        $section->addText("Diterima: " . ($data['bookingByStatus']['diterima'] ?? 0));
+        $section->addText("Ditolak: " . ($data['bookingByStatus']['ditolak'] ?? 0));
+        $section->addText("Selesai: " . ($data['bookingByStatus']['selesai'] ?? 0));
+        $section->addTextBreak(1);
+
+        $section->addText('BOOKING TERBARU', ['bold' => true, 'size' => 13]);
+
+        foreach ($data['recentBookings'] as $booking) {
+            $section->addText(
+                "• {$booking->nama_penyewa} | {$booking->nama_kost} | Kamar {$booking->nama_kamar} | " .
+                "{$booking->status_booking} | Rp " . number_format($booking->total_bayar, 0, ',', '.')
+            );
+        }
+
+        $section->addTextBreak(1);
+        $section->addText('KOS TERLARIS BULAN INI', ['bold' => true, 'size' => 13]);
+
+        foreach ($data['topKostsThisMonth'] as $kost) {
+            $section->addText(
+                "• {$kost->nama_kost} - {$kost->nama_owner} | Booking: {$kost->total_booking} | " .
+                "Pemasukan: Rp " . number_format($kost->total_pemasukan, 0, ',', '.')
+            );
+        }
+
+        $filename = storage_path('app/public/laporan-admin-' . now()->format('Ymd-His') . '.docx');
+        $writer = IOFactory::createWriter($phpWord, 'Word2007');
+        $writer->save($filename);
+
+        return response()->download($filename)->deleteFileAfterSend(true);
+    }
+
+    public function activities(Request $request)
+    {
+        if (! $this->hasActivityLogTable()) {
+            $activities = new LengthAwarePaginator([], 0, 15, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+
+            return view('admin.activities', compact('activities'));
+        }
+
+        $q = trim((string) $request->query('q', ''));
+
+        $activities = ActivityLog::with(['actor:id,name,role'])
+            ->whereHas('actor', function ($query) {
+                $query->whereIn('role', ['user', 'owner']);
+            })
+            ->when($q !== '', function ($query) use ($q) {
+                $query->whereHas('actor', function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhere('role', 'like', "%{$q}%");
+                });
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.activities', compact('activities'));
+    }
+
+    private function getReportExportData(): array
+    {
+        $totalUsers = User::where('role', 'user')->count();
+        $totalOwners = User::where('role', 'owner')->count();
+        $totalKosts = Kost::count();
+        $totalBookings = Booking::count();
+
+        $bookingThisMonth = Booking::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        $totalPendapatanAdmin = Booking::where('status_pembayaran', '!=', 'belum')
+            ->sum('komisi_admin');
+
+        $statusStats = Booking::selectRaw('status_booking, COUNT(*) as total')
+            ->groupBy('status_booking')
+            ->pluck('total', 'status_booking');
+
+        $bookingByStatus = [
+            'pending'  => (int) ($statusStats['pending'] ?? 0),
+            'diterima' => (int) ($statusStats['diterima'] ?? 0),
+            'ditolak'  => (int) ($statusStats['ditolak'] ?? 0),
+            'selesai'  => (int) ($statusStats['selesai'] ?? 0),
+        ];
+
+        $recentBookings = DB::table('bookings')
+            ->join('users as penyewa', 'penyewa.id', '=', 'bookings.user_id')
+            ->join('rooms', 'rooms.id_room', '=', 'bookings.room_id')
+            ->join('kosts', 'kosts.id_kost', '=', 'rooms.kost_id')
+            ->join('users as owner', 'owner.id', '=', 'kosts.owner_id')
+            ->select(
+                'bookings.id_booking',
+                'penyewa.name as nama_penyewa',
+                'owner.name as nama_owner',
+                'kosts.nama_kost',
+                'rooms.nomor_kamar as nama_kamar',
+                'bookings.status_booking',
+                'bookings.status_pembayaran',
+                'bookings.total_bayar',
+                'bookings.komisi_admin',
+                'bookings.created_at'
+            )
+            ->latest('bookings.created_at')
+            ->limit(20)
+            ->get();
+
+        $topKostsThisMonth = DB::table('bookings')
+            ->join('rooms', 'rooms.id_room', '=', 'bookings.room_id')
+            ->join('kosts', 'kosts.id_kost', '=', 'rooms.kost_id')
+            ->join('users as owner', 'owner.id', '=', 'kosts.owner_id')
+            ->whereMonth('bookings.created_at', now()->month)
+            ->whereYear('bookings.created_at', now()->year)
+            ->where('bookings.status_pembayaran', '!=', 'belum')
+            ->select(
+                'kosts.nama_kost',
+                'owner.name as nama_owner',
+                DB::raw('COUNT(bookings.id_booking) as total_booking'),
+                DB::raw('SUM(bookings.total_bayar) as total_pemasukan')
+            )
+            ->groupBy('kosts.id_kost', 'kosts.nama_kost', 'owner.name')
+            ->orderByDesc('total_booking')
+            ->limit(10)
+            ->get();
+
+        return compact(
+            'totalUsers',
+            'totalOwners',
+            'totalKosts',
+            'totalBookings',
+            'bookingThisMonth',
+            'totalPendapatanAdmin',
+            'bookingByStatus',
+            'recentBookings',
+            'topKostsThisMonth'
+        );
+    }
+
+    private function logActivity(
+        Request $request,
+        string $action,
+        ?string $targetType = null,
+        ?int $targetId = null,
+        ?int $targetUserId = null,
+        array $meta = []
+    ): void {
+        if (! $this->hasActivityLogTable()) {
+            return;
+        }
+
+        ActivityLog::create([
+            'actor_id' => $request->user()->id,
+            'target_user_id' => $targetUserId,
+            'action' => $action,
+            'target_type' => $targetType,
+            'target_id' => $targetId,
+            'ip_address' => $request->ip(),
+            'user_agent' => (string) $request->userAgent(),
+            'meta' => $meta,
+        ]);
+    }
+
+    private function hasKostVerificationColumn(): bool
+    {
+        return Schema::hasColumn('kosts', 'is_verified');
+    }
+
+    private function hasUserStatusColumn(): bool
+    {
+        return Schema::hasColumn('users', 'status_akun');
+    }
+
+    private function hasActivityLogTable(): bool
+    {
+        return Schema::hasTable('activity_logs');
+    }
+
+
+// ✅ YANG BARU (PAKAI INI)
+// METHOD SETTINGS (SUDAH ADA)
+public function settings()
+{
+    $settings = Setting::first();
+    return view('admin.settings', compact('settings'));
+}
+
+// ✅ TEMPEL DI SINI
+public function updateSettings(Request $request)
+{
+    $user = auth()->user();
+
+    $request->validate([
+        'photo'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        'name'         => 'required|string|max:255',
+        'old_password' => 'nullable|string',
+        'password'     => 'nullable|confirmed|min:6',
+    ]);
+
+    $user->name = $request->name;
+
+    // ✅ Upload Foto
+    if ($request->hasFile('photo')) {
+        if ($user->photo) {
+            Storage::disk('public')->delete($user->photo);
+        }
+        $path = $request->file('photo')->store('profile-photos', 'public');
+        $user->photo = $path;
+    }
+
+    // ✅ Update Password
+    if ($request->filled('password')) {
+        if (!Hash::check($request->old_password, $user->password)) {
+            return back()->withErrors(['old_password' => 'Password lama salah!']);
+        }
+        $user->password = Hash::make($request->password);
+    }
+
+    $user->save();
+
+    // ✅ Notifikasi
+    $settings = Setting::first() ?? new Setting();
+    $settings->notif_booking = $request->has('notif_booking');
+    $settings->notif_user    = $request->has('notif_user');
+    $settings->save();
+
+    return back()->with('success', 'Pengaturan berhasil disimpan!');
+}
+public function readNotification($id)
+{
+    $notif = auth()->user()->notifications->find($id);
+    if ($notif) {
+        $notif->markAsRead();
+        return redirect($notif->data['url']);
+    }
+    return redirect()->route('admin.dashboard');
+}
+
+public function readAllNotifications()
+{
+    auth()->user()->unreadNotifications->markAsRead();
+    return back()->with('status', 'Semua notifikasi sudah dibaca.');
+}
+}
