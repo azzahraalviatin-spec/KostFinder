@@ -3,511 +3,875 @@
 @section('title', 'Panduan Penggunaan - KostFinder')
 
 @section('styles')
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,800;1,600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --kf-primary: #E8401C;
-    --kf-primary-dark: #c03414;
-    --kf-primary-light: #ff7a52;
-    --kf-dark: #0f1923;
-    --kf-muted: #6c768a;
-    --kf-soft: #f6f8fc;
-    --kf-border: #e7ebf3;
-  }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fafbff; }
+:root {
+  --or-50:  #fff8f3;
+  --or-100: #ffeedd;
+  --or-200: #ffd8b8;
+  --or-300: #ffbb87;
+  --or-400: #ff9a52;
+  --or-500: #f4793a;
+  --or-600: #e05a20;
+  --or-dark: #2c1a0e;
+  --or-text: #4a3728;
+  --or-muted:#9b7f6e;
+  --or-border:#f0ddd0;
+  --or-card: #fff;
+  --or-bg:   #fdf8f4;
+  --shadow-sm: 0 2px 8px rgba(240,120,50,.08);
+  --shadow-md: 0 6px 24px rgba(240,120,50,.12);
+  --shadow-lg: 0 16px 48px rgba(240,120,50,.16);
+}
 
-  /* ── HERO ── */
-  .panduan-hero {
-    background: linear-gradient(135deg, #0f1923 0%, #1e2f42 60%, #162538 100%);
-    padding: 5rem 0 8rem;
-    position: relative;
-    overflow: hidden;
-  }
-  .panduan-hero::before {
-    content: '';
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse 55% 70% at 85% 40%, rgba(232,64,28,.2), transparent 60%),
-      radial-gradient(ellipse 40% 50% at 10% 80%, rgba(255,122,82,.1), transparent 55%);
-    pointer-events: none;
-  }
-  .panduan-hero::after {
-    content: '';
-    position: absolute;
-    bottom: -2px; left: 0; right: 0;
-    height: 80px;
-    background: #fafbff;
-    clip-path: ellipse(55% 100% at 50% 100%);
-  }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: .45rem;
-    background: rgba(232,64,28,.15); border: 1px solid rgba(232,64,28,.35);
-    color: #ff9977; font-size: .75rem; font-weight: 700;
-    letter-spacing: .08em; text-transform: uppercase;
-    padding: .32rem .9rem; border-radius: 999px; margin-bottom: 1.2rem;
-  }
-  .hero-badge span {
-    width: 6px; height: 6px; border-radius: 50%; background: #ff7a52;
-    animation: blink 2s infinite;
-  }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-  .panduan-hero-title {
-    font-family: 'Fraunces', serif; font-weight: 700;
-    font-size: clamp(2.2rem, 4.5vw, 3.4rem); color: #fff;
-    letter-spacing: -.025em; line-height: 1.1; margin-bottom: .8rem;
-  }
-  .panduan-hero-title .accent { color: #ff7a52; font-style: italic; }
-  .panduan-hero-sub {
-    color: #8a9ab8; font-size: .95rem; line-height: 1.75;
-    max-width: 500px; margin-bottom: 2rem;
-  }
-  .hero-search {
-    display: flex; align-items: center; gap: .5rem;
-    background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.14);
-    border-radius: 1rem; padding: .5rem .5rem .5rem 1rem;
-    max-width: 460px; transition: border-color .2s, background .2s;
-  }
-  .hero-search:focus-within { border-color: rgba(232,64,28,.5); background: rgba(255,255,255,.12); }
-  .hero-search input {
-    flex: 1; background: transparent; border: 0; outline: none;
-    color: #fff; font-size: .9rem; font-family: 'Plus Jakarta Sans', sans-serif;
-  }
-  .hero-search input::placeholder { color: rgba(255,255,255,.35); }
-  .hero-search-btn {
-    height: 36px; padding: 0 1rem; border-radius: .7rem;
-    background: var(--kf-primary); color: #fff; border: 0;
-    font-size: .82rem; font-weight: 700; cursor: pointer;
-    transition: background .18s;
-  }
-  .hero-search-btn:hover { background: var(--kf-primary-dark); }
-  .hero-stats { display: flex; gap: 2rem; margin-top: 2.5rem; flex-wrap: wrap; }
-  .hero-stat-num {
-    font-family: 'Fraunces', serif; font-size: 1.6rem;
-    font-weight: 700; color: #fff; line-height: 1;
-  }
-  .hero-stat-num span { color: #ff7a52; }
-  .hero-stat-label { font-size: .75rem; color: #8a9ab8; margin-top: .2rem; font-weight: 500; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--or-bg);color:var(--or-text);line-height:1.6}
 
-  /* floating cards */
-  .hero-visual { position: relative; height: 320px; display: flex; align-items: center; justify-content: center; }
-  .float-card {
-    position: absolute; background: rgba(255,255,255,.08);
-    border: 1px solid rgba(255,255,255,.12); border-radius: 1rem;
-    padding: .9rem 1.1rem; backdrop-filter: blur(10px);
-    display: flex; align-items: center; gap: .7rem;
-    color: #fff; font-size: .82rem; font-weight: 600; white-space: nowrap;
-    animation: floatY 4s ease-in-out infinite;
-  }
-  .float-card:nth-child(2){animation-delay:.8s}
-  .float-card:nth-child(3){animation-delay:1.6s}
-  .float-card:nth-child(4){animation-delay:2.4s}
-  @keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-  .float-card-icon { width:34px;height:34px;border-radius:.6rem;display:flex;align-items:center;justify-content:center;font-size:1rem; }
-  .float-card:nth-child(1){top:20px;left:10%}
-  .float-card:nth-child(2){top:80px;right:5%}
-  .float-card:nth-child(3){bottom:80px;left:5%}
-  .float-card:nth-child(4){bottom:20px;right:15%}
+/* ─── HERO ─── */
+.hero{
+  position:relative;
+  overflow:hidden;
+  padding:80px 0 120px;
 
-  /* ── CATEGORIES ── */
-  .categories-section { padding: 3.5rem 0 2rem; }
-  .cat-card {
-    background: #fff; border: 1.5px solid var(--kf-border);
-    border-radius: 1.1rem; padding: 1.5rem 1.3rem;
-    cursor: pointer; transition: all .22s ease;
-    text-align: center; height: 100%; position: relative; overflow: hidden;
-  }
-  .cat-card::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, var(--kf-primary), var(--kf-primary-dark));
-    opacity: 0; transition: opacity .22s;
-  }
-  .cat-card:hover::before,.cat-card.active::before { opacity: 1; }
-  .cat-card > * { position: relative; z-index: 1; }
-  .cat-icon {
-    width:52px;height:52px;border-radius:1rem;
-    display:flex;align-items:center;justify-content:center;
-    font-size:1.3rem;margin:0 auto .9rem;transition:all .22s;
-  }
-  .cat-card:nth-child(1) .cat-icon{background:#fff0eb;color:var(--kf-primary)}
-  .cat-card:nth-child(2) .cat-icon{background:#eff8ff;color:#2563eb}
-  .cat-card:nth-child(3) .cat-icon{background:#f0fdf4;color:#16a34a}
-  .cat-card:nth-child(4) .cat-icon{background:#fdfbf0;color:#d97706}
-  .cat-card:nth-child(5) .cat-icon{background:#fdf4ff;color:#9333ea}
-  .cat-card:hover .cat-icon,.cat-card.active .cat-icon{background:rgba(255,255,255,.2)!important;color:#fff!important}
-  .cat-title{font-weight:800;font-size:.88rem;color:var(--kf-dark);margin-bottom:.25rem;transition:color .22s}
-  .cat-desc{font-size:.75rem;color:var(--kf-muted);margin:0;transition:color .22s}
-  .cat-card:hover .cat-title,.cat-card.active .cat-title{color:#fff}
-  .cat-card:hover .cat-desc,.cat-card.active .cat-desc{color:rgba(255,255,255,.75)}
-  .cat-count{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--kf-soft);color:var(--kf-muted);font-size:.65rem;font-weight:700;margin-top:.6rem;transition:all .22s}
-  .cat-card:hover .cat-count,.cat-card.active .cat-count{background:rgba(255,255,255,.2);color:#fff}
+  background:
+    linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.5)),
+    url("{{ asset('images/panduan.jpg') }}");
 
-  /* ── CONTENT ── */
-  .content-section { padding: 1rem 0 5rem; }
-  .panduan-panel { display: none; }
-  .panduan-panel.active { display: block; animation: fadeIn .3s ease; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
-  .panel-header { display:flex;align-items:center;gap:1rem;margin-bottom:2rem;padding-bottom:1.2rem;border-bottom:1px solid var(--kf-border); }
-  .panel-header-icon { width:48px;height:48px;border-radius:.9rem;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;flex-shrink:0;box-shadow:0 6px 16px rgba(232,64,28,.28);background:linear-gradient(135deg,var(--kf-primary),var(--kf-primary-dark)); }
-  .panel-header-title { font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:var(--kf-dark);margin:0;letter-spacing:-.02em; }
-  .panel-header-sub { font-size:.85rem;color:var(--kf-muted);margin:.2rem 0 0; }
+.hero::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 80% at 90% -10%,rgba(255,255,255,.12) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 60% at -10% 80%,rgba(255,255,255,.08) 0%,transparent 55%);
+}
+.hero-wave{
+  position:absolute;bottom:-2px;left:0;width:100%;height:80px;
+  background:var(--or-bg);
+  clip-path:ellipse(56% 100% at 50% 100%);
+}
+.hero-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);
+  color:#fff;font-size:.72rem;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:5px 14px;border-radius:999px;margin-bottom:20px;
+}
+.hero-pill span{
+  width:6px;height:6px;border-radius:50%;
+  background:#fff;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 
-  /* TIMELINE */
-  .timeline { position:relative;padding-left:2.2rem; }
-  .timeline::before { content:'';position:absolute;left:.85rem;top:1rem;bottom:1rem;width:2px;background:linear-gradient(to bottom,var(--kf-primary),#ffb3a0,transparent); }
-  .timeline-item { position:relative;margin-bottom:1.5rem; }
-  .timeline-item:last-child{margin-bottom:0}
-  .timeline-dot { position:absolute;left:-2.2rem;top:.9rem;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--kf-primary),var(--kf-primary-dark));color:#fff;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(232,64,28,.3);z-index:1; }
-  .timeline-card { background:#fff;border:1px solid var(--kf-border);border-radius:.9rem;padding:1.1rem 1.3rem;box-shadow:0 2px 10px rgba(10,20,50,.05);transition:all .2s; }
-  .timeline-card:hover { border-color:#ffc4b5;box-shadow:0 6px 20px rgba(232,64,28,.1);transform:translateX(4px); }
-  .timeline-card-title { font-weight:700;font-size:.9rem;color:var(--kf-dark);margin-bottom:.3rem; }
-  .timeline-card-text { font-size:.85rem;color:var(--kf-muted);line-height:1.65;margin:0; }
-  .timeline-card-text strong{color:var(--kf-dark)}
+.hero-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.4rem,5vw,3.8rem);
+  font-weight:800;line-height:1.08;
+  color:#fff;letter-spacing:-.03em;
+  margin-bottom:16px;
+}
+.hero-title em{
+  font-style:italic;font-weight:600;
+  color:rgba(255,255,255,.85);
+}
+.hero-sub{
+  font-size:.95rem;color:rgba(255,255,255,.85);
+  line-height:1.8;max-width:480px;margin-bottom:32px;font-weight:400;
+}
 
-  /* BOXES */
-  .tip-box { display:flex;align-items:flex-start;gap:.8rem;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:.85rem;padding:.9rem 1.1rem;margin-top:1.2rem;font-size:.83rem;color:#166534;line-height:1.6; }
-  .tip-box i{flex-shrink:0;margin-top:.15rem}
-  .warning-box { display:flex;align-items:flex-start;gap:.8rem;background:linear-gradient(135deg,#fffbeb,#fef9c3);border:1px solid #fde68a;border-radius:.85rem;padding:.9rem 1.1rem;margin-top:1.2rem;font-size:.83rem;color:#92400e;line-height:1.6; }
-  .warning-box i{flex-shrink:0;margin-top:.15rem}
+/* search bar */
+.search-wrap{
+  display:flex;align-items:center;gap:8px;
+  background:#fff;border:2px solid rgba(255,255,255,.6);
+  border-radius:16px;padding:6px 6px 6px 18px;
+  max-width:480px;
+  box-shadow:0 8px 32px rgba(0,0,0,.15);
+  transition:border-color .2s,box-shadow .2s;
+}
+.search-wrap:focus-within{border-color:var(--or-400);box-shadow:0 0 0 4px rgba(244,121,58,.1),var(--shadow-md)}
+/* ─── SEARCH BAR IMPROVEMENT ─── */
+.search-wrap i {
+    color: #333333;      /* Ganti jadi hitam pekat agar terlihat jelas */
+    font-size: 1.1rem;   /* Sedikit diperbesar ukurannya */
+}
 
-  /* ACCORDION */
-  .kf-accordion{display:flex;flex-direction:column;gap:.65rem}
-  .kf-acc-item{background:#fff;border:1.5px solid var(--kf-border);border-radius:.9rem;overflow:hidden;transition:border-color .2s,box-shadow .2s}
-  .kf-acc-item:hover{border-color:#ffc4b5;box-shadow:0 4px 16px rgba(232,64,28,.08)}
-  .kf-acc-item.open{border-color:#ffb3a0;box-shadow:0 4px 20px rgba(232,64,28,.1)}
-  .kf-acc-header{display:flex;align-items:center;gap:.9rem;padding:1rem 1.2rem;cursor:pointer;user-select:none}
-  .kf-acc-icon{width:34px;height:34px;border-radius:.6rem;background:#fff0eb;color:var(--kf-primary);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;transition:all .2s}
-  .kf-acc-item.open .kf-acc-icon{background:var(--kf-primary);color:#fff}
-  .kf-acc-title{flex:1;font-weight:700;font-size:.9rem;color:var(--kf-dark);margin:0}
-  .kf-acc-chevron{color:#c0c8d8;font-size:.75rem;transition:transform .25s;flex-shrink:0}
-  .kf-acc-item.open .kf-acc-chevron{transform:rotate(180deg);color:var(--kf-primary)}
-  .kf-acc-body{display:none;padding:0 1.2rem 1.2rem 3.5rem}
-  .kf-acc-item.open .kf-acc-body{display:block}
+.search-wrap input::placeholder {
+    color: #757575;      /* Ganti jadi abu-abu tua agar terbaca */
+    opacity: 1;          /* Pastikan opacity penuh agar tidak pudar */
+    font-weight: 500;
+}
 
-  /* GUIDE CARDS */
-  .guide-card{background:#fff;border:1.5px solid var(--kf-border);border-radius:1rem;padding:1.4rem;height:100%;transition:all .22s;position:relative;overflow:hidden}
-  .guide-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--kf-primary),var(--kf-primary-light));transform:scaleX(0);transform-origin:left;transition:transform .25s}
-  .guide-card:hover{transform:translateY(-4px);box-shadow:0 14px 32px rgba(10,20,50,.1);border-color:#ffc4b5}
-  .guide-card:hover::after{transform:scaleX(1)}
-  .guide-card-num{font-family:'Fraunces',serif;font-size:2.5rem;font-weight:700;color:#f0f2f7;line-height:1;margin-bottom:.6rem}
-  .guide-card-title{font-weight:800;font-size:.92rem;color:var(--kf-dark);margin-bottom:.4rem}
-  .guide-card-text{font-size:.83rem;color:var(--kf-muted);line-height:1.65;margin:0}
-  .guide-card-tag{display:inline-block;padding:.18rem .6rem;border-radius:999px;font-size:.68rem;font-weight:700;margin-bottom:.7rem}
-  .tag-penghuni{background:#fff0eb;color:var(--kf-primary)}
-  .tag-owner{background:#eff8ff;color:#2563eb}
-  .tag-tips{background:#f0fdf4;color:#16a34a}
+.search-wrap input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: none;
+    font-family: inherit;
+    font-size: .95rem;
+    color:rgb(224, 101, 19);      /* Warna teks saat mengetik */
+    padding-left: 10px;  /* Kasih jarak sedikit dari ikon */
+    
+}
+.search-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(244,121,58,.45)}
 
-  /* SIDEBAR */
-  .guide-sidebar{position:sticky;top:80px}
-  .sidebar-box{background:#fff;border:1.5px solid var(--kf-border);border-radius:1rem;overflow:hidden;margin-bottom:1rem;box-shadow:0 4px 16px rgba(10,20,50,.05)}
-  .sidebar-box-head{padding:.9rem 1.1rem;background:var(--kf-soft);font-size:.75rem;font-weight:800;color:var(--kf-dark);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--kf-border)}
-  .sidebar-nav-item{display:flex;align-items:center;gap:.65rem;padding:.72rem 1.1rem;font-size:.84rem;font-weight:600;color:var(--kf-muted);cursor:pointer;transition:all .15s;border-bottom:1px solid #f4f6fb;text-decoration:none}
-  .sidebar-nav-item:last-child{border-bottom:0}
-  .sidebar-nav-item i{width:16px;text-align:center;font-size:.9rem}
-  .sidebar-nav-item:hover{background:#fff8f5;color:var(--kf-primary)}
-  .sidebar-nav-item.active{background:#fff3ef;color:var(--kf-primary);font-weight:700}
-  .help-box{background:linear-gradient(135deg,#0f1923,#1e2f42);border-radius:1rem;padding:1.3rem;text-align:center}
-  .help-box-emoji{font-size:2rem;margin-bottom:.6rem}
-  .help-box-title{font-weight:800;font-size:.95rem;color:#fff;margin-bottom:.35rem}
-  .help-box-sub{font-size:.78rem;color:#8a9ab8;line-height:1.55;margin-bottom:1rem}
-  .btn-help{display:block;background:var(--kf-primary);color:#fff;font-weight:700;font-size:.82rem;padding:.62rem 1rem;border-radius:.65rem;text-decoration:none;box-shadow:0 4px 12px rgba(232,64,28,.35);transition:all .18s}
-  .btn-help:hover{background:var(--kf-primary-dark);color:#fff;transform:translateY(-1px)}
+/* ─── STATS HERO — Agar Teks Putih & Jelas ─── */
+.hero-stats {
+    display: flex;
+    gap: 32px;
+    margin-top: 36px;
+    flex-wrap: wrap;
+}
 
-  @media(max-width:991px){.guide-sidebar{position:static;margin-bottom:1.5rem}.hero-visual{display:none}.panduan-hero{padding-bottom:6rem}}
+.stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem; /* Sedikit diperbesar agar gagah */
+    font-weight: 800;
+    color: #ffffff;    /* GANTI KE PUTIH */
+    line-height: 1;
+}
+
+.stat-num sup {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8); /* Putih agak transparan */
+    margin-left: 2px;
+}
+
+.stat-label {
+    font-size: .75rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9); /* Putih agar kontras */
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-top: 6px;
+}
+
+.stat-divider {
+    width: 1px;
+    background: rgba(255, 255, 255, 0.3); /* Garis pemisah putih tipis */
+    align-self: stretch;
+}
+
+/* floating cards */
+.hero-visual{position:relative;height:340px}
+.fc{
+  position:absolute;
+  background:#fff;border:1.5px solid var(--or-border);
+  border-radius:16px;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  font-size:.82rem;font-weight:600;color:var(--or-text);
+  white-space:nowrap;box-shadow:var(--shadow-md);
+  animation:floatY 5s ease-in-out infinite;
+}
+.fc:nth-child(1){top:30px;left:0;animation-delay:0s}
+.fc:nth-child(2){top:100px;right:0;animation-delay:1s}
+.fc:nth-child(3){bottom:100px;left:5%;animation-delay:2s}
+.fc:nth-child(4){bottom:25px;right:10%;animation-delay:3s}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.fc-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;
+}
+.fc:nth-child(1) .fc-icon{background:#fff3e8;color:var(--or-500)}
+.fc:nth-child(2) .fc-icon{background:#e8f8ee;color:#27ae60}
+.fc:nth-child(3) .fc-icon{background:#e8f0fe;color:#3a6df0}
+.fc:nth-child(4) .fc-icon{background:#fff8e1;color:#f39c12}
+.fc-sub{font-size:.7rem;color:var(--or-muted);font-weight:400;margin-top:1px}
+
+/* big decoration circle */
+.hero-deco{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.08) 0%,rgba(255,255,255,.02) 60%,transparent 100%);
+  border:2px dashed rgba(255,255,255,.2);
+}
+
+/* ─── CATEGORIES ─── */
+.section-kecil{padding:48px 0 16px}
+.label-tag{
+  display:inline-block;
+  background:var(--or-100);border:1.5px solid var(--or-200);
+  color:var(--or-600);font-size:.7rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.1em;
+  padding:4px 12px;border-radius:999px;margin-bottom:10px;
+}
+.section-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.5rem,3vw,2.1rem);
+  font-weight:800;color:var(--or-dark);letter-spacing:-.025em;
+}
+
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:991px){.cat-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:575px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+
+.cat-card{
+  background:#fff;border:2px solid var(--or-border);
+  border-radius:16px;padding:20px 14px;
+  text-align:center;cursor:pointer;
+  transition:all .22s cubic-bezier(.4,0,.2,1);
+  position:relative;overflow:hidden;
+}
+.cat-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--or-500),var(--or-400));
+  opacity:0;transition:opacity .22s;
+}
+.cat-card>*{position:relative;z-index:1}
+.cat-card:hover,.cat-card.active{
+  border-color:var(--or-400);
+  transform:translateY(-4px);
+  box-shadow:var(--shadow-lg);
+}
+.cat-card:hover::before,.cat-card.active::before{opacity:1}
+
+.cat-ico{
+  width:50px;height:50px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;margin:0 auto 10px;
+  transition:all .22s;
+}
+.cat-card:nth-child(1) .cat-ico{background:#fff3e8;color:var(--or-500)}
+.cat-card:nth-child(2) .cat-ico{background:#e3f2fd;color:#1565c0}
+.cat-card:nth-child(3) .cat-ico{background:#e8f5e9;color:#2e7d32}
+.cat-card:nth-child(4) .cat-ico{background:#fce4ec;color:#c62828}
+.cat-card:nth-child(5) .cat-ico{background:#f3e5f5;color:#6a1b9a}
+.cat-card:hover .cat-ico,.cat-card.active .cat-ico{
+  background:rgba(255,255,255,.22)!important;
+  color:#fff!important;
+}
+.cat-name{font-size:.85rem;font-weight:800;color:var(--or-dark);transition:color .22s;margin-bottom:3px}
+.cat-desc{font-size:.72rem;color:var(--or-muted);transition:color .22s;margin:0}
+.cat-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--or-100);color:var(--or-600);
+  font-size:.65rem;font-weight:800;margin-top:8px;
+  transition:all .22s;
+}
+.cat-card:hover .cat-name,.cat-card.active .cat-name,
+.cat-card:hover .cat-desc,.cat-card.active .cat-desc{color:rgba(255,255,255,.95)}
+.cat-card:hover .cat-badge,.cat-card.active .cat-badge{background:rgba(255,255,255,.25);color:#fff}
+
+/* ─── MAIN ─── */
+.main-section{padding:8px 0 80px}
+
+/* sidebar */
+.sidebar{position:sticky;top:80px}
+.coming-soon-msg{
+  display:none;margin-top:10px;padding:9px 12px;
+  background:rgba(244,121,58,.1);border:1.5px solid rgba(244,121,58,.3);
+  border-radius:10px;font-size:.8rem;font-weight:700;
+  color:var(--or-600);text-align:center;
+  animation:fadeUp .3s ease;
+}
+.coming-soon-msg i{margin-right:5px}
+.help-card{
+  background:linear-gradient(160deg,#fff9f5,#ffeedd);
+  border:2px solid var(--or-200);border-radius:18px;
+  padding:24px 20px;text-align:center;overflow:hidden;position:relative;
+}
+.help-card::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:100px;height:100px;border-radius:50%;
+  background:rgba(244,121,58,.1);
+}
+.help-emoji{font-size:2.2rem;margin-bottom:10px;display:block}
+.help-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:800;color:var(--or-dark);margin-bottom:6px}
+.help-sub{font-size:.78rem;color:var(--or-muted);line-height:1.6;margin-bottom:16px}
+.btn-contact{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  background:linear-gradient(135deg,var(--or-500),var(--or-600));
+  color:#fff;font-family:inherit;font-size:.82rem;font-weight:700;
+  padding:11px 18px;border-radius:12px;
+  text-decoration:none;border:0;cursor:pointer;
+  box-shadow:0 4px 14px rgba(244,121,58,.35);
+  transition:all .18s;
+}
+.btn-contact:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(244,121,58,.45);color:#fff}
+
+
+
+/* ─── PANEL ─── */
+.panel{display:none;animation:fadeUp .3s ease}
+.panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.panel-head{
+  display:flex;align-items:center;gap:14px;
+  padding:20px 24px;
+  background:linear-gradient(to right,#fff,var(--or-50));
+  border:2px solid var(--or-border);border-radius:18px;
+  margin-bottom:24px;
+}
+.panel-ico{
+  width:50px;height:50px;flex-shrink:0;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;color:#fff;
+  background:linear-gradient(135deg,var(--or-500),var(--or-600));
+  box-shadow:0 4px 12px rgba(244,121,58,.3);
+}
+.panel-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--or-dark);margin:0;letter-spacing:-.02em}
+.panel-subtitle{font-size:.82rem;color:var(--or-muted);margin:3px 0 0}
+
+/* mini guide cards */
+.mini-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:575px){.mini-cards{grid-template-columns:1fr}}
+.mini-card{
+  background:#fff;border:2px solid var(--or-border);
+  border-radius:14px;padding:18px;
+  transition:all .22s;position:relative;overflow:hidden;
+}
+.mini-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(to right,var(--or-400),var(--or-500));
+  transform:scaleX(0);transform-origin:left;transition:transform .25s;
+}
+.mini-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--or-300)}
+.mini-card:hover::after{transform:scaleX(1)}
+.mini-num{
+  font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:800;
+  color:var(--or-100);line-height:1;margin-bottom:6px;
+}
+.mini-tag{
+  display:inline-block;padding:2px 8px;border-radius:999px;
+  font-size:.65rem;font-weight:800;letter-spacing:.04em;margin-bottom:6px;
+}
+.tag-orange{background:var(--or-100);color:var(--or-600)}
+.tag-blue{background:#e3f2fd;color:#1565c0}
+.tag-green{background:#e8f5e9;color:#2e7d32}
+.mini-title{font-size:.85rem;font-weight:800;color:var(--or-dark);margin-bottom:4px}
+.mini-desc{font-size:.78rem;color:var(--or-muted);line-height:1.6;margin:0}
+
+/* ─── ACCORDION ─── */
+.acc-list{display:flex;flex-direction:column;gap:10px}
+.acc-item{
+  background:#fff;border:2px solid var(--or-border);
+  border-radius:14px;overflow:hidden;
+  transition:border-color .2s,box-shadow .2s;
+}
+.acc-item:hover{border-color:var(--or-300)}
+.acc-item.open{border-color:var(--or-400);box-shadow:var(--shadow-md)}
+.acc-header{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 18px;cursor:pointer;user-select:none;
+  background:linear-gradient(to right,#fff,var(--or-50));
+}
+.acc-ico{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:var(--or-100);color:var(--or-500);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;transition:all .2s;
+}
+.acc-item.open .acc-ico{background:linear-gradient(135deg,var(--or-500),var(--or-600));color:#fff;box-shadow:0 3px 10px rgba(244,121,58,.3)}
+.acc-title{flex:1;font-size:.88rem;font-weight:700;color:var(--or-dark);margin:0}
+.acc-arrow{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--or-100);color:var(--or-400);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;flex-shrink:0;
+  transition:all .25s;
+}
+.acc-item.open .acc-arrow{background:var(--or-500);color:#fff;transform:rotate(180deg)}
+.acc-body{display:none;padding:0 18px 20px}
+.acc-item.open .acc-body{display:block}
+
+/* ─── TIMELINE ─── */
+.timeline{position:relative;padding-left:30px;margin-top:4px}
+.timeline::before{
+  content:'';position:absolute;left:11px;top:14px;bottom:8px;width:2px;
+  background:linear-gradient(to bottom,var(--or-400),var(--or-100));
+  border-radius:2px;
+}
+.tl-item{position:relative;margin-bottom:12px}
+.tl-item:last-child{margin-bottom:0}
+.tl-dot{
+  position:absolute;left:-30px;top:10px;
+  width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,var(--or-500),var(--or-400));
+  color:#fff;font-size:.65rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(244,121,58,.3);z-index:1;
+}
+.tl-card{
+  background:var(--or-50);border:1.5px solid var(--or-border);
+  border-radius:12px;padding:12px 14px;
+  transition:all .18s;
+}
+.tl-card:hover{border-color:var(--or-300);transform:translateX(4px);background:#fff}
+.tl-title{font-size:.84rem;font-weight:700;color:var(--or-dark);margin-bottom:3px}
+.tl-text{font-size:.8rem;color:var(--or-muted);line-height:1.65;margin:0}
+.tl-text strong{color:var(--or-600);font-weight:700}
+
+/* tip / warning */
+.tip-box{
+  display:flex;align-items:flex-start;gap:10px;
+  background:linear-gradient(to right,var(--or-50),#fff);
+  border:1.5px solid var(--or-200);border-radius:12px;
+  padding:12px 14px;margin-top:14px;
+  font-size:.8rem;color:var(--or-600);line-height:1.65;
+}
+.tip-box>i{flex-shrink:0;margin-top:1px;color:var(--or-500);font-size:.95rem}
+.warn-box{
+  display:flex;align-items:flex-start;gap:10px;
+  background:linear-gradient(to right,#fff8e1,#fff);
+  border:1.5px solid #ffe082;border-radius:12px;
+  padding:12px 14px;margin-top:14px;
+  font-size:.8rem;color:#e65100;line-height:1.65;
+}
+.warn-box>i{flex-shrink:0;margin-top:1px;color:#fb8c00;font-size:.95rem}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:991px){
+  .sidebar{position:static;margin-bottom:24px}
+  .hero-visual{display:none}
+  .hero{padding-bottom:100px}
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:575px){
+  .cat-grid{grid-template-columns:repeat(2,1fr)}
+  .mini-cards{grid-template-columns:1fr}
+  .hero{padding:60px 0 90px}
+}
 </style>
 @endsection
 
 @section('content')
 
-{{-- HERO --}}
-<section class="panduan-hero">
+{{-- ───────── HERO ───────── --}}
+<section class="hero">
   <div class="container">
     <div class="row align-items-center">
-      <div class="col-lg-6">
-        <div class="hero-badge"><span></span> Pusat Bantuan KostFinder</div>
-        <h1 class="panduan-hero-title">Ada yang Bisa<br>Kami <span class="accent">Bantu?</span></h1>
-        <p class="panduan-hero-sub">Panduan lengkap menggunakan KostFinder — dari daftar akun, cari kost, booking, sampai jadi pemilik kost.</p>
-        <div class="hero-search">
-          <i class="bi bi-search" style="color:rgba(255,255,255,.35);font-size:.9rem;"></i>
-          <input type="text" id="heroSearch" placeholder="Cari panduan, misal: cara booking..." oninput="liveSearch(this.value)">
-          <button class="hero-search-btn" onclick="doSearch()">Cari</button>
+
+      <div class="col-lg-6 mb-5 mb-lg-0">
+        <div class="hero-pill"><span></span>Pusat Bantuan KostFinder</div>
+        <h1 class="hero-title">Ada yang Bisa<br>Kami <em>Bantu?</em></h1>
+        <p class="hero-sub">Panduan lengkap KostFinder — daftar akun, cari kost, booking, sampai jadi pemilik kost yang sukses.</p>
+
+        <div class="search-wrap">
+          <i class="bi bi-search"></i>
+          <input type="text" id="heroSearch" placeholder="Cari panduan, misal: cara booking…" oninput="liveSearch(this.value)">
+          <button class="search-btn" onclick="doSearch()"><i class="bi bi-arrow-right me-1"></i>Cari</button>
         </div>
+
         <div class="hero-stats">
-          <div class="hero-stat"><div class="hero-stat-num">5<span>+</span></div><div class="hero-stat-label">Kategori Panduan</div></div>
-          <div class="hero-stat"><div class="hero-stat-num">15<span>+</span></div><div class="hero-stat-label">Artikel Bantuan</div></div>
-          <div class="hero-stat"><div class="hero-stat-num">24<span>/7</span></div><div class="hero-stat-label">Siap Membantu</div></div>
+          <div>
+            <div class="stat-num">5<sup>+</sup></div>
+            <div class="stat-label">Topik Panduan</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div>
+            <div class="stat-num">15<sup>+</sup></div>
+            <div class="stat-label">Artikel Bantuan</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div>
+            <div class="stat-num">24<sup>/7</sup></div>
+            <div class="stat-label">Siap Membantu</div>
+          </div>
         </div>
       </div>
-      <div class="col-lg-6 d-none d-lg-block">
-        <div class="hero-visual">
-          <div class="float-card"><div class="float-card-icon" style="background:rgba(232,64,28,.2);color:#ff7a52;"><i class="bi bi-house-fill"></i></div>Kost ditemukan! 🎉</div>
-          <div class="float-card"><div class="float-card-icon" style="background:rgba(74,222,128,.2);color:#4ade80;"><i class="bi bi-check-circle-fill"></i></div>Booking dikonfirmasi</div>
-          <div class="float-card"><div class="float-card-icon" style="background:rgba(96,165,250,.2);color:#60a5fa;"><i class="bi bi-star-fill"></i></div>Rating 4.8/5 ⭐</div>
-          <div class="float-card"><div class="float-card-icon" style="background:rgba(251,191,36,.2);color:#fbbf24;"><i class="bi bi-people-fill"></i></div>1.200+ penghuni aktif</div>
+
+      <div class="col-lg-6 d-none d-lg-flex justify-content-center">
+        <div class="hero-visual w-100">
+          <div class="hero-deco"></div>
+          <div class="fc">
+            <div class="fc-icon"><i class="bi bi-house-fill"></i></div>
+            <div><div>Kost ditemukan! 🎉</div><div class="fc-sub">Surabaya Timur</div></div>
+          </div>
+          <div class="fc">
+            <div class="fc-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <div><div>Booking dikonfirmasi</div><div class="fc-sub">Masuk 1 Jan 2025</div></div>
+          </div>
+          <div class="fc">
+            <div class="fc-icon"><i class="bi bi-star-fill"></i></div>
+            <div><div>Rating 4.8 / 5 ⭐</div><div class="fc-sub">dari 120 ulasan</div></div>
+          </div>
+          <div class="fc">
+            <div class="fc-icon"><i class="bi bi-people-fill"></i></div>
+            <div><div>1.200+ penghuni aktif</div><div class="fc-sub">Bergabung sekarang</div></div>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
+  <div class="hero-wave"></div>
 </section>
 
-{{-- CATEGORIES --}}
-<section class="categories-section">
+{{-- ───────── KATEGORI ───────── --}}
+<section class="section-kecil">
   <div class="container">
     <div class="text-center mb-4">
-      <p style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--kf-primary);margin-bottom:.4rem;">Pilih Topik</p>
-      <h2 style="font-family:'Fraunces',serif;font-weight:700;font-size:clamp(1.4rem,2.5vw,1.9rem);color:var(--kf-dark);letter-spacing:-.02em;margin:0;">Mau Belajar Tentang Apa?</h2>
+      <span class="label-tag">Pilih Topik</span>
+      <h2 class="section-title">Mau Belajar Tentang Apa?</h2>
     </div>
-    <div class="row g-3 justify-content-center">
-      <div class="col-6 col-md-4 col-lg"><div class="cat-card active" onclick="switchPanel('penghuni',this)"><div class="cat-icon"><i class="bi bi-person-fill"></i></div><div class="cat-title">Penghuni</div><div class="cat-desc">Daftar & kelola akun</div><div class="cat-count">3</div></div></div>
-      <div class="col-6 col-md-4 col-lg"><div class="cat-card" onclick="switchPanel('cari',this)"><div class="cat-icon"><i class="bi bi-search"></i></div><div class="cat-title">Cari Kost</div><div class="cat-desc">Filter & favorit</div><div class="cat-count">3</div></div></div>
-      <div class="col-6 col-md-4 col-lg"><div class="cat-card" onclick="switchPanel('booking',this)"><div class="cat-icon"><i class="bi bi-calendar-check-fill"></i></div><div class="cat-title">Booking</div><div class="cat-desc">Pesan & bayar kost</div><div class="cat-count">3</div></div></div>
-      <div class="col-6 col-md-4 col-lg"><div class="cat-card" onclick="switchPanel('owner',this)"><div class="cat-icon"><i class="bi bi-building-fill"></i></div><div class="cat-title">Pemilik Kost</div><div class="cat-desc">Daftar & kelola kost</div><div class="cat-count">3</div></div></div>
-      <div class="col-6 col-md-4 col-lg"><div class="cat-card" onclick="switchPanel('akun',this)"><div class="cat-icon"><i class="bi bi-shield-lock-fill"></i></div><div class="cat-title">Keamanan</div><div class="cat-desc">Password & privasi</div><div class="cat-count">2</div></div></div>
+    <div class="cat-grid">
+      <div class="cat-card active" onclick="switchPanel('penghuni',this)">
+        <div class="cat-ico"><i class="bi bi-person-fill"></i></div>
+        <div class="cat-name">Penghuni</div>
+        <div class="cat-desc">Daftar & kelola akun</div>
+        <div class="cat-badge">3</div>
+      </div>
+      <div class="cat-card" onclick="switchPanel('cari',this)">
+        <div class="cat-ico"><i class="bi bi-search"></i></div>
+        <div class="cat-name">Cari Kost</div>
+        <div class="cat-desc">Filter & favorit</div>
+        <div class="cat-badge">3</div>
+      </div>
+      <div class="cat-card" onclick="switchPanel('booking',this)">
+        <div class="cat-ico"><i class="bi bi-calendar-check-fill"></i></div>
+        <div class="cat-name">Booking</div>
+        <div class="cat-desc">Pesan & bayar kost</div>
+        <div class="cat-badge">3</div>
+      </div>
+      <div class="cat-card" onclick="switchPanel('owner',this)">
+        <div class="cat-ico"><i class="bi bi-building-fill"></i></div>
+        <div class="cat-name">Pemilik Kost</div>
+        <div class="cat-desc">Daftar & kelola kost</div>
+        <div class="cat-badge">3</div>
+      </div>
+      <div class="cat-card" onclick="switchPanel('akun',this)">
+        <div class="cat-ico"><i class="bi bi-shield-lock-fill"></i></div>
+        <div class="cat-name">Keamanan</div>
+        <div class="cat-desc">Password & privasi</div>
+        <div class="cat-badge">2</div>
+      </div>
     </div>
   </div>
 </section>
 
-{{-- MAIN CONTENT --}}
-<section class="content-section">
+{{-- ───────── MAIN CONTENT ───────── --}}
+<section class="main-section">
   <div class="container">
     <div class="row g-4">
 
       {{-- SIDEBAR --}}
       <div class="col-lg-3 order-lg-2">
-        <div class="guide-sidebar">
-          <div class="sidebar-box">
-            <div class="sidebar-box-head">Navigasi Cepat</div>
-            <div class="sidebar-nav-item active" onclick="switchPanel('penghuni')" id="snav-penghuni"><i class="bi bi-person"></i> Penghuni</div>
-            <div class="sidebar-nav-item" onclick="switchPanel('cari')" id="snav-cari"><i class="bi bi-search"></i> Cari Kost</div>
-            <div class="sidebar-nav-item" onclick="switchPanel('booking')" id="snav-booking"><i class="bi bi-calendar-check"></i> Booking Kost</div>
-            <div class="sidebar-nav-item" onclick="switchPanel('owner')" id="snav-owner"><i class="bi bi-building"></i> Pemilik Kost</div>
-            <div class="sidebar-nav-item" onclick="switchPanel('akun')" id="snav-akun"><i class="bi bi-shield-lock"></i> Keamanan Akun</div>
+        <div class="sidebar">
+          <div class="help-card">
+            <span class="help-emoji">🤝</span>
+            <div class="help-title">Masih Bingung?</div>
+            <p class="help-sub">Tim kami siap membantu kamu menemukan jawaban yang tepat kapan saja.</p>
+            <button class="btn-contact" onclick="showComingSoon()">
+              <i class="bi bi-envelope-fill"></i> Hubungi Kami
+            </button>
+            <div class="coming-soon-msg" id="comingSoonMsg">
+              <i class="bi bi-clock-history"></i> Fitur ini akan segera hadir! 🚀
+            </div>
           </div>
-          <div class="help-box">
-            <div class="help-box-emoji">🤝</div>
-            <div class="help-box-title">Masih Bingung?</div>
-            <div class="help-box-sub">Tim kami siap membantu kamu menemukan jawaban yang tepat.</div>
-            <a href="mailto:support@kostfinder.com" class="btn-help"><i class="bi bi-envelope me-1"></i> Hubungi Kami</a>
-          </div>
+
         </div>
       </div>
 
       {{-- PANELS --}}
       <div class="col-lg-9 order-lg-1">
 
-        {{-- PENGHUNI --}}
-        <div class="panduan-panel active" id="panel-penghuni">
-          <div class="panel-header">
-            <div class="panel-header-icon"><i class="bi bi-person-fill"></i></div>
-            <div><div class="panel-header-title">Panduan Penghuni</div><div class="panel-header-sub">Cara mendaftar, login, dan mengelola akun pencari kost</div></div>
+        {{-- ── PANEL: PENGHUNI ── --}}
+        <div class="panel active" id="panel-penghuni">
+          <div class="panel-head">
+            <div class="panel-ico"><i class="bi bi-person-fill"></i></div>
+            <div>
+              <div class="panel-title">Panduan Penghuni</div>
+              <div class="panel-subtitle">Cara mendaftar, login, dan mengelola akun pencari kost</div>
+            </div>
           </div>
-          <div class="row g-3 mb-4">
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">01</div><div class="guide-card-tag tag-penghuni">Penghuni</div><div class="guide-card-title">Daftar Akun</div><div class="guide-card-text">Buat akun baru sebagai pencari kost dalam hitungan menit.</div></div></div>
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">02</div><div class="guide-card-tag tag-penghuni">Penghuni</div><div class="guide-card-title">Login & Masuk</div><div class="guide-card-text">Masuk ke akun dengan email/password atau Google.</div></div></div>
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">03</div><div class="guide-card-tag tag-penghuni">Penghuni</div><div class="guide-card-title">Update Profil</div><div class="guide-card-text">Lengkapi dan perbarui informasi profil kamu.</div></div></div>
+
+          <div class="mini-cards">
+            <div class="mini-card"><div class="mini-num">01</div><div class="mini-tag tag-orange">Penghuni</div><div class="mini-title">Daftar Akun</div><div class="mini-desc">Buat akun baru sebagai pencari kost dalam hitungan menit.</div></div>
+            <div class="mini-card"><div class="mini-num">02</div><div class="mini-tag tag-orange">Penghuni</div><div class="mini-title">Login & Masuk</div><div class="mini-desc">Masuk ke akun dengan email/password atau Google.</div></div>
+            <div class="mini-card"><div class="mini-num">03</div><div class="mini-tag tag-orange">Penghuni</div><div class="mini-title">Update Profil</div><div class="mini-desc">Lengkapi dan perbarui informasi profil kamu.</div></div>
           </div>
-          <div class="kf-accordion">
-            <div class="kf-acc-item open">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-person-plus-fill"></i></div><div class="kf-acc-title">Cara Daftar Akun sebagai Penghuni</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+          <div class="acc-list">
+            <div class="acc-item open">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-person-plus-fill"></i></div>
+                <div class="acc-title">Cara Daftar Akun sebagai Penghuni</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Klik tombol Daftar</div><p class="timeline-card-text">Di pojok kanan atas halaman, klik tombol <strong>"Daftar"</strong> berwarna merah.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Pilih tipe akun</div><p class="timeline-card-text">Pilih <strong>"Daftar sebagai Pencari Kost"</strong> pada modal yang muncul.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Isi formulir pendaftaran</div><p class="timeline-card-text">Masukkan <strong>nama lengkap, email aktif</strong>, dan <strong>password</strong> minimal 8 karakter.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">4</div><div class="timeline-card"><div class="timeline-card-title">Akun siap digunakan!</div><p class="timeline-card-text">Klik <strong>"Daftar Sekarang"</strong> — kamu langsung bisa mulai mencari kost.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Klik tombol Daftar</div><p class="tl-text">Di pojok kanan atas halaman, klik tombol <strong>"Daftar"</strong> berwarna oranye.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Pilih tipe akun</div><p class="tl-text">Pilih <strong>"Daftar sebagai Pencari Kost"</strong> pada modal yang muncul.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Isi formulir pendaftaran</div><p class="tl-text">Masukkan <strong>nama lengkap, email aktif</strong>, dan <strong>password</strong> minimal 8 karakter.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">4</div><div class="tl-card"><div class="tl-title">Akun siap digunakan!</div><p class="tl-text">Klik <strong>"Daftar Sekarang"</strong> — kamu langsung bisa mulai mencari kost.</p></div></div>
                 </div>
                 <div class="tip-box"><i class="bi bi-lightning-charge-fill"></i><span>Cara lebih cepat: klik <strong>"Login dengan Google"</strong> untuk daftar/masuk otomatis tanpa mengisi formulir!</span></div>
               </div>
             </div>
-            <div class="kf-acc-item">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-box-arrow-in-right"></i></div><div class="kf-acc-title">Cara Login ke Akun KostFinder</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+            <div class="acc-item">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-box-arrow-in-right"></i></div>
+                <div class="acc-title">Cara Login ke Akun KostFinder</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Klik tombol Masuk</div><p class="timeline-card-text">Di navbar kanan atas, klik tombol <strong>"Masuk"</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Masukkan email & password</div><p class="timeline-card-text">Isi <strong>email</strong> dan <strong>password</strong> yang sudah didaftarkan, lalu klik <strong>"Login"</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Atau login dengan Google</div><p class="timeline-card-text">Klik <strong>"Login dengan Google"</strong> untuk masuk lebih cepat.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Klik tombol Masuk</div><p class="tl-text">Di navbar kanan atas, klik tombol <strong>"Masuk"</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Masukkan email & password</div><p class="tl-text">Isi <strong>email</strong> dan <strong>password</strong> yang sudah didaftarkan, lalu klik <strong>"Login"</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Atau login dengan Google</div><p class="tl-text">Klik <strong>"Login dengan Google"</strong> untuk masuk lebih cepat.</p></div></div>
                 </div>
                 <div class="tip-box"><i class="bi bi-lightbulb-fill"></i><span>Lupa password? Klik <strong>"Lupa password?"</strong> di halaman login untuk reset via email.</span></div>
               </div>
             </div>
-            <div class="kf-acc-item">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-pencil-fill"></i></div><div class="kf-acc-title">Cara Update Profil Penghuni</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+            <div class="acc-item">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-pencil-fill"></i></div>
+                <div class="acc-title">Cara Update Profil Penghuni</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Buka Profil Saya</div><p class="timeline-card-text">Klik nama kamu → pilih <strong>"Profil Saya"</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Klik Edit Profil</div><p class="timeline-card-text">Ubah nama, foto, atau nomor HP sesuai kebutuhan.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Simpan perubahan</div><p class="timeline-card-text">Klik <strong>"Simpan Perubahan"</strong> — profil langsung terupdate.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Buka Profil Saya</div><p class="tl-text">Klik nama kamu → pilih <strong>"Profil Saya"</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Klik Edit Profil</div><p class="tl-text">Ubah nama, foto, atau nomor HP sesuai kebutuhan.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Simpan perubahan</div><p class="tl-text">Klik <strong>"Simpan Perubahan"</strong> — profil langsung terupdate.</p></div></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {{-- CARI --}}
-        <div class="panduan-panel" id="panel-cari">
-          <div class="panel-header">
-            <div class="panel-header-icon"><i class="bi bi-search"></i></div>
-            <div><div class="panel-header-title">Cara Mencari Kost</div><div class="panel-header-sub">Temukan kost terbaik dengan fitur pencarian dan filter KostFinder</div></div>
+        {{-- ── PANEL: CARI ── --}}
+        <div class="panel" id="panel-cari">
+          <div class="panel-head">
+            <div class="panel-ico"><i class="bi bi-search"></i></div>
+            <div>
+              <div class="panel-title">Cara Mencari Kost</div>
+              <div class="panel-subtitle">Temukan kost terbaik dengan fitur pencarian dan filter KostFinder</div>
+            </div>
           </div>
-          <div class="row g-3 mb-4">
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">01</div><div class="guide-card-tag tag-tips">Tips</div><div class="guide-card-title">Cari by Kota</div><div class="guide-card-text">Ketik nama kota atau klik kota populer di halaman utama.</div></div></div>
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">02</div><div class="guide-card-tag tag-tips">Tips</div><div class="guide-card-title">Gunakan Filter</div><div class="guide-card-text">Filter kost berdasarkan harga, fasilitas, dan tipe penghuni.</div></div></div>
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">03</div><div class="guide-card-tag tag-tips">Tips</div><div class="guide-card-title">Simpan Favorit</div><div class="guide-card-text">Klik ikon hati untuk menyimpan kost yang kamu suka.</div></div></div>
+
+          <div class="mini-cards">
+            <div class="mini-card"><div class="mini-num">01</div><div class="mini-tag tag-green">Tips</div><div class="mini-title">Cari by Kota</div><div class="mini-desc">Ketik nama kota atau klik kota populer di halaman utama.</div></div>
+            <div class="mini-card"><div class="mini-num">02</div><div class="mini-tag tag-green">Tips</div><div class="mini-title">Gunakan Filter</div><div class="mini-desc">Filter berdasarkan harga, fasilitas, dan tipe penghuni.</div></div>
+            <div class="mini-card"><div class="mini-num">03</div><div class="mini-tag tag-green">Tips</div><div class="mini-title">Simpan Favorit</div><div class="mini-desc">Klik ikon hati untuk menyimpan kost yang kamu suka.</div></div>
           </div>
-          <div class="kf-accordion">
-            <div class="kf-acc-item open">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-map-fill"></i></div><div class="kf-acc-title">Cara Mencari Kost di KostFinder</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+          <div class="acc-list">
+            <div class="acc-item open">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-map-fill"></i></div>
+                <div class="acc-title">Cara Mencari Kost di KostFinder</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Gunakan kolom pencarian</div><p class="timeline-card-text">Ketik <strong>nama kota, kampus, atau nama jalan</strong> lalu klik <strong>"Cari Kost"</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Atau pilih kota populer</div><p class="timeline-card-text">Klik kota seperti <strong>Surabaya, Malang, Sidoarjo</strong> di halaman utama.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Lihat hasil pencarian</div><p class="timeline-card-text">Daftar kost tampil beserta <strong>harga, fasilitas, dan lokasi</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Gunakan kolom pencarian</div><p class="tl-text">Ketik <strong>nama kota, kampus, atau nama jalan</strong> lalu klik <strong>"Cari Kost"</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Atau pilih kota populer</div><p class="tl-text">Klik kota seperti <strong>Surabaya, Malang, Sidoarjo</strong> di halaman utama.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Lihat hasil pencarian</div><p class="tl-text">Daftar kost tampil beserta <strong>harga, fasilitas, dan lokasi</strong>.</p></div></div>
                 </div>
                 <div class="tip-box"><i class="bi bi-sliders"></i><span>Gunakan tombol <strong>Filter</strong> untuk menyaring kost berdasarkan fasilitas, tipe penghuni, dan harga.</span></div>
               </div>
             </div>
-            <div class="kf-acc-item">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-heart-fill"></i></div><div class="kf-acc-title">Cara Menyimpan Kost ke Favorit</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+            <div class="acc-item">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-heart-fill"></i></div>
+                <div class="acc-title">Cara Menyimpan Kost ke Favorit</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Pastikan sudah login</div><p class="timeline-card-text">Fitur favorit hanya tersedia untuk pengguna yang sudah <strong>login</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Klik ikon hati ♡</div><p class="timeline-card-text">Di kartu kost, klik ikon <strong>♡</strong> di pojok kanan atas gambar untuk menyimpan.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Akses daftar favorit</div><p class="timeline-card-text">Buka menu <strong>Favorit</strong> di profil untuk melihat kost tersimpan.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Pastikan sudah login</div><p class="tl-text">Fitur favorit hanya tersedia untuk pengguna yang sudah <strong>login</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Klik ikon hati ♡</div><p class="tl-text">Di kartu kost, klik ikon <strong>♡</strong> di pojok kanan atas gambar untuk menyimpan.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Akses daftar favorit</div><p class="tl-text">Buka menu <strong>Favorit</strong> di profil untuk melihat kost tersimpan.</p></div></div>
                 </div>
               </div>
             </div>
-            <div class="kf-acc-item">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-eye-fill"></i></div><div class="kf-acc-title">Apa yang Harus Dilakukan Setelah Menemukan Kost?</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+            <div class="acc-item">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-eye-fill"></i></div>
+                <div class="acc-title">Apa yang Harus Dilakukan Setelah Menemukan Kost?</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Lihat detail kost</div><p class="timeline-card-text">Klik kost yang diminati untuk melihat <strong>foto, fasilitas, harga, dan lokasi</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Bandingkan beberapa kost</div><p class="timeline-card-text">Simpan ke <strong>Favorit</strong> untuk membandingkan sebelum memutuskan.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Lanjut booking</div><p class="timeline-card-text">Sudah yakin? Klik <strong>"Booking Sekarang"</strong> untuk melanjutkan pemesanan.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Lihat detail kost</div><p class="tl-text">Klik kost yang diminati untuk melihat <strong>foto, fasilitas, harga, dan lokasi</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Bandingkan beberapa kost</div><p class="tl-text">Simpan ke <strong>Favorit</strong> untuk membandingkan sebelum memutuskan.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Lanjut booking</div><p class="tl-text">Sudah yakin? Klik <strong>"Booking Sekarang"</strong> untuk melanjutkan pemesanan.</p></div></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {{-- BOOKING --}}
-        <div class="panduan-panel" id="panel-booking">
-          <div class="panel-header">
-            <div class="panel-header-icon"><i class="bi bi-calendar-check-fill"></i></div>
-            <div><div class="panel-header-title">Cara Booking Kost</div><div class="panel-header-sub">Panduan lengkap pemesanan kost dari pilih kamar hingga pembayaran</div></div>
+        {{-- ── PANEL: BOOKING ── --}}
+        <div class="panel" id="panel-booking">
+          <div class="panel-head">
+            <div class="panel-ico"><i class="bi bi-calendar-check-fill"></i></div>
+            <div>
+              <div class="panel-title">Cara Booking Kost</div>
+              <div class="panel-subtitle">Panduan lengkap pemesanan dari pilih kamar hingga pembayaran</div>
+            </div>
           </div>
-          <div class="row g-3 mb-4">
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">01</div><div class="guide-card-tag tag-penghuni">Booking</div><div class="guide-card-title">Pilih Kamar</div><div class="guide-card-text">Pilih tipe kamar yang tersedia dan sesuai budget.</div></div></div>
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">02</div><div class="guide-card-tag tag-penghuni">Booking</div><div class="guide-card-title">Tunggu Konfirmasi</div><div class="guide-card-text">Pemilik kost akan membalas dalam waktu singkat.</div></div></div>
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">03</div><div class="guide-card-tag tag-penghuni">Booking</div><div class="guide-card-title">Lakukan Pembayaran</div><div class="guide-card-text">Bayar sesuai instruksi setelah booking disetujui.</div></div></div>
+
+          <div class="mini-cards">
+            <div class="mini-card"><div class="mini-num">01</div><div class="mini-tag tag-orange">Booking</div><div class="mini-title">Pilih Kamar</div><div class="mini-desc">Pilih tipe kamar yang tersedia dan sesuai budget.</div></div>
+            <div class="mini-card"><div class="mini-num">02</div><div class="mini-tag tag-orange">Booking</div><div class="mini-title">Tunggu Konfirmasi</div><div class="mini-desc">Pemilik kost akan membalas dalam waktu singkat.</div></div>
+            <div class="mini-card"><div class="mini-num">03</div><div class="mini-tag tag-orange">Booking</div><div class="mini-title">Lakukan Pembayaran</div><div class="mini-desc">Bayar sesuai instruksi setelah booking disetujui.</div></div>
           </div>
-          <div class="kf-accordion">
-            <div class="kf-acc-item open">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-calendar-plus-fill"></i></div><div class="kf-acc-title">Cara Booking Kost di KostFinder</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+          <div class="acc-list">
+            <div class="acc-item open">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-calendar-plus-fill"></i></div>
+                <div class="acc-title">Cara Booking Kost di KostFinder</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Buka halaman detail kost</div><p class="timeline-card-text">Pilih kost yang diinginkan lalu pilih <strong>tipe kamar</strong> yang tersedia.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Klik Booking Sekarang</div><p class="timeline-card-text">Isi <strong>tanggal masuk</strong> dan catatan tambahan, lalu konfirmasi.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Tunggu konfirmasi pemilik</div><p class="timeline-card-text">Pantau status di menu <strong>"Pesanan"</strong> di profil kamu.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">4</div><div class="timeline-card"><div class="timeline-card-title">Lakukan pembayaran</div><p class="timeline-card-text">Setelah disetujui, ikuti instruksi pembayaran yang diberikan.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Buka halaman detail kost</div><p class="tl-text">Pilih kost yang diinginkan lalu pilih <strong>tipe kamar</strong> yang tersedia.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Klik Booking Sekarang</div><p class="tl-text">Isi <strong>tanggal masuk</strong> dan catatan tambahan, lalu konfirmasi.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Tunggu konfirmasi pemilik</div><p class="tl-text">Pantau status di menu <strong>"Pesanan"</strong> di profil kamu.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">4</div><div class="tl-card"><div class="tl-title">Lakukan pembayaran</div><p class="tl-text">Setelah disetujui, ikuti instruksi pembayaran yang diberikan.</p></div></div>
                 </div>
                 <div class="tip-box"><i class="bi bi-bell-fill"></i><span>Status booking bisa dipantau kapan saja di menu <strong>"Pesanan"</strong> di profil kamu.</span></div>
               </div>
             </div>
-            <div class="kf-acc-item">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-credit-card-fill"></i></div><div class="kf-acc-title">Cara Melakukan Pembayaran</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+            <div class="acc-item">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-credit-card-fill"></i></div>
+                <div class="acc-title">Cara Melakukan Pembayaran</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Buka menu Pesanan</div><p class="timeline-card-text">Setelah booking disetujui, buka <strong>"Pesanan"</strong> dan klik booking tersebut.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Klik Bayar Sekarang</div><p class="timeline-card-text">Ikuti instruksi pembayaran yang tersedia.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Upload bukti transfer</div><p class="timeline-card-text">Upload <strong>bukti pembayaran</strong> dan tunggu konfirmasi dari pemilik.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Buka menu Pesanan</div><p class="tl-text">Setelah booking disetujui, buka <strong>"Pesanan"</strong> dan klik booking tersebut.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Klik Bayar Sekarang</div><p class="tl-text">Ikuti instruksi pembayaran yang tersedia.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Upload bukti transfer</div><p class="tl-text">Upload <strong>bukti pembayaran</strong> dan tunggu konfirmasi dari pemilik.</p></div></div>
                 </div>
               </div>
             </div>
-            <div class="kf-acc-item">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-x-circle-fill"></i></div><div class="kf-acc-title">Cara Membatalkan Booking</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+            <div class="acc-item">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-x-circle-fill"></i></div>
+                <div class="acc-title">Cara Membatalkan Booking</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Buka menu Pesanan</div><p class="timeline-card-text">Masuk ke <strong>"Pesanan"</strong> dan pilih booking yang ingin dibatalkan.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Klik Batalkan & konfirmasi</div><p class="timeline-card-text">Klik <strong>"Batalkan"</strong> dan konfirmasi pembatalan.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Buka menu Pesanan</div><p class="tl-text">Masuk ke <strong>"Pesanan"</strong> dan pilih booking yang ingin dibatalkan.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Klik Batalkan & konfirmasi</div><p class="tl-text">Klik <strong>"Batalkan"</strong> dan konfirmasi pembatalan.</p></div></div>
                 </div>
-                <div class="warning-box"><i class="bi bi-exclamation-triangle-fill"></i><span>Pembatalan hanya bisa dilakukan saat status masih <strong>"Menunggu"</strong> atau <strong>"Disetujui"</strong> sebelum pembayaran.</span></div>
+                <div class="warn-box"><i class="bi bi-exclamation-triangle-fill"></i><span>Pembatalan hanya bisa dilakukan saat status masih <strong>"Menunggu"</strong> atau <strong>"Disetujui"</strong> sebelum pembayaran.</span></div>
               </div>
             </div>
           </div>
         </div>
 
-        {{-- OWNER --}}
-        <div class="panduan-panel" id="panel-owner">
-          <div class="panel-header">
-            <div class="panel-header-icon"><i class="bi bi-building-fill"></i></div>
-            <div><div class="panel-header-title">Panduan Pemilik Kost</div><div class="panel-header-sub">Daftarkan properti dan mulai terima penghuni via KostFinder</div></div>
+        {{-- ── PANEL: OWNER ── --}}
+        <div class="panel" id="panel-owner">
+          <div class="panel-head">
+            <div class="panel-ico"><i class="bi bi-building-fill"></i></div>
+            <div>
+              <div class="panel-title">Panduan Pemilik Kost</div>
+              <div class="panel-subtitle">Daftarkan properti dan mulai terima penghuni via KostFinder</div>
+            </div>
           </div>
-          <div class="row g-3 mb-4">
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">01</div><div class="guide-card-tag tag-owner">Owner</div><div class="guide-card-title">Daftar Owner</div><div class="guide-card-text">Buat akun pemilik kost dan verifikasi identitas.</div></div></div>
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">02</div><div class="guide-card-tag tag-owner">Owner</div><div class="guide-card-title">Pasang Iklan Kost</div><div class="guide-card-text">Upload foto dan isi detail kost agar tampil di pencarian.</div></div></div>
-            <div class="col-md-4"><div class="guide-card"><div class="guide-card-num">03</div><div class="guide-card-tag tag-owner">Owner</div><div class="guide-card-title">Kelola Booking</div><div class="guide-card-text">Terima, tolak, dan pantau semua pesanan masuk.</div></div></div>
+
+          <div class="mini-cards">
+            <div class="mini-card"><div class="mini-num">01</div><div class="mini-tag tag-blue">Owner</div><div class="mini-title">Daftar Owner</div><div class="mini-desc">Buat akun pemilik kost dan verifikasi identitas.</div></div>
+            <div class="mini-card"><div class="mini-num">02</div><div class="mini-tag tag-blue">Owner</div><div class="mini-title">Pasang Iklan Kost</div><div class="mini-desc">Upload foto dan isi detail kost agar tampil di pencarian.</div></div>
+            <div class="mini-card"><div class="mini-num">03</div><div class="mini-tag tag-blue">Owner</div><div class="mini-title">Kelola Booking</div><div class="mini-desc">Terima, tolak, dan pantau semua pesanan masuk.</div></div>
           </div>
-          <div class="kf-accordion">
-            <div class="kf-acc-item open">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-person-badge-fill"></i></div><div class="kf-acc-title">Cara Daftar sebagai Pemilik Kost</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+          <div class="acc-list">
+            <div class="acc-item open">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-person-badge-fill"></i></div>
+                <div class="acc-title">Cara Daftar sebagai Pemilik Kost</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Klik Daftar → Pemilik Kost</div><p class="timeline-card-text">Di navbar, klik <strong>"Daftar"</strong> lalu pilih <strong>"Daftar sebagai Pemilik Kost"</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Isi formulir pendaftaran</div><p class="timeline-card-text">Masukkan nama, email, nomor HP, dan password akun owner.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Lengkapi verifikasi identitas</div><p class="timeline-card-text">Upload dokumen identitas agar kost bisa tampil di platform.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">4</div><div class="timeline-card"><div class="timeline-card-title">Tunggu persetujuan admin</div><p class="timeline-card-text">Tim KostFinder memverifikasi akun dalam <strong>1x24 jam</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Klik Daftar → Pemilik Kost</div><p class="tl-text">Di navbar, klik <strong>"Daftar"</strong> lalu pilih <strong>"Daftar sebagai Pemilik Kost"</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Isi formulir pendaftaran</div><p class="tl-text">Masukkan nama, email, nomor HP, dan password akun owner.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Lengkapi verifikasi identitas</div><p class="tl-text">Upload dokumen identitas agar kost bisa tampil di platform.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">4</div><div class="tl-card"><div class="tl-title">Tunggu persetujuan admin</div><p class="tl-text">Tim KostFinder memverifikasi akun dalam <strong>1×24 jam</strong>.</p></div></div>
                 </div>
                 <div class="tip-box"><i class="bi bi-shield-check-fill"></i><span>Kost hanya tampil di pencarian setelah identitas pemilik <strong>diverifikasi</strong> oleh admin KostFinder.</span></div>
               </div>
             </div>
-            <div class="kf-acc-item">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-house-add-fill"></i></div><div class="kf-acc-title">Cara Mendaftarkan dan Memasang Iklan Kost</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+            <div class="acc-item">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-house-add-fill"></i></div>
+                <div class="acc-title">Cara Mendaftarkan dan Memasang Iklan Kost</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Masuk ke Dashboard Owner</div><p class="timeline-card-text">Login ke akun pemilik lalu buka <strong>Dashboard Owner</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Klik Tambah Kost</div><p class="timeline-card-text">Isi nama, alamat, kota, tipe kost, dan deskripsi properti.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Upload foto kost</div><p class="timeline-card-text">Tambahkan <strong>foto kost yang menarik</strong> untuk meningkatkan minat calon penghuni.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">4</div><div class="timeline-card"><div class="timeline-card-title">Tambahkan detail kamar</div><p class="timeline-card-text">Isi <strong>tipe kamar, harga per bulan, fasilitas</strong>, dan ketersediaannya.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Masuk ke Dashboard Owner</div><p class="tl-text">Login ke akun pemilik lalu buka <strong>Dashboard Owner</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Klik Tambah Kost</div><p class="tl-text">Isi nama, alamat, kota, tipe kost, dan deskripsi properti.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Upload foto kost</div><p class="tl-text">Tambahkan <strong>foto kost yang menarik</strong> untuk meningkatkan minat calon penghuni.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">4</div><div class="tl-card"><div class="tl-title">Tambahkan detail kamar</div><p class="tl-text">Isi <strong>tipe kamar, harga per bulan, fasilitas</strong>, dan ketersediaannya.</p></div></div>
                 </div>
               </div>
             </div>
-            <div class="kf-acc-item">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-check2-all"></i></div><div class="kf-acc-title">Cara Konfirmasi dan Kelola Booking Masuk</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+            <div class="acc-item">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-check2-all"></i></div>
+                <div class="acc-title">Cara Konfirmasi dan Kelola Booking Masuk</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Cek notifikasi booking</div><p class="timeline-card-text">Buka <strong>Dashboard Owner → Booking</strong> saat ada pemesanan masuk.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Terima atau Tolak</div><p class="timeline-card-text">Lihat detail calon penghuni, klik <strong>"Terima"</strong> atau <strong>"Tolak"</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Konfirmasi selesai</div><p class="timeline-card-text">Setelah penghuni membayar, klik <strong>"Selesai"</strong> untuk menandai lunas.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Cek notifikasi booking</div><p class="tl-text">Buka <strong>Dashboard Owner → Booking</strong> saat ada pemesanan masuk.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Terima atau Tolak</div><p class="tl-text">Lihat detail calon penghuni, klik <strong>"Terima"</strong> atau <strong>"Tolak"</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Konfirmasi selesai</div><p class="tl-text">Setelah penghuni membayar, klik <strong>"Selesai"</strong> untuk menandai lunas.</p></div></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {{-- AKUN --}}
-        <div class="panduan-panel" id="panel-akun">
-          <div class="panel-header">
-            <div class="panel-header-icon"><i class="bi bi-shield-lock-fill"></i></div>
-            <div><div class="panel-header-title">Keamanan Akun</div><div class="panel-header-sub">Panduan mengelola password dan keamanan akun KostFinder kamu</div></div>
+        {{-- ── PANEL: AKUN ── --}}
+        <div class="panel" id="panel-akun">
+          <div class="panel-head">
+            <div class="panel-ico"><i class="bi bi-shield-lock-fill"></i></div>
+            <div>
+              <div class="panel-title">Keamanan Akun</div>
+              <div class="panel-subtitle">Panduan mengelola password dan keamanan akun KostFinder kamu</div>
+            </div>
           </div>
-          <div class="kf-accordion">
-            <div class="kf-acc-item open">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-key-fill"></i></div><div class="kf-acc-title">Cara Ganti Password</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+          <div class="acc-list">
+            <div class="acc-item open">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-key-fill"></i></div>
+                <div class="acc-title">Cara Ganti Password</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Buka Profil → Keamanan</div><p class="timeline-card-text">Login lalu buka halaman <strong>Profil</strong> dan klik tab <strong>"Keamanan"</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Isi form ganti password</div><p class="timeline-card-text">Masukkan <strong>password lama</strong> dan <strong>password baru</strong> minimal 8 karakter.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Simpan perubahan</div><p class="timeline-card-text">Klik <strong>"Simpan"</strong> — password baru langsung aktif.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Buka Profil → Keamanan</div><p class="tl-text">Login lalu buka halaman <strong>Profil</strong> dan klik tab <strong>"Keamanan"</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Isi form ganti password</div><p class="tl-text">Masukkan <strong>password lama</strong> dan <strong>password baru</strong> minimal 8 karakter.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Simpan perubahan</div><p class="tl-text">Klik <strong>"Simpan"</strong> — password baru langsung aktif.</p></div></div>
                 </div>
               </div>
             </div>
-            <div class="kf-acc-item">
-              <div class="kf-acc-header" onclick="toggleAcc(this)"><div class="kf-acc-icon"><i class="bi bi-envelope-fill"></i></div><div class="kf-acc-title">Cara Reset Password (Lupa Password)</div><i class="bi bi-chevron-down kf-acc-chevron"></i></div>
-              <div class="kf-acc-body">
+
+            <div class="acc-item">
+              <div class="acc-header" onclick="toggleAcc(this)">
+                <div class="acc-ico"><i class="bi bi-envelope-fill"></i></div>
+                <div class="acc-title">Cara Reset Password (Lupa Password)</div>
+                <div class="acc-arrow"><i class="bi bi-chevron-down"></i></div>
+              </div>
+              <div class="acc-body">
                 <div class="timeline">
-                  <div class="timeline-item"><div class="timeline-dot">1</div><div class="timeline-card"><div class="timeline-card-title">Klik "Lupa password?"</div><p class="timeline-card-text">Di halaman login, klik link <strong>"Lupa password?"</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">2</div><div class="timeline-card"><div class="timeline-card-title">Masukkan email terdaftar</div><p class="timeline-card-text">Isi <strong>email</strong> terdaftar lalu klik <strong>"Kirim Link Reset"</strong>.</p></div></div>
-                  <div class="timeline-item"><div class="timeline-dot">3</div><div class="timeline-card"><div class="timeline-card-title">Cek email & reset password</div><p class="timeline-card-text">Klik link di email, lalu masukkan <strong>password baru</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-title">Klik "Lupa password?"</div><p class="tl-text">Di halaman login, klik link <strong>"Lupa password?"</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-title">Masukkan email terdaftar</div><p class="tl-text">Isi <strong>email</strong> terdaftar lalu klik <strong>"Kirim Link Reset"</strong>.</p></div></div>
+                  <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-title">Cek email & reset password</div><p class="tl-text">Klik link di email, lalu masukkan <strong>password baru</strong>.</p></div></div>
                 </div>
                 <div class="tip-box"><i class="bi bi-clock-fill"></i><span>Link reset password berlaku selama <strong>60 menit</strong>. Jika expired, ulangi dari awal.</span></div>
               </div>
@@ -515,7 +879,7 @@
           </div>
         </div>
 
-      </div>
+      </div>{{-- end panels --}}
     </div>
   </div>
 </section>
@@ -524,39 +888,47 @@
 
 @section('scripts')
 <script>
-const panels = ['penghuni','cari','booking','owner','akun'];
+const PANELS = ['penghuni','cari','booking','owner','akun'];
 
-function switchPanel(id, catEl = null) {
-  panels.forEach(p => {
-    document.getElementById('panel-'+p)?.classList.toggle('active', p===id);
-    document.getElementById('snav-'+p)?.classList.toggle('active', p===id);
+function switchPanel(id, catEl) {
+  PANELS.forEach(p => {
+    document.getElementById('panel-' + p)?.classList.toggle('active', p === id);
   });
-  if (!catEl) {
-    document.querySelectorAll('.cat-card').forEach((el,i) => el.classList.toggle('active', panels[i]===id));
-  } else {
-    document.querySelectorAll('.cat-card').forEach(el => el.classList.remove('active'));
-    catEl.classList.add('active');
-  }
-  document.querySelector('.content-section')?.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  document.querySelectorAll('.cat-card').forEach((el, i) => {
+    el.classList.toggle('active', catEl ? el === catEl : PANELS[i] === id);
+  });
+
+  document.querySelector('.main-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function toggleAcc(header) {
-  header.closest('.kf-acc-item').classList.toggle('open');
+  header.closest('.acc-item').classList.toggle('open');
 }
 
 function liveSearch(val) {
   if (!val.trim()) return;
   const q = val.toLowerCase();
   const map = {
-    'daftar':'penghuni','registrasi':'penghuni','login':'penghuni','masuk':'penghuni','profil':'penghuni',
-    'cari':'cari','filter':'cari','favorit':'cari','kota':'cari',
-    'booking':'booking','pesan':'booking','bayar':'booking','pembayaran':'booking','batal':'booking',
-    'owner':'owner','pemilik':'owner','properti':'owner','pasang':'owner','iklan':'owner',
-    'password':'akun','sandi':'akun','reset':'akun','keamanan':'akun',
+    daftar:'penghuni', registrasi:'penghuni', login:'penghuni',
+    masuk:'penghuni', profil:'penghuni',
+    cari:'cari', filter:'cari', favorit:'cari', kota:'cari',
+    booking:'booking', pesan:'booking', bayar:'booking',
+    pembayaran:'booking', batal:'booking',
+    owner:'owner', pemilik:'owner', properti:'owner',
+    pasang:'owner', iklan:'owner',
+    password:'akun', sandi:'akun', reset:'akun', keamanan:'akun'
   };
   for (const [key, panel] of Object.entries(map)) {
     if (q.includes(key)) { switchPanel(panel); break; }
   }
+}
+
+
+function showComingSoon() {
+  const msg = document.getElementById('comingSoonMsg');
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 3500);
 }
 function doSearch() { liveSearch(document.getElementById('heroSearch').value); }
 </script>

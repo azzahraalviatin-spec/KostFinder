@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Kost extends Model
 {
     protected $table = 'kosts';
-    protected $primaryKey = 'id_kost'; // Ini sudah ada di atas, jangan tulis lagi di bawah!
+    protected $primaryKey = 'id_kost';
 
     protected $fillable = [
         'owner_id',
@@ -32,14 +32,16 @@ class Kost extends Model
 
     protected $casts = [
         'fasilitas' => 'array',
+        'aturan' => 'array',
     ];
+    
 
     public function getFotoUtamaUrlAttribute()
     {
         if ($this->foto_utama) {
             return asset('storage/' . $this->foto_utama);
         }
-        return asset('images/default-kost.jpg'); // Bagus kalo dikasih default biar gak pecah
+        return asset('images/default-kost.jpg');
     }
 
     public function owner()
@@ -62,4 +64,18 @@ class Kost extends Model
         return $this->hasMany(KostImage::class, 'kost_id', 'id_kost')
                     ->orderBy('sort_order', 'asc');
     }
+
+    // TAMBAHAN BARU
+    public function bookings()
+    {
+        return $this->hasManyThrough(
+            Booking::class,
+            Room::class,
+            'kost_id',
+            'room_id',
+            'id_kost',
+            'id_room'
+        );
+    }
+    
 }

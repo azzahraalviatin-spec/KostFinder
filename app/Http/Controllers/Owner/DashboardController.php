@@ -63,7 +63,7 @@ class DashboardController extends Controller
         ->map(fn($k) => [
             'title'    => $k->nama_kost,
             'subtitle' => $k->kota,
-            'icon'     => '🏠',
+            'icon'     => '??',
             'url'      => route('owner.kost.show', $k->id_kost),
         ]);
     
@@ -73,8 +73,8 @@ class DashboardController extends Controller
         ->limit(4)->get()
         ->map(fn($r) => [
             'title'    => 'Kamar ' . $r->nomor_kamar,
-            'subtitle' => $r->kost->nama_kost ?? '—',
-            'icon'     => '🚪',
+            'subtitle' => $r->kost->nama_kost ?? '�',
+            'icon'     => '??',
             'url'      => route('owner.kamar.show', $r->id_room),
         ]);
 

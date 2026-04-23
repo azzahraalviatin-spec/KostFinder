@@ -73,7 +73,7 @@ return view('cari-kost', compact('kosts', 'kostsMap'));
         abort_if($kost->status != 'aktif', 404);
         abort_if($kost->owner->status_verifikasi_identitas !== 'disetujui', 404);
 
-        $kost->load(['rooms.images', 'reviews.user', 'owner']);
+        $kost->load(['rooms.images', 'reviews.user', 'owner', 'bookings']);
 
         $viewed = session('recently_viewed', []);
         $viewed = array_filter($viewed, fn($id) => $id != $kost->id_kost);

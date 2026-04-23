@@ -8,7 +8,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+  
   <style>
     :root {
       --sidebar-w: 250px;
@@ -534,6 +535,25 @@
   {{-- Divider --}}
   <hr style="border-color:#f0f3f8;margin:.5rem 0 1rem;">
 
+  {{-- Diskon --}}
+<div class="mb-3">
+  <label class="form-label">
+    Diskon <span style="font-size:.7rem;color:var(--muted);font-weight:500;">(opsional)</span>
+  </label>
+
+  <div class="input-group">
+    <span class="input-group-text" style="font-size:.78rem;background:#f8fafd;border-color:var(--line);">Rp</span>
+    <input type="number" name="diskon" class="form-control"
+           placeholder="Contoh: 200000"
+           value="{{ old('diskon') }}">
+  </div>
+
+  <div class="form-text" style="font-size:.72rem;color:var(--muted);">
+    <i class="bi bi-lightning-charge me-1"></i>
+    Kos kamu akan tampil dengan badge <strong>Diskon</strong> di halaman utama
+  </div>
+</div>
+
   {{-- Harga Per Hari --}}
   <div class="d-flex align-items-center justify-content-between mb-2">
     <label class="form-label mb-0">Harga Per Hari <span style="font-size:.7rem;color:var(--muted);font-weight:500;">(opsional)</span></label>
@@ -577,23 +597,33 @@
                 <option value="nonaktif" {{ old('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
               </select>
             </div>
-
             <div class="form-card">
-              <h6><i class="bi bi-geo-alt" style="color:var(--primary)"></i> Lokasi di Peta</h6>
-              <p style="font-size:.75rem;color:var(--muted);margin-bottom:.7rem;">Klik peta untuk menentukan lokasi kost</p>
-              <div id="map"></div>
-              <div class="row g-2 mt-2">
-                <div class="col-6">
-                  <label class="form-label">Latitude</label>
-                  <input type="text" name="latitude" id="latitude" class="form-control"
-                         placeholder="-7.2575" value="{{ old('latitude') }}">
-                </div>
-                <div class="col-6">
-                  <label class="form-label">Longitude</label>
-                  <input type="text" name="longitude" id="longitude" class="form-control"
-                         placeholder="112.7521" value="{{ old('longitude') }}">
-                </div>
-              </div>
+  <h6><i class="bi bi-geo-alt" style="color:var(--primary)"></i> Lokasi di Peta</h6>
+  <p style="font-size:.75rem;color:var(--muted);margin-bottom:.7rem;">
+    Masukkan alamat lalu klik <strong>Cari Lokasi</strong>, atau klik langsung di peta.
+  </p>
+
+  {{-- TOMBOL CARI LOKASI --}}
+  <div class="mb-2">
+    <input type="text" id="inputCariLokasi" class="form-control mb-2"
+           placeholder="Ketik alamat kost di sini..."
+           style="border-radius:.75rem;font-size:.82rem;">
+    <div class="d-flex gap-2">
+      <button type="button" id="btnCariLokasi"
+              onclick="cariLokasi()"
+              style="background:linear-gradient(135deg,#e8401c,#ff7043);color:#fff;
+                     border:none;border-radius:.75rem;padding:.55rem 1rem;
+                     font-size:.82rem;font-weight:700;cursor:pointer;
+                     display:flex;align-items:center;gap:.4rem;width:100%;">
+        <i class="bi bi-search"></i> Cari Lokasi
+      </button>
+    </div>
+    <div id="lokasiStatus" style="font-size:.75rem;color:var(--muted);margin-top:.4rem;"></div>
+  </div>
+
+  <div id="map"></div>
+  <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
+  <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
             </div>
 
           </div>
@@ -619,205 +649,238 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // ── SIDEBAR ──
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script><script>
+    // ═══════════════════════════════════════════════════════════════
+    //  SIDEBAR
+    // ═══════════════════════════════════════════════════════════════
     function toggleSidebar() {
-      const s = document.getElementById('sidebar');
-      const m = document.getElementById('mainContent');
-      if (window.innerWidth <= 991) { s?.classList.toggle('show'); }
-      else { s?.classList.toggle('collapsed'); m?.classList.toggle('collapsed'); }
+        const s = document.getElementById('sidebar');
+        const m = document.getElementById('mainContent');
+        if (window.innerWidth <= 991) { s?.classList.toggle('show'); }
+        else { s?.classList.toggle('collapsed'); m?.classList.toggle('collapsed'); }
     }
 
-    // ── LEAFLET MAP ──
-    const initLat = Number('{{ old('latitude', -7.2575) }}') || -7.2575;
-    const initLng = Number('{{ old('longitude', 112.7521) }}') || 112.7521;
+    // ═══════════════════════════════════════════════════════════════
+    //  MAP SETUP
+    // ═══════════════════════════════════════════════════════════════
+    const initLat = Number('{{ old('latitude', -7.4478) }}') || -7.4478;
+    const initLng = Number('{{ old('longitude', 112.7183) }}') || 112.7183;
+    
     const map = L.map('map').setView([initLat, initLng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
     let marker = null;
 
+    // ═══════════════════════════════════════════════════════════════
+    //  SET MARKER (BISA DIGESER)
+    // ═══════════════════════════════════════════════════════════════
     function setMarker(lat, lng) {
-      latInput.value = Number(lat).toFixed(7);
-      lngInput.value = Number(lng).toFixed(7);
-      if (marker) marker.setLatLng([lat, lng]);
-      else marker = L.marker([lat, lng]).addTo(map).bindPopup('Lokasi kost');
-      marker.openPopup();
+        latInput.value = lat.toFixed(7);
+        lngInput.value = lng.toFixed(7);
+
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+            
+            // Saat digeser → update koordinat
+            marker.on('dragend', function() {
+                const pos = marker.getLatLng();
+                latInput.value = pos.lat.toFixed(7);
+                lngInput.value = pos.lng.toFixed(7);
+                showStatus('Koordinat diperbarui: ' + pos.lat.toFixed(5) + ', ' + pos.lng.toFixed(5), 'success');
+            });
+        }
+        
+        marker.bindPopup('📍 Lokasi kost').openPopup();
     }
 
-    if (latInput.value && lngInput.value) setMarker(initLat, initLng);
-    map.on('click', e => { setMarker(e.latlng.lat, e.latlng.lng); map.setView([e.latlng.lat, e.latlng.lng], 15); });
-    latInput.addEventListener('change', () => { const la = +latInput.value, ln = +lngInput.value; if (isFinite(la) && isFinite(ln)) { setMarker(la, ln); map.setView([la,ln],15); } });
-    lngInput.addEventListener('change', () => { const la = +latInput.value, ln = +lngInput.value; if (isFinite(la) && isFinite(ln)) { setMarker(la, ln); map.setView([la,ln],15); } });
+    // Init marker kalau ada old value
+    if (latInput.value && lngInput.value) {
+        setMarker(parseFloat(latInput.value), parseFloat(lngInput.value));
+    }
+
+    // Klik peta → set lokasi
+    map.on('click', function(e) {
+        setMarker(e.latlng.lat, e.latlng.lng);
+        map.setView([e.latlng.lat, e.latlng.lng], 17);
+        showStatus('Lokasi dipilih dari peta', 'success');
+    });
+
     setTimeout(() => map.invalidateSize(), 300);
 
-    // ══════════════════════════════════════
-    //  UPLOAD FOTO — LOGIC
-    // ══════════════════════════════════════
-    const MAX_FILES  = 6;
-    const MAX_MB     = 2;
-    const dropZone   = document.getElementById('dropZone');
-    const fotoInput  = document.getElementById('fotoInput');
-    const previewGrid= document.getElementById('previewGrid');
-    const infoBar    = document.getElementById('fotoInfoBar');
-    const infoText   = document.getElementById('fotoInfoText');
-    const dot1       = document.getElementById('dot1');
-    const dot2       = document.getElementById('dot2');
+    // ═══════════════════════════════════════════════════════════════
+    //  CARI LOKASI (PAKAI FETCH API)
+    // ═══════════════════════════════════════════════════════════════
+    function showStatus(msg, type) {
+        const colors = { success: '#16a34a', warning: '#f59e0b', error: '#dc2626' };
+        const icons = { success: 'check-circle', warning: 'exclamation-triangle', error: 'x-circle' };
+        document.getElementById('lokasiStatus').innerHTML = 
+            '<span style="color:' + colors[type] + '"><i class="bi bi-' + icons[type] + ' me-1"></i>' + msg + '</span>';
+    }
 
-    // State: simpan file yang dipilih (maks 2)
+    async function cariLokasi() {
+        const inputCari = document.getElementById('inputCariLokasi').value.trim();
+        const alamat = inputCari || document.querySelector('textarea[name="alamat"]').value.trim();
+        const kota = document.querySelector('select[name="kota"]').value;
+        const btn = document.getElementById('btnCariLokasi');
+
+        if (!alamat) {
+            showStatus('Isi alamat dulu!', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        showStatus('Mencari lokasi...', 'warning');
+
+        // Buat 4 level query (dari spesifik ke umum)
+        const queries = [];
+        
+        // Level 1: Alamat lengkap
+        queries.push(alamat + (kota ? ', ' + kota : '') + ', Jawa Timur, Indonesia');
+        
+        // Level 2: Area/Dusun/Desa saja
+        const area = alamat.match(/(Dusun|Desa|Banjar|Krajan)\s+\w+/i);
+        if (area) queries.push(area[0] + ', ' + kota + ', Jawa Timur, Indonesia');
+        
+        // Level 3: Kecamatan
+        const kec = alamat.match(/(Kec\.?|Kecamatan)\s+(\w+)/i);
+        if (kec) queries.push('Kecamatan ' + kec[2] + ', ' + kota + ', Jawa Timur, Indonesia');
+        
+        // Level 4: Kota saja
+        if (kota) queries.push(kota + ', Jawa Timur, Indonesia');
+
+        // Coba satu per satu
+        for (const query of queries) {
+            console.log('🔍 Coba:', query);
+            
+            try {
+                const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=1&accept-language=id');
+                const data = await res.json();
+
+                if (data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lng = parseFloat(data[0].lon);
+                    
+                    setMarker(lat, lng);
+                    map.setView([lat, lng], 18);
+                    showStatus('Ditemukan: ' + data[0].display_name.split(',')[0], 'success');
+                    
+                    btn.disabled = false;
+                    return; // Berhenti kalau ketemu
+                }
+            } catch (e) {
+                console.log('❌ Gagal:', query);
+            }
+        }
+
+        // Kalau semua gagal
+        showStatus('Tidak ditemukan. Coba klik langsung di peta!', 'error');
+        btn.disabled = false;
+    }
+
+    // Enter key
+    document.getElementById('inputCariLokasi').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            cariLokasi();
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  UPLOAD FOTO (TETAP SAMA)
+    // ═══════════════════════════════════════════════════════════════
+    const MAX_FILES = 6, MAX_MB = 2;
+    const dropZone = document.getElementById('dropZone');
+    const fotoInput = document.getElementById('fotoInput');
+    const previewGrid = document.getElementById('previewGrid');
+    const infoBar = document.getElementById('fotoInfoBar');
+    const infoText = document.getElementById('fotoInfoText');
     let selectedFiles = [];
 
-    // ── Drag & Drop ──
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    ['dragenter','dragover','dragleave','drop'].forEach(evt => {
+        dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); }, false);
+    });
+
+    dropZone.addEventListener('dragover', () => dropZone.classList.add('drag-over'));
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
     dropZone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropZone.classList.remove('drag-over');
-      handleFiles(Array.from(e.dataTransfer.files));
+        dropZone.classList.remove('drag-over');
+        handleFiles(Array.from(e.dataTransfer.files));
     });
 
-    // ── Input change ──
-    fotoInput.addEventListener('change', function() {
-  handleFiles(Array.from(this.files));
-});
-
-    // ── Klik drop zone body (bukan tombol) ──
-    dropZone.addEventListener('click', function(e) {
-      if (e.target.closest('.btn-pilih-foto')) return;
-      fotoInput.click();
-    });
+    fotoInput.addEventListener('change', () => handleFiles(Array.from(fotoInput.files)));
+    dropZone.addEventListener('click', e => { if(!e.target.closest('.btn-pilih-foto')) fotoInput.click(); });
 
     function handleFiles(newFiles) {
-      const imageFiles = newFiles.filter(f => f.type.startsWith('image/'));
-
-      // Validasi tipe
-      if (newFiles.length !== imageFiles.length) {
-        showAlert('Hanya file gambar (JPG, PNG, WEBP) yang diperbolehkan.', 'danger');
-        return;
-      }
-
-      // Validasi ukuran
-      const tooBig = imageFiles.filter(f => f.size > MAX_MB * 1024 * 1024);
-      if (tooBig.length > 0) {
-        showAlert(`File "${tooBig[0].name}" melebihi batas ${MAX_MB} MB.`, 'danger');
-        return;
-      }
-
-      // Gabung & batasi
-      const combined = [...selectedFiles, ...imageFiles].slice(0, MAX_FILES);
-      if (selectedFiles.length + imageFiles.length > MAX_FILES) {
-        showAlert(`Maksimal ${MAX_FILES} foto. Foto berlebih diabaikan.`, 'warning');
-      }
-
-      selectedFiles = combined;
-      syncInputFiles();
-      renderPreviews();
+        const images = newFiles.filter(f => f.type.startsWith('image/'));
+        if (images.length !== newFiles.length) return alert('Hanya gambar!');
+        if (images.some(f => f.size > MAX_MB*1024*1024)) return alert('Maks 2MB!');
+        
+        selectedFiles = [...selectedFiles, ...images].slice(0, MAX_FILES);
+        if (selectedFiles.length === MAX_FILES) alert('Maks 6 foto!');
+        
+        updateInput();
+        renderPreviews();
     }
 
-    // Sinkronisasi selectedFiles → input[type=file] via DataTransfer
-    function syncInputFiles() {
-  try {
-    const dt = new DataTransfer();
-    selectedFiles.forEach(f => dt.items.add(f));
-    fotoInput.files = dt.files;
-  } catch(e) {
-    console.warn('DataTransfer tidak didukung:', e);
-  }
-}
+    function updateInput() {
+        const dt = new DataTransfer();
+        selectedFiles.forEach(f => dt.items.add(f));
+        fotoInput.files = dt.files;
+    }
 
     function renderPreviews() {
-      previewGrid.innerHTML = '';
+        previewGrid.innerHTML = '';
+        infoBar.style.display = selectedFiles.length ? 'flex' : 'none';
+        infoText.textContent = selectedFiles.length + ' dari ' + MAX_FILES + ' foto';
+        
+        for(let i=1; i<=MAX_FILES; i++) {
+            const dot = document.getElementById('dot'+i);
+            if(dot) dot.classList.toggle('filled', i <= selectedFiles.length);
+        }
 
-      if (selectedFiles.length === 0) {
-        infoBar.style.display = 'none';
-        return;
-      }
-
-      infoBar.style.display = 'flex';
-      infoText.textContent = `${selectedFiles.length} dari ${MAX_FILES} foto dipilih`;
-for (let i = 1; i <= MAX_FILES; i++) {
-  const dot = document.getElementById(`dot${i}`);
-  if (dot) dot.classList.toggle('filled', selectedFiles.length >= i);
-}
-
-      selectedFiles.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const card = document.createElement('div');
-          card.className = 'preview-card' + (index === 0 ? ' is-cover' : '');
-          card.dataset.index = index;
-
-          card.innerHTML = `
-            <div class="preview-img-wrap">
-              <img src="${e.target.result}" alt="${file.name}">
-              <div class="preview-img-overlay"></div>
-              ${index === 0 ? '<div class="badge-cover"><i class="bi bi-star-fill" style="font-size:.6rem"></i> Foto Cover</div>' : ''}
-              <span class="badge-num">Foto ${index + 1}</span>
-              <button type="button" class="btn-remove" title="Hapus foto" data-idx="${index}">
-                <i class="bi bi-x-lg"></i>
-              </button>
-              ${index !== 0 ? `<button type="button" class="btn-set-cover" data-idx="${index}">
-                <i class="bi bi-star"></i> Jadikan Cover
-              </button>` : ''}
-              <div class="upload-progress">
-                <div class="upload-progress-bar" id="progress-${index}"></div>
-              </div>
-            </div>
-            <div class="preview-info">
-              <div class="preview-name" title="${file.name}">${file.name}</div>
-              <div class="preview-size">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
-            </div>
-          `;
-
-          previewGrid.appendChild(card);
-
-          // Animasi progress bar (simulasi "diproses")
-          setTimeout(() => {
-            const bar = document.getElementById(`progress-${index}`);
-            if (bar) bar.style.width = '100%';
-          }, 100);
-
-          // Event hapus
-          card.querySelector('.btn-remove').addEventListener('click', function() {
-            const idx = Number(this.dataset.idx);
-            selectedFiles.splice(idx, 1);
-            syncInputFiles();
-            renderPreviews();
-          });
-
-          // Event jadikan cover
-          const btnCover = card.querySelector('.btn-set-cover');
-          if (btnCover) {
-            btnCover.addEventListener('click', function() {
-              const idx = Number(this.dataset.idx);
-              // Tukar posisi: jadikan index 0
-              const [moved] = selectedFiles.splice(idx, 1);
-              selectedFiles.unshift(moved);
-              syncInputFiles();
-              renderPreviews();
-            });
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+        selectedFiles.forEach((file, i) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const div = document.createElement('div');
+                div.className = 'preview-card' + (i===0?' is-cover':'');
+                div.innerHTML = `
+                    <div class="preview-img-wrap">
+                        <img src="${e.target.result}">
+                        <div class="preview-img-overlay"></div>
+                        ${i===0?'<div class="badge-cover"><i class="bi bi-star-fill"></i> Cover</div>':''}
+                        <span class="badge-num">Foto ${i+1}</span>
+                        <button type="button" class="btn-remove" onclick="removeFile(${i})"><i class="bi bi-x-lg"></i></button>
+                        ${i!==0?`<button type="button" class="btn-set-cover" onclick="setCover(${i})"><i class="bi bi-star"></i> Cover</button>`:''}
+                    </div>
+                    <div class="preview-info">
+                        <div class="preview-name">${file.name}</div>
+                        <div class="preview-size">${(file.size/1024/1024).toFixed(2)}MB</div>
+                    </div>`;
+                previewGrid.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
     }
 
-    // ── Alert helper ──
-    function showAlert(msg, type = 'danger') {
-      const existing = document.getElementById('uploadAlert');
-      if (existing) existing.remove();
+    window.removeFile = function(idx) {
+        selectedFiles.splice(idx, 1);
+        updateInput();
+        renderPreviews();
+    };
 
-      const div = document.createElement('div');
-      div.id = 'uploadAlert';
-      div.className = `alert alert-${type} alert-dismissible mt-2`;
-      div.style.cssText = 'font-size:.82rem;border-radius:.75rem;';
-      div.innerHTML = `<i class="bi bi-exclamation-triangle me-1"></i>${msg}
-        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>`;
-      dropZone.after(div);
-
-      setTimeout(() => div.remove(), 4000);
-    }
-  </script>
+    window.setCover = function(idx) {
+        const [moved] = selectedFiles.splice(idx, 1);
+        selectedFiles.unshift(moved);
+        updateInput();
+        renderPreviews();
+    };
+</script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\CustomResetPassword;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -46,6 +47,14 @@ class User extends Authenticatable
 'status_verifikasi_identitas',
 'catatan_verifikasi',
 'foto_kepemilikan',
+'alamat',
+'provinsi',
+'kode_pos',
+'kecamatan',
+'kelurahan',
+'area_jalan',
+'latitude',
+'longitude',
     ];
 
     /**
@@ -74,4 +83,9 @@ class User extends Authenticatable
 {
     return $this->hasOne(\App\Models\OwnerReview::class);
 }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new CustomResetPassword($token));
+    }
 }

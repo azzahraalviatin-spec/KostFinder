@@ -64,12 +64,15 @@
 
     <div class="u-pp-divider"></div>
 
-    <form method="POST" action="{{ route('logout') }}">
-      @csrf
-      <button type="submit" class="u-pp-item u-pp-logout w-100 text-start">
-        <i class="bi bi-box-arrow-left"></i> Keluar dari Akun
-      </button>
+  {{-- Ganti bagian logout di dropdown user --}}
+<li>
+    <form method="POST" action="{{ route('logout') }}" id="logout-form-user">
+        @csrf
+        <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-danger">
+            <i class="bi bi-box-arrow-right" style="width:14px;"></i> Logout
+        </button>
     </form>
+</li>
   </div>
 </div>
 

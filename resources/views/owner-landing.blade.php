@@ -1536,42 +1536,6 @@
     </div>
 </section>
 
-{{-- ══ FOOTER ══ --}}
-<footer class="footer">
-    <div class="wrap">
-        <div class="footer-grid">
-            <div>
-                <div class="foot-brand-name serif">KostFinder</div>
-                <p class="foot-desc">
-                    Platform pencarian dan pengelolaan kost yang membantu penyewa menemukan hunian nyaman dan membantu pemilik kos mendapatkan penyewa lebih cepat.
-                </p>
-            </div>
-            <div>
-                <div class="foot-head">KostFinder</div>
-                <div class="foot-links">
-                    <a href="{{ route('home') }}" class="foot-link">Tentang Kami</a>
-                    <a href="{{ route('home') }}" class="foot-link">Promosikan Kost Anda</a>
-                    <a href="{{ route('home') }}" class="foot-link">Pusat Bantuan</a>
-                </div>
-            </div>
-            <div>
-                <div class="foot-head">Kebijakan</div>
-                <div class="foot-links">
-                    <a href="{{ route('home') }}" class="foot-link">Kebijakan Privasi</a>
-                    <a href="{{ route('home') }}" class="foot-link">Syarat dan Ketentuan</a>
-                </div>
-            </div>
-            <div>
-                <div class="foot-head">Hubungi Kami</div>
-                <div class="foot-contact">admin@kostfinder.id<br>+62 881-0361-63991</div>
-            </div>
-        </div>
-        <div class="foot-copy">
-            <span>© {{ date('Y') }} KostFinder. All rights reserved.</span>
-            <span>Kami siap membantu Anda</span>
-        </div>
-    </div>
-</footer>
 
 @php
 $testiJson = $reviews->map(function($r) {

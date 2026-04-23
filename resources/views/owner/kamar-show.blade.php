@@ -469,7 +469,19 @@
             </div>
           </div>
         </div>
+        <div class="col-6">
+              <div class="info-label">Ukuran Kamar</div>
+              <div class="info-value">{{ $kamar->ukuran ?? '-' }}</div>
+            </div>
 
+            {{-- TAMBAHKAN INI --}}
+            <div class="col-12">
+              <div class="info-label">Deskripsi</div>
+              <div class="info-value">{{ $kamar->deskripsi ?? '-' }}</div>
+            </div>
+
+          </div>
+        </div>
         {{-- FASILITAS --}}
         <div class="card-box">
           <h6><i class="bi bi-star"></i> Fasilitas Kamar</h6>

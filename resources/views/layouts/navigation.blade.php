@@ -335,7 +335,7 @@
       <i class="bi bi-list" style="font-size:1.2rem;"></i>
     </button>
 
-    <div class="collapse navbar-collapse" id="navMenu">
+   <div class="navbar-collapse" id="navMenu">
     {{-- ── SEARCH BAR (tampil di halaman Cari Kost & setelah scroll hero) ── --}}
       <div id="navbarSearch" class="d-none position-relative">
         <div class="kf-search-wrap">
@@ -367,18 +367,28 @@
           </div>
 
           <div class="kf-scroll-x">
-            @foreach(['Surabaya','Malang','Sidoarjo','Gresik','Jember'] as $c)
-            <div class="text-center flex-shrink-0" style="cursor:pointer;" onclick="setNavSearch('{{ $c }}')">
-              <img src="https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=120&h=72&fit=crop"
-                   class="rounded-3 mb-1"
-                   style="width:96px;height:58px;object-fit:cover;box-shadow:0 8px 16px rgba(15,25,35,.08);"
-                   loading="lazy">
-              <div style="font-size:.72rem;font-weight:600;color:#374151;">{{ $c }}</div>
-            </div>
-            @endforeach
-          </div>
+    @foreach([
+        ['nama' => 'Surabaya',   'file' => 'surabaya.jpg'],
+        ['nama' => 'Malang',     'file' => 'malang.jpg'],
+        ['nama' => 'Sidoarjo',   'file' => 'sidoarjo.jpg'],
+        ['nama' => 'Gresik',     'file' => 'gresik.jpg'],
+        ['nama' => 'Jember',     'file' => 'jember.jpg'],
+        ['nama' => 'Kediri',     'file' => 'kediri.jpg'],
+        ['nama' => 'Banyuwangi', 'file' => 'banyuwangi.jpg'],
+        ['nama' => 'Mojokerto',  'file' => 'Mojokerto.jpg'],
+        ['nama' => 'Pasuruan', 'file' => 'pasuruan.jpg'],
+    ] as $c)
+    <div class="text-center flex-shrink-0" style="cursor:pointer;" onclick="setNavSearch('{{ $c['nama'] }}')">
+        <img src="{{ asset('images/kota/' . $c['file']) }}"
+             class="rounded-3 mb-1"
+             style="width:96px;height:58px;object-fit:cover;box-shadow:0 8px 16px rgba(15,25,35,.08);"
+             loading="lazy">
+        <div style="font-size:.72rem;font-weight:600;color:#374151;">{{ $c['nama'] }}</div>
+    </div>
+    @endforeach
+</div>
 
-          <div class="d-flex gap-3 border-bottom mb-2">
+<div class="d-flex gap-3 border-bottom mb-2">
             <button class="btn btn-link p-0 pb-2 fw-bold text-decoration-none"
                     id="tabBtnDaerah"
                     style="color:#E8401C;border-bottom:2px solid #E8401C;font-size:.82rem;border-radius:0;"
@@ -390,10 +400,11 @@
           </div>
 
           <div id="navTabDaerah" class="d-flex flex-wrap gap-2">
-            @foreach(['Surabaya','Malang','Sidoarjo','Gresik','Kediri','Jember','Banyuwangi'] as $d)
-            <span class="nav-chip" onclick="setNavSearch('{{ $d }}')">{{ $d }}</span>
-            @endforeach
-          </div>
+          @foreach(['Surabaya','Malang','Sidoarjo','Gresik','Jember','Kediri','Banyuwangi','Mojokerto','Pasuruan'] as $d)    <span class="nav-chip" onclick="setNavSearch('{{ $d }}')">{{ $d }}</span>
+    @endforeach
+</div>
+
+
           <div id="navTabKampus" class="d-none d-flex flex-wrap gap-2">
             @foreach(['ITS Surabaya','UNAIR','UB Malang','UIN Malang','UNEJ Jember','UNESA'] as $k)
             <span class="nav-chip" onclick="setNavSearch('{{ $k }}')">{{ $k }}</span>
@@ -422,6 +433,12 @@
             <i class="bi bi-info-circle me-1 d-lg-none"></i>Panduan
           </a>
         </li>
+        <li>
+  <a class="nav-link {{ request()->is('hubungi-kami*') ? 'active' : '' }}"
+     href="{{ route('hubungi.kami') }}">
+    <i class="bi bi-envelope me-1 d-lg-none"></i>Hubungi
+  </a>
+</li>
       </ul>
 
       
@@ -458,12 +475,12 @@
                 </li>
                 <li><hr class="dropdown-divider my-1"></li>
                 <li>
-                  <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-danger">
-                      <i class="bi bi-box-arrow-right" style="width:14px;"></i> Keluar
-                    </button>
-                  </form>
+                <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="btn-logout" style="background:none; border:none; color:inherit; cursor:pointer;">
+        Logout
+    </button>
+</form>
                 </li>
               </ul>
             </div>
@@ -541,18 +558,7 @@
         </div>
         <hr class="my-3">
 
-        <div class="mb-4">
-          <div class="filter-sec-title">Fasilitas</div>
-          <div class="row g-2">
-            @foreach(['AC','Kamar Mandi Dalam','TV','Kasur','Lemari','Meja & Kursi','Internet/WiFi','Parkir Motor','Air Minum','Parkir Mobil'] as $f)
-            <div class="col-6">
-              <label style="cursor:pointer;font-size:.84rem;display:flex;align-items:center;gap:.5rem;">
-                <input type="checkbox"> {{ $f }}
-              </label>
-            </div>
-            @endforeach
-          </div>
-        </div>
+        
         <hr class="my-3">
 
         <div class="mb-4">
@@ -612,18 +618,25 @@
   const heroEl     = document.querySelector('.hero');
 
   if (isCariKost) {
-    // ── Halaman Cari Kost:
-    //    Nav links  → TETAP TAMPIL
-    //    Search bar → LANGSUNG TAMPIL juga
-    if (navLinks) navLinks.classList.remove('d-none');
+    // Semua ukuran layar: tampilkan search, sembunyikan nav links
     if (navSrch)  navSrch.classList.remove('d-none');
+    if (navLinks) navLinks.classList.add('d-none');
 
-    // Isi search input dari ?q= URL
-    const q   = new URLSearchParams(window.location.search).get('q');
+    // Isi search input dari URL
+    const params = new URLSearchParams(window.location.search);
     const inp = document.getElementById('navSearchInput');
-    if (inp && q) inp.value = q;
-
-  } else if (heroEl) {
+    if (inp) {
+        if (params.get('q'))    inp.value = params.get('q');
+        if (params.get('kota')) inp.value = params.get('kota');
+    }
+    // Isi search input dari URL
+    const params = new URLSearchParams(window.location.search);
+    const inp = document.getElementById('navSearchInput');
+    if (inp) {
+        if (params.get('q'))    inp.value = params.get('q');
+        if (params.get('kota')) inp.value = params.get('kota');
+    }
+    else if (heroEl) {
     // ── Halaman Home (ada .hero):
     //    Nav links tampil, search tersembunyi → keduanya toggle saat scroll melewati hero
     if (navLinks) navLinks.classList.remove('d-none');
@@ -654,6 +667,7 @@ function showNavDropdown() {
 function setNavSearch(val) {
   document.getElementById('navSearchInput').value = val;
   document.getElementById('navSearchDropdown').classList.add('d-none');
+  document.getElementById('navSearchInput').focus();
 }
 
 function switchNavTab(tab) {
@@ -677,7 +691,18 @@ function switchNavTab(tab) {
 
 function doNavSearch() {
   const q = document.getElementById('navSearchInput').value.trim();
-  window.location.href = '{{ route("kost.cari") }}' + (q ? '?q=' + encodeURIComponent(q) : '');
+  if (!q) {
+    window.location.href = '{{ route("carikos") }}';
+    return;
+  }
+  // Cek apakah input adalah nama kota
+  const kotaList = ['Surabaya','Malang','Sidoarjo','Gresik','Jember','Kediri','Banyuwangi','Mojokerto','Pasuruan'];
+  const isKota = kotaList.find(k => k.toLowerCase() === q.toLowerCase());
+  if (isKota) {
+    window.location.href = '{{ route("carikos") }}?kota=' + encodeURIComponent(isKota);
+  } else {
+    window.location.href = '{{ route("carikos") }}?q=' + encodeURIComponent(q);
+  }
 }
 
 // Tutup dropdown saat klik di luar

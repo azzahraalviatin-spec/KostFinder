@@ -63,4 +63,12 @@ class StatistikController extends Controller
             'tahun', 'daftarTahun'
         ));
     }
+    public function exportExcel(Request $request)
+{
+    $tahun = $request->tahun;
+
+    // sementara dummy dulu biar gak error
+    return response()->download(storage_path('app/public/contoh.xlsx'));
+}
+
 }

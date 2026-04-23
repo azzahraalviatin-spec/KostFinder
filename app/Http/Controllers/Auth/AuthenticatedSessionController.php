@@ -28,6 +28,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         return $this->redirectByRole(auth()->user());
+        
     }
 
     public function redirectToGoogle(Request $request): RedirectResponse
@@ -156,7 +157,8 @@ class AuthenticatedSessionController extends Controller
         return match ($user->role) {
             'admin' => redirect()->route('admin.dashboard'),
             'owner' => redirect()->route('owner.dashboard'),
-            default => redirect()->route('home'),
+            default => redirect()->route('user.dashboard'),
         };
     }
+    
 }

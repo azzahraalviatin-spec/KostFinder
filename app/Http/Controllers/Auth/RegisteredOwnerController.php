@@ -23,23 +23,47 @@ class RegisteredOwnerController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'no_hp' => ['required', 'string', 'max:20', Rule::unique('users', 'no_hp')],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:100', Rule::unique('users', 'email')],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'name'      => ['required', 'string', 'max:100'],
+            'no_hp'     => ['required', 'string', 'max:20', Rule::unique('users', 'no_hp')],
+            'email'     => ['required', 'string', 'lowercase', 'email', 'max:100', Rule::unique('users', 'email')],
+            'password'  => ['required', 'confirmed', Rules\Password::defaults()],
+            'alamat'    => ['required', 'string'],
+            'kota'      => ['required', 'string'],
+            'provinsi'  => ['required', 'string'],
+            'kode_pos'  => ['required', 'string', 'max:10'],
+            'kecamatan' => ['nullable', 'string', 'max:100'],
+            'kelurahan' => ['nullable', 'string', 'max:100'],
+            'area_jalan'=> ['nullable', 'string', 'max:150'],
+            'latitude'  => ['required', 'numeric'],
+            'longitude' => ['required', 'numeric'],
         ], [
-            'no_hp.unique' => 'Nomor HP sudah terdaftar.',
-            'email.unique' => 'Email sudah terdaftar.',
+            'no_hp.unique'       => 'Nomor HP sudah terdaftar.',
+            'email.unique'       => 'Email sudah terdaftar.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'alamat.required'    => 'Alamat wajib diisi.',
+            'kota.required'      => 'Kota wajib diisi.',
+            'provinsi.required'  => 'Provinsi wajib diisi.',
+            'kode_pos.required'  => 'Kode pos wajib diisi.',
+            'latitude.required'  => 'Latitude wajib diisi.',
+            'longitude.required' => 'Longitude wajib diisi.',
         ]);
-
+        
         $owner = User::create([
-            'name' => $request->name,
-            'no_hp' => $request->no_hp,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'owner',
+            'name'      => $request->name,
+            'no_hp'     => $request->no_hp,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
+            'role'      => 'owner',
             'status_verifikasi_identitas' => 'belum',
+            'alamat'    => $request->alamat,
+            'kota'      => $request->kota,
+            'provinsi'  => $request->provinsi,
+            'kode_pos'  => $request->kode_pos,
+            'kecamatan' => $request->kecamatan,
+            'kelurahan' => $request->kelurahan,
+            'area_jalan'=> $request->area_jalan,
+            'latitude'  => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
 
         event(new Registered($owner));

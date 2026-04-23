@@ -1,20 +1,18 @@
 {{-- ============================================================
      _navbar.blade.php  –  KostFinder Panel Owner
-     CSS dari: public/css/owner.css
      ============================================================ --}}
 
 <div class="topbar">
 
-  {{-- KIRI: toggle + greeting --}}
-  <div class="topbar-left">
-    <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
-      <i class="bi bi-list"></i>
-    </button>
-    <div>
-      <h5>Selamat datang, {{ auth()->user()->name }}! 👋</h5>
-      <p>{{ now()->translatedFormat('l, d F Y') }}</p>
-    </div>
-  </div>
+{{-- KIRI: toggle + tanggal (tanpa garis/divider) --}}
+<div class="topbar-left">
+  <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+    <i class="bi bi-list"></i>
+  </button>
+  <span style="font-size:.85rem;font-weight:600;color:var(--dark);">
+    {{ now()->translatedFormat('l, d F Y') }}
+  </span>
+</div>
 
   {{-- KANAN: search + notif + gear --}}
   <div class="topbar-right">
@@ -51,7 +49,6 @@
       </button>
 
       <div id="notifDropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:300px;background:#fff;border-radius:.75rem;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:9999;overflow:hidden;">
-        {{-- Header notif --}}
         <div style="padding:.75rem 1rem;border-bottom:1px solid #f0f3f8;display:flex;justify-content:space-between;align-items:center;">
           <span style="font-size:.82rem;font-weight:700;color:var(--dark);">Notifikasi</span>
           @if($notifCount > 0)
@@ -59,7 +56,6 @@
           @endif
         </div>
 
-        {{-- List notif --}}
         <div style="max-height:320px;overflow-y:auto;">
           @php
             $notifBookings = \App\Models\Booking::whereHas('room.kost', fn($q) => $q->where('owner_id', auth()->id()))
@@ -201,7 +197,6 @@
 </div>
 
 <script>
-  // ── Modal hapus ──
   (() => {
     let pendingForm = null;
     const getModal = () => {
@@ -226,14 +221,12 @@
     });
   })();
 
-  // ── Notif toggle ──
   function toggleNotif() {
     const d = document.getElementById('notifDropdown');
     document.getElementById('searchDropdown').style.display = 'none';
     d.style.display = d.style.display === 'none' ? 'block' : 'none';
   }
 
-  // ── Tutup dropdown klik luar ──
   document.addEventListener('click', e => {
     if (!e.target.closest('#notifBtn') && !e.target.closest('#notifDropdown'))
       document.getElementById('notifDropdown').style.display = 'none';
@@ -241,7 +234,6 @@
       document.getElementById('searchDropdown').style.display = 'none';
   });
 
-  // ── Search ──
   const searchInput    = document.getElementById('globalSearch');
   const searchDropdown = document.getElementById('searchDropdown');
   const searchResults  = document.getElementById('searchResults');

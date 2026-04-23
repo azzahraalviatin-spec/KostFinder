@@ -78,7 +78,17 @@
     .kamar-legend { display:flex; flex-direction:column; gap:.5rem; margin-top:1rem; }
     .kamar-legend-item { display:flex; justify-content:space-between; align-items:center; font-size:.8rem; }
     .kamar-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-  </style>
+    .stat-card {
+  transition: all .25s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0,0,0,.08);
+}
+
+ </style>
 </head>
 <body>
 
@@ -95,21 +105,30 @@
           <div style="font-size:.95rem;font-weight:800;color:var(--dark);">📊 Statistik Kost</div>
           <div style="font-size:.75rem;color:#8fa3b8;">Data tahun {{ $tahun }}</div>
         </div>
-        <form method="GET" action="{{ route('owner.statistik') }}" class="filter-tahun">
-          <i class="bi bi-calendar3" style="color:#8fa3b8;font-size:.85rem;"></i>
-          <select name="tahun" onchange="this.form.submit()">
-            @foreach($daftarTahun as $t)
-              <option value="{{ $t }}" {{ $t == $tahun ? 'selected' : '' }}>{{ $t }}</option>
-            @endforeach
-          </select>
-        </form>
-      </div>
+        <div class="d-flex align-items-center gap-2">
+  <form method="GET" action="{{ route('owner.statistik') }}" class="filter-tahun">
+    <i class="bi bi-calendar3" style="color:#8fa3b8;font-size:.85rem;"></i>
+    <select name="tahun" onchange="this.form.submit()">
+      @foreach($daftarTahun as $t)
+        <option value="{{ $t }}" {{ $t == $tahun ? 'selected' : '' }}>{{ $t }}</option>
+      @endforeach
+    </select>
+  </form>
+
+  <a href="{{ route('owner.export.excel', ['tahun' => $tahun]) }}" 
+     class="btn btn-sm"
+     style="background:var(--primary);color:#fff;font-weight:600;">
+     <i class="bi bi-download me-1"></i> Export Excel
+  </a>
+</div>
+
 
       {{-- STAT CARDS --}}
       <div class="row g-3 mb-3">
         <div class="col-6 col-xl-3">
           <div class="stat-card">
-            <div class="stat-icon" style="background:#fff5f2;">💰</div>
+          <div class="stat-icon" style="background:#ecfdf5;color:#22c55e;"></div>
+
             <div>
               <div class="stat-num" style="font-size:1rem;">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</div>
               <div class="stat-lbl">Pendapatan {{ $tahun }}</div>
@@ -118,7 +137,8 @@
         </div>
         <div class="col-6 col-xl-3">
           <div class="stat-card">
-            <div class="stat-icon" style="background:#f0f9ff;">📋</div>
+          <div class="stat-icon" style="background:#eff6ff;color:#3b82f6;">📋</div>
+
             <div>
               <div class="stat-num">{{ $totalBooking }}</div>
               <div class="stat-lbl">Booking {{ $tahun }}</div>
@@ -127,7 +147,8 @@
         </div>
         <div class="col-6 col-xl-3">
           <div class="stat-card">
-            <div class="stat-icon" style="background:#f0fdf4;">🛏️</div>
+          <div class="stat-icon" style="background:#fff7ed;color:#f97316;">🛏️</div>
+
             <div>
               <div class="stat-num">{{ $kamarTerisi }}</div>
               <div class="stat-lbl">Kamar Terisi</div>
@@ -136,7 +157,9 @@
         </div>
         <div class="col-6 col-xl-3">
           <div class="stat-card">
-            <div class="stat-icon" style="background:#fefce8;">🏠</div>
+          <div class="stat-icon" style="background:#fefce8;color:#eab308;">🏠</div>
+          <form method="GET" action="{{ route('owner.statistik') }}" class="filter-tahun">
+
             <div>
               <div class="stat-num">{{ $kamarTersedia }}</div>
               <div class="stat-lbl">Kamar Tersedia</div>
@@ -157,6 +180,36 @@
             </div>
           </div>
         </div>
+        {{-- INSIGHT CEPAT --}}
+<div class="row g-3 mb-3">
+  <div class="col-12">
+    <div class="section-card p-3 d-flex justify-content-between flex-wrap gap-3">
+
+      <div>
+        <div style="font-size:.7rem;color:#8fa3b8;">📈 Bulan Terlaris</div>
+        <div style="font-weight:700;color:var(--dark);">
+          {{ $bulanTerlaris ?? '-' }}
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:.7rem;color:#8fa3b8;">📊 Rata-rata Booking</div>
+        <div style="font-weight:700;color:var(--dark);">
+          {{ $rataBooking ?? 0 }}/bulan
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:.7rem;color:#8fa3b8;">🔥 Performa</div>
+        <div style="font-weight:700;color:var(--primary);">
+          {{ $performa ?? 'Stabil' }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
         {{-- DONUT KAMAR --}}
         <div class="col-12 col-lg-4">
@@ -171,9 +224,12 @@
                 <div class="donut-wrap">
                   <canvas id="kamarChart" height="200"></canvas>
                   <div class="donut-center">
-                    <div class="num">{{ $totalKamar }}</div>
-                    <div class="lbl">Total Kamar</div>
-                  </div>
+  <div class="num">
+    {{ $totalKamar > 0 ? round($kamarTerisi / $totalKamar * 100) : 0 }}%
+  </div>
+  <div class="lbl">Terisi</div>
+</div>
+
                 </div>
               @else
                 <div class="text-center py-4 text-muted" style="font-size:.82rem;">
@@ -235,7 +291,8 @@
                   @if($kost->total_booking > 0)
                   <tr>
                     <td>
-                      @if($i == 0) 🥇
+                    @if($i == 0) 🥇 <span style="color:var(--primary);font-weight:700;">Terlaris</span>
+
                       @elseif($i == 1) 🥈
                       @elseif($i == 2) 🥉
                       @else {{ $i + 1 }}

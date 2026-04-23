@@ -52,7 +52,24 @@
     .btn-tambah { background:var(--primary); color:#fff; font-weight:700; border:0; border-radius:.55rem; padding:.42rem .9rem; font-size:.8rem; text-decoration:none; display:flex; align-items:center; gap:.35rem; }
     .btn-tambah:hover { background:#cb3518; color:#fff; }
     .content { padding:1.4rem; flex:1; }
-    .stat-card { background:#fff; border-radius:.85rem; padding:1.1rem 1.2rem; border:1px solid #e4e9f0; box-shadow:0 2px 6px rgba(0,0,0,.04); display:flex; align-items:center; gap:1rem; }
+    .stat-card {
+  background:#fff;
+  border-radius:.85rem;
+  padding:1.1rem 1.2rem;
+  border:1px solid #e4e9f0;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  transition: all .25s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(232,64,28,0.15);
+}
+    }
     .stat-icon { width:46px; height:46px; border-radius:.75rem; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
     .stat-num { font-size:1.6rem; font-weight:800; color:var(--dark); line-height:1; }
     .stat-lbl { font-size:.75rem; color:#8fa3b8; margin-top:.2rem; }
@@ -91,11 +108,20 @@
 
     <div class="content">
     
+{{-- Greeting pindah ke sini --}}
+<div style="margin-bottom:1.75rem;">
+  <h4 style="font-size:1.3rem;font-weight:700;color:var(--dark);margin:0;">
+    Selamat datang, {{ auth()->user()->name }}! 
+  </h4>
+</div>
+ 
       {{-- STAT CARDS --}}
       <div class="row g-3 mb-3">
         <div class="col-6 col-xl-3">
           <div class="stat-card">
-            <div class="stat-icon" style="background:#fff5f2;">🏠</div>
+          <div class="stat-icon" style="background:rgba(232,64,28,0.1); color:#e8401c;">
+  <i class="bi bi-house-door"></i>
+</div>
             <div>
               <div class="stat-num">{{ $total_kost }}</div>
               <div class="stat-lbl">Total Kost</div>
@@ -105,7 +131,9 @@
         </div>
         <div class="col-6 col-xl-3">
           <div class="stat-card">
-            <div class="stat-icon" style="background:#f0f9ff;">🛏️</div>
+          <div class="stat-icon" style="background:rgba(232,64,28,0.1); color:#e8401c;">
+  <i class="bi bi-door-open"></i>
+</div>
             <div>
               <div class="stat-num">0</div>
               <div class="stat-lbl">Kamar Terisi</div>
@@ -115,7 +143,9 @@
         </div>
         <div class="col-6 col-xl-3">
           <div class="stat-card">
-            <div class="stat-icon" style="background:#fffbeb;">📋</div>
+          <div class="stat-icon" style="background:rgba(232,64,28,0.1); color:#e8401c;">
+  <i class="bi bi-journal-check"></i>
+</div>
             <div>
               <div class="stat-num">{{ $total_booking }}</div>
               <div class="stat-lbl">Total Booking</div>
@@ -125,7 +155,9 @@
         </div>
         <div class="col-6 col-xl-3">
     <div class="stat-card">
-        <div class="stat-icon" style="background:#f0fdf4;">💰</div>
+    <div class="stat-icon" style="background:rgba(232,64,28,0.1); color:#e8401c;">
+  <i class="bi bi-cash-stack"></i>
+</div>
         <div>
             <div class="stat-num" style="font-size:1.2rem;">
                 Rp {{ number_format($pendapatan_bulan_ini, 0, ',', '.') }}
@@ -133,11 +165,11 @@
             <div class="stat-lbl">Pendapatan Bulan Ini</div>
             <div class="stat-sub" style="color:{{ $selisih_pendapatan >= 0 ? '#10b981' : '#ef4444' }};">
                 @if($selisih_pendapatan > 0)
-                    ▲ Rp {{ number_format($selisih_pendapatan, 0, ',', '.') }} vs bulan lalu
+                    ? Rp {{ number_format($selisih_pendapatan, 0, ',', '.') }} vs bulan lalu
                 @elseif($selisih_pendapatan < 0)
-                    ▼ Rp {{ number_format(abs($selisih_pendapatan), 0, ',', '.') }} vs bulan lalu
+                    ? Rp {{ number_format(abs($selisih_pendapatan), 0, ',', '.') }} vs bulan lalu
                 @else
-                    — sama dengan bulan lalu
+                    � sama dengan bulan lalu
                 @endif
             </div>
         </div>
@@ -149,7 +181,7 @@
         <div class="col-12 col-lg-8">
           <div class="section-card">
             <div class="section-head">
-              <h6><i class="bi bi-graph-up me-1" style="color:var(--primary)"></i> Statistik Booking — 6 Bulan Terakhir</h6>
+              <h6><i class="bi bi-graph-up me-1" style="color:var(--primary)"></i> Statistik Booking � 6 Bulan Terakhir</h6>
             </div>
             <div class="p-3">
               <canvas id="bookingChart" height="100"></canvas>
@@ -171,7 +203,9 @@
             @else
               @foreach($kosts->take(4) as $kost)
               <div class="kost-item">
-                <div class="kost-thumb">🏠</div>
+              <div class="kost-thumb" style="color:#e8401c;">
+  <i class="bi bi-building"></i>
+</div>
                 <div style="flex:1;">
                   <div class="kost-name">{{ $kost->nama_kost }}</div>
                   <div class="kost-loc"><i class="bi bi-geo-alt" style="font-size:.65rem;"></i> {{ $kost->kota }}</div>
@@ -193,7 +227,7 @@
       <div class="section-card">
         <div class="section-head">
           <h6><i class="bi bi-journal-check me-1" style="color:var(--primary)"></i> Booking Terbaru</h6>
-          <a href="#" class="link-p">Lihat Semua</a>
+          <a href="{{ route('owner.booking.index') }}" class="link-p">Lihat Semua</a>
         </div>
         <div class="table-responsive">
           <table class="table mb-0">
@@ -231,18 +265,18 @@
     </div>
 
     <footer class="owner-footer">
-      © {{ date('Y') }} KostFinder — Panel Pemilik Kost. All rights reserved.
+      � {{ date('Y') }} KostFinder � Panel Pemilik Kost. All rights reserved.
     </footer>
 
   </div>
-  {{-- ══ MODAL ULASAN ══ --}}
+  {{-- -- MODAL ULASAN -- --}}
 @if(!auth()->user()->ownerReview)
 <div class="modal fade" id="modalUlasan" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow">
             <div class="modal-header border-0 pb-0">
                 <div>
-                    <h5 class="fw-800 mb-1" style="font-weight:800;">Bagaimana pengalaman Anda? ⭐</h5>
+                    <h5 class="fw-800 mb-1" style="font-weight:800;">Bagaimana pengalaman Anda? ?</h5>
                     <p class="text-muted small mb-0">Ulasan Anda membantu pemilik kos lain bergabung.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -285,7 +319,7 @@
                             @for($i = 5; $i >= 1; $i--)
                             <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}"
                                 {{ old('rating', 5) == $i ? 'checked' : '' }}>
-                            <label for="star{{ $i }}">★</label>
+                            <label for="star{{ $i }}">?</label>
                             @endfor
                         </div>
                     </div>

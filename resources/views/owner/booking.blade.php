@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -40,215 +40,323 @@
     .main { margin-left:var(--sidebar-w); flex:1; transition:margin-left .3s ease; display:flex; flex-direction:column; }
     .main.collapsed { margin-left:var(--sidebar-col); }
     .topbar { background:#fff; height:60px; padding:0 1.5rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e4e9f0; position:sticky; top:0; z-index:100; }
-    .topbar-left { display:flex; align-items:center; gap:.8rem; }
-    .topbar-left h5 { font-size:.98rem; font-weight:800; color:var(--dark); margin:0; }
-    .topbar-left p { font-size:.72rem; color:#8fa3b8; margin:0; }
     .topbar-right { display:flex; align-items:center; gap:.6rem; }
-    .search-box { display:flex; align-items:center; gap:.5rem; background:#f0f4f8; border:1px solid #dde3ed; border-radius:.55rem; padding:.38rem .75rem; width:180px; }
-    .search-box input { border:0; background:none; outline:none; font-size:.8rem; color:#333; width:100%; }
-    .icon-btn { width:34px; height:34px; border-radius:.5rem; background:#f0f4f8; border:1px solid #dde3ed; display:flex; align-items:center; justify-content:center; color:#555; font-size:.9rem; cursor:pointer; text-decoration:none; position:relative; }
-    .icon-btn:hover { background:#e4e9f0; color:#333; }
-    .notif-dot { position:absolute; top:5px; right:5px; width:6px; height:6px; background:var(--primary); border-radius:50%; border:1px solid #fff; }
-    .content { padding:1.4rem; flex:1; }
-    .section-card { background:#fff; border-radius:.85rem; border:1px solid #e4e9f0; box-shadow:0 2px 6px rgba(0,0,0,.04); overflow:hidden; }
-    .section-head { padding:.9rem 1.2rem; border-bottom:1px solid #f0f3f8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; }
-    .section-head h6 { font-weight:700; color:var(--dark); margin:0; font-size:.87rem; }
-    table thead th { font-size:.68rem; font-weight:700; color:#8fa3b8; letter-spacing:.05em; border:0; padding:.6rem 1rem; background:#f8fafd; }
-    table tbody td { font-size:.8rem; color:#333; padding:.65rem 1rem; border-color:#f0f3f8; vertical-align:middle; }
-    .s-pill { padding:.22rem .7rem; border-radius:999px; font-size:.7rem; font-weight:600; display:inline-flex; align-items:center; gap:.25rem; }
-    .s-pending { background:#fff7ed; color:#ea580c; }
-    .s-diterima { background:#f0fdf4; color:#16a34a; }
-    .s-ditolak { background:#fef2f2; color:#dc2626; }
-    .s-selesai { background:#f0f4f8; color:#64748b; }
-    .filter-btn { padding:.3rem .8rem; border-radius:.45rem; font-size:.75rem; font-weight:600; border:1px solid #e4e9f0; background:#f8fafd; color:#555; cursor:pointer; transition:all .2s; }
-    .filter-btn.active, .filter-btn:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .icon-btn { width:34px; height:34px; border-radius:.5rem; background:#f0f4f8; border:1px solid #dde3ed; display:flex; align-items:center; justify-content:center; color:#555; font-size:.9rem; cursor:pointer; text-decoration:none; }
+    .content { padding:1.5rem; flex:1; }
     .owner-footer { background:#fff; border-top:1px solid #e4e9f0; padding:.8rem 1.5rem; text-align:center; color:#8fa3b8; font-size:.72rem; }
-    .empty-s { padding:2.5rem; text-align:center; color:#8fa3b8; font-size:.82rem; }
-    .empty-s i { font-size:2rem; display:block; margin-bottom:.5rem; opacity:.3; }
-    .penyewa-info { display:flex; align-items:center; gap:.6rem; }
-    .penyewa-avatar { width:30px; height:30px; border-radius:50%; background:var(--primary); color:#fff; font-weight:700; font-size:.75rem; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-    .stat-mini { background:#fff; border-radius:.75rem; border:1px solid #e4e9f0; padding:.8rem 1rem; display:flex; align-items:center; gap:.7rem; }
-    .stat-mini-icon { width:38px; height:38px; border-radius:.6rem; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
-    .stat-mini-num { font-size:1.3rem; font-weight:800; color:var(--dark); line-height:1; }
-    .stat-mini-lbl { font-size:.7rem; color:#8fa3b8; }
+
+    /* STAT CARDS */
+    .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+    .stat-card { border-radius:16px; padding:1.1rem 1.25rem; display:flex; align-items:center; gap:1rem; position:relative; overflow:hidden; }
+    .stat-card::after { content:''; position:absolute; right:-16px; top:-16px; width:80px; height:80px; border-radius:50%; opacity:.12; background:#fff; }
+    .stat-card.total  { background:linear-gradient(135deg,#1e2d3d,#2d4a6b); }
+    .stat-card.pending { background:linear-gradient(135deg,#f97316,#fb923c); }
+    .stat-card.diterima { background:linear-gradient(135deg,#16a34a,#22c55e); }
+    .stat-card.ditolak { background:linear-gradient(135deg,#dc2626,#ef4444); }
+    .stat-icon-wrap { width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#fff; flex-shrink:0; }
+    .stat-num { font-size:1.8rem; font-weight:800; color:#fff; line-height:1; }
+    .stat-lbl { font-size:.72rem; color:rgba(255,255,255,.75); margin-top:3px; font-weight:500; }
+
+    /* TABLE */
+    .table-section { background:#fff; border-radius:16px; border:1px solid #e4e9f0; overflow:hidden; }
+    .table-header { padding:1rem 1.25rem; border-bottom:1px solid #f0f4f8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.75rem; }
+    .table-title { font-size:.92rem; font-weight:800; color:var(--dark); display:flex; align-items:center; gap:.5rem; }
+    .table-title-dot { width:8px; height:8px; border-radius:50%; background:var(--primary); }
+    .filter-wrap { display:flex; gap:.4rem; flex-wrap:wrap; }
+    .fpill {
+  padding: .38rem 1rem;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 600;
+  border: 1px solid #e5eaf1;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all .22s ease;
+}
+
+/* HOVER */
+.fpill:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,.05);
+}
+
+/* ACTIVE BASE */
+.fpill.active {
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  transform: translateY(-1px);
+}
+
+/* WARNA PER STATUS */
+.fpill.active.f-semua {
+  background: linear-gradient(135deg,#1e293b,#334155);
+}
+
+.fpill.active.f-pending {
+  background: linear-gradient(135deg,#f97316,#fb923c);
+}
+
+.fpill.active.f-diterima {
+  background: linear-gradient(135deg,#16a34a,#22c55e);
+}
+
+.fpill.active.f-ditolak {
+  background: linear-gradient(135deg,#dc2626,#ef4444);
+}
+
+.fpill.active.f-selesai {
+  background: linear-gradient(135deg,#64748b,#94a3b8);
+}
+.filter-wrap {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  background: #f1f5f9;
+  padding: .35rem;
+  border-radius: 999px;
+}
+table { width:100%; border-collapse:collapse; }
+    thead th { font-size:.67rem; font-weight:700; color:#94a3b8; letter-spacing:.06em; padding:.65rem 1rem; background:#f8fafd; border-bottom:1px solid #f0f4f8; text-transform:uppercase; }
+    tbody td { font-size:.8rem; color:#334155; padding:.8rem 1rem; border-bottom:1px solid #f8fafd; vertical-align:middle; }
+    tbody tr:last-child td { border-bottom:0; }
+    tbody tr:hover td { background:#fafbfe; }
+    .avatar-circle { width:34px; height:34px; border-radius:50%; color:#fff; font-weight:700; font-size:.78rem; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+    .sbadge { padding:.28rem .85rem; border-radius:99px; font-size:.7rem; font-weight:700; display:inline-flex; align-items:center; gap:.35rem; }
+    .sbadge-pending { background:#fff7ed; color:#ea580c; }
+    .sbadge-diterima { background:#f0fdf4; color:#16a34a; }
+    .sbadge-ditolak { background:#fef2f2; color:#dc2626; }
+    .sbadge-selesai { background:#f1f5f9; color:#64748b; }
+    .sbadge-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .sbadge-pending .sbadge-dot { background:#ea580c; }
+    .sbadge-diterima .sbadge-dot { background:#16a34a; }
+    .sbadge-ditolak .sbadge-dot { background:#dc2626; }
+    .sbadge-selesai .sbadge-dot { background:#94a3b8; }
+    .aksi-wrap { display:flex; gap:.35rem; }
+    .abtn { width:32px; height:32px; border-radius:9px; border:0; display:inline-flex; align-items:center; justify-content:center; font-size:.82rem; cursor:pointer; transition:all .15s; }
+    .abtn:hover { transform:translateY(-1px); }
+    .abtn-terima { background:#dcfce7; color:#16a34a; }
+    .abtn-tolak { background:#fee2e2; color:#dc2626; }
+    .abtn-selesai { background:#f1f5f9; color:#475569; }
+    .abtn-detail { background:#e0f2fe; color:#0369a1; }
+    .empty-wrap { padding:3.5rem 1rem; text-align:center; color:#94a3b8; }
+    .empty-wrap i { font-size:3rem; opacity:.2; display:block; margin-bottom:.75rem; }
   </style>
 </head>
 <body>
-
   @include('owner._sidebar')
-
   <div class="main" id="mainContent">
     @include('owner._navbar')
-
     <div class="content">
 
       @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show mb-3" style="font-size:.83rem;">
-          {{ session('success') }}
+        <div class="alert alert-success alert-dismissible fade show mb-4 rounded-3">
+          <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       @endif
 
-      {{-- STAT MINI --}}
-      <div class="row g-3 mb-3">
-        <div class="col-6 col-md-3">
-          <div class="stat-mini">
-            <div class="stat-mini-icon" style="background:#fff7ed;">📋</div>
-            <div>
-              <div class="stat-mini-num">{{ $bookings->count() }}</div>
-              <div class="stat-mini-lbl">Total Booking</div>
-            </div>
+      <div class="mb-4">
+        <h5 class="fw-bold mb-0" style="color:var(--dark);">Kelola Booking</h5>
+        <p class="text-muted small mb-0">Pantau dan kelola semua permintaan booking kos Anda</p>
+      </div>
+
+      {{-- STAT CARDS --}}
+      <div class="stat-grid">
+        <div class="stat-card total">
+          <div class="stat-icon-wrap"><i class="bi bi-journal-check"></i></div>
+          <div>
+            <div class="stat-num">{{ $bookings->count() }}</div>
+            <div class="stat-lbl">Total Booking</div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
-          <div class="stat-mini">
-            <div class="stat-mini-icon" style="background:#fff7ed;">⏳</div>
-            <div>
-              <div class="stat-mini-num">{{ $bookings->where('status_booking','pending')->count() }}</div>
-              <div class="stat-mini-lbl">Pending</div>
-            </div>
+        <div class="stat-card pending">
+          <div class="stat-icon-wrap"><i class="bi bi-clock-history"></i></div>
+          <div>
+            <div class="stat-num">{{ $bookings->where('status_booking','pending')->count() }}</div>
+            <div class="stat-lbl">Menunggu</div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
-          <div class="stat-mini">
-            <div class="stat-mini-icon" style="background:#f0fdf4;">✅</div>
-            <div>
-              <div class="stat-mini-num">{{ $bookings->where('status_booking','diterima')->count() }}</div>
-              <div class="stat-mini-lbl">Diterima</div>
-            </div>
+        <div class="stat-card diterima">
+          <div class="stat-icon-wrap"><i class="bi bi-check-circle"></i></div>
+          <div>
+            <div class="stat-num">{{ $bookings->where('status_booking','diterima')->count() }}</div>
+            <div class="stat-lbl">Diterima</div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
-          <div class="stat-mini">
-            <div class="stat-mini-icon" style="background:#fef2f2;">❌</div>
-            <div>
-              <div class="stat-mini-num">{{ $bookings->where('status_booking','ditolak')->count() }}</div>
-              <div class="stat-mini-lbl">Ditolak</div>
-            </div>
+        <div class="stat-card ditolak">
+          <div class="stat-icon-wrap"><i class="bi bi-x-circle"></i></div>
+          <div>
+            <div class="stat-num">{{ $bookings->where('status_booking','ditolak')->count() }}</div>
+            <div class="stat-lbl">Ditolak</div>
           </div>
         </div>
       </div>
 
-      {{-- TABEL BOOKING --}}
-      <div class="section-card">
-        <div class="section-head">
-          <h6><i class="bi bi-journal-check me-1" style="color:var(--primary)"></i> Kelola Booking</h6>
-          <div class="d-flex gap-1 flex-wrap">
-            <button class="filter-btn active" onclick="filterBooking('semua', this)">Semua</button>
-            <button class="filter-btn" onclick="filterBooking('pending', this)">Pending</button>
-            <button class="filter-btn" onclick="filterBooking('diterima', this)">Diterima</button>
-            <button class="filter-btn" onclick="filterBooking('ditolak', this)">Ditolak</button>
-            <button class="filter-btn" onclick="filterBooking('selesai', this)">Selesai</button>
+      {{-- TABLE --}}
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">
+            <div class="table-title-dot"></div>
+            Daftar Booking
           </div>
-        </div>
+          <div class="filter-wrap">
+          <a href="?status=semua" class="fpill f-semua {{ $activeStatus=='semua'?'active':'' }}">Semua</a>
 
-        <div class="table-responsive">
-          <table class="table mb-0" id="bookingTable">
+<a href="?status=pending" class="fpill f-pending {{ $activeStatus=='pending'?'active':'' }}">Pending</a>
+
+<a href="?status=diterima" class="fpill f-diterima {{ $activeStatus=='diterima'?'active':'' }}">Diterima</a>
+
+<a href="?status=ditolak" class="fpill f-ditolak {{ $activeStatus=='ditolak'?'active':'' }}">Ditolak</a>
+
+<a href="?status=selesai" class="fpill f-selesai {{ $activeStatus=='selesai'?'active':'' }}">Selesai</a>
+ </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
             <thead>
               <tr>
-                <th>No</th>
-                <th>PENYEWA</th>
-                <th>KOST & KAMAR</th>
-                <th>TANGGAL MASUK</th>
-                <th>DURASI</th>
-                <th>TOTAL HARGA</th>
-                <th>STATUS</th>
-                <th>AKSI</th>
+                <th>#</th>
+                <th>Penyewa</th>
+                <th>Kost &amp; Kamar</th>
+                <th>Tgl Masuk</th>
+                <th>Durasi</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
               @forelse($bookings as $i => $booking)
               <tr class="booking-row" data-status="{{ $booking->status_booking }}">
-                <td>{{ $i + 1 }}</td>
+                <td style="color:#94a3b8;font-weight:600;">{{ $i + 1 }}</td>
                 <td>
-                  <div class="penyewa-info">
-                    <div class="penyewa-avatar">{{ strtoupper(substr($booking->user->name ?? 'U', 0, 1)) }}</div>
+                  <div style="display:flex;align-items:center;gap:.6rem;">
+                    @php
+                      $colors = ['#e8401c','#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899'];
+                      $cl = $colors[ord(strtoupper(substr($booking->user->name ?? 'U',0,1))) % count($colors)];
+                    @endphp
+                    <div class="avatar-circle" style="background:{{ $cl }};">{{ strtoupper(substr($booking->user->name ?? 'U',0,1)) }}</div>
                     <div>
-                      <div style="font-weight:600;font-size:.82rem;">{{ $booking->user->name ?? '—' }}</div>
-                      <div style="font-size:.72rem;color:#8fa3b8;">{{ $booking->user->email ?? '—' }}</div>
+                      <div style="font-weight:600;font-size:.82rem;color:#1e293b;">{{ $booking->user->name ?? '-' }}</div>
+                      <div style="font-size:.7rem;color:#94a3b8;">{{ $booking->user->email ?? '-' }}</div>
                     </div>
                   </div>
                 </td>
                 <td>
-                  <div style="font-weight:600;font-size:.82rem;">{{ $booking->room->kost->nama_kost ?? '—' }}</div>
-                  <div style="font-size:.72rem;color:#8fa3b8;">Kamar No. {{ $booking->room->nomor_kamar ?? '—' }}</div>
+                  <div style="font-weight:600;font-size:.82rem;color:#1e293b;">{{ $booking->room->kost->nama_kost ?? '-' }}</div>
+                  <div style="font-size:.7rem;color:#94a3b8;">Kamar {{ $booking->room->nomor_kamar ?? '-' }}</div>
                 </td>
                 <td>{{ \Carbon\Carbon::parse($booking->tanggal_masuk)->format('d M Y') }}</td>
-                <td>{{ $booking->durasi_sewa }} bulan</td>
-                <td style="font-weight:700;color:var(--primary);">
-                  Rp {{ number_format($booking->total_bayar ?? 0, 0, ',', '.') }}
+                <td>
+                  <span style="font-size:.78rem;background:#f1f5f9;color:#475569;padding:3px 10px;border-radius:99px;font-weight:600;">
+                    {{ $booking->durasi_sewa }} {{ isset($booking->tipe_sewa) && $booking->tipe_sewa==='harian' ? 'hari' : 'bln' }}
+                  </span>
+                </td>
+                <td style="font-weight:700;color:var(--primary);font-size:.85rem;">
+                  Rp {{ number_format($booking->total_bayar ?? 0,0,',','.') }}
                 </td>
                 <td>
-                  <span class="s-pill s-{{ $booking->status_booking }}">
-                    <i class="bi bi-circle-fill" style="font-size:.35rem;"></i>
+                  <span class="sbadge sbadge-{{ $booking->status_booking }}">
+                    <span class="sbadge-dot"></span>
                     {{ ucfirst($booking->status_booking) }}
                   </span>
                 </td>
                 <td>
-                  <div class="d-flex gap-1">
+                  <div class="aksi-wrap">
                     @if($booking->status_booking == 'pending')
-                      <form action="{{ route('owner.booking.terima', $booking->id_booking) }}" method="POST">
+                      <form action="{{ route('owner.booking.terima',$booking->id_booking) }}" method="POST">
                         @csrf @method('PATCH')
-                        <button class="btn btn-sm btn-success" title="Terima">
-                          <i class="bi bi-check-lg"></i>
-                        </button>
+                        <button type="submit" class="abtn abtn-terima" title="Terima"><i class="bi bi-check-lg"></i></button>
                       </form>
-                      <form action="{{ route('owner.booking.tolak', $booking->id_booking) }}" method="POST">
+                      <form action="{{ route('owner.booking.tolak',$booking->id_booking) }}" method="POST" class="js-tolak">
                         @csrf @method('PATCH')
-                        <button class="btn btn-sm btn-danger" title="Tolak" onclick="return confirm('Tolak booking ini?')">
-                          <i class="bi bi-x-lg"></i>
-                        </button>
+                        <button type="submit" class="abtn abtn-tolak" title="Tolak"><i class="bi bi-x-lg"></i></button>
                       </form>
                     @elseif($booking->status_booking == 'diterima')
-                      <form action="{{ route('owner.booking.selesai', $booking->id_booking) }}" method="POST">
+                      <form action="{{ route('owner.booking.selesai',$booking->id_booking) }}" method="POST" class="js-selesai">
                         @csrf @method('PATCH')
-                        <button class="btn btn-sm btn-secondary" title="Tandai Selesai" onclick="return confirm('Tandai booking ini selesai?')">
-                          <i class="bi bi-check2-all"></i>
-                        </button>
+                        <button type="submit" class="abtn abtn-selesai" title="Selesai"><i class="bi bi-check2-all"></i></button>
                       </form>
-                    @else
-                      <span style="font-size:.75rem;color:#8fa3b8;">—</span>
                     @endif
-                    <button class="btn btn-sm btn-outline-secondary" onclick="showDetail({{ $booking->id_booking }})" title="Detail">
-                      <i class="bi bi-eye"></i>
-                    </button>
+                    <a href="{{ route('owner.booking.show', $booking->id_booking) }}" 
+   class="abtn abtn-detail" 
+   title="Detail">
+  <i class="bi bi-eye"></i>
+</a>
                   </div>
+
+
+              
                 </td>
               </tr>
               @empty
-              <tr>
-                <td colspan="8">
-                  <div class="empty-s">
-                    <i class="bi bi-inbox"></i>
-                    Belum ada booking masuk
-                  </div>
-                </td>
-              </tr>
+              <tr><td colspan="8">
+                <div class="empty-wrap">
+                  <i class="bi bi-inbox"></i>
+                  <p style="font-size:.85rem;">Belum ada booking masuk</p>
+                </div>
+              </td></tr>
               @endforelse
             </tbody>
           </table>
         </div>
       </div>
-
     </div>
-
-    <footer class="owner-footer">
-      © {{ date('Y') }} KostFinder — Panel Pemilik Kost. All rights reserved.
-    </footer>
+    <footer class="owner-footer">&copy; {{ date('Y') }} KostFinder &mdash; Panel Pemilik Kost. All rights reserved.</footer>
   </div>
 
   {{-- MODAL DETAIL --}}
   <div class="modal fade" id="detailModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content" style="border-radius:.85rem;border:0;">
-        <div class="modal-header" style="border-bottom:1px solid #f0f3f8;">
-          <h6 class="modal-title fw-bold" style="color:var(--dark);">
-            <i class="bi bi-info-circle me-1" style="color:var(--primary)"></i> Detail Booking
-          </h6>
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header" style="border-bottom:1px solid #f0f4f8;padding:1rem 1.25rem;">
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);"></div>
+            <h6 class="modal-title fw-bold mb-0">Detail Booking</h6>
+          </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body" id="modalBody" style="font-size:.85rem;">
-          {{-- diisi via JS --}}
+        <div class="modal-body p-0" id="modalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  {{-- MODAL TOLAK --}}
+  <div class="modal fade" id="tolakModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-body text-center p-4">
+          <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+            <i class="bi bi-x-lg" style="font-size:1.4rem;color:#dc2626;"></i>
+          </div>
+          <h6 class="fw-bold mb-1">Tolak Booking?</h6>
+          <p class="text-muted small mb-3">Permintaan booking ini akan ditolak.</p>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-light rounded-3 flex-fill fw-semibold" data-bs-dismiss="modal">Batal</button>
+            <button class="btn btn-sm btn-danger rounded-3 flex-fill fw-semibold" id="tolakConfirmBtn">Ya, Tolak</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- MODAL SELESAI --}}
+  <div class="modal fade" id="selesaiModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-body text-center p-4">
+          <div style="width:56px;height:56px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+            <i class="bi bi-check2-all" style="font-size:1.4rem;color:#16a34a;"></i>
+          </div>
+          <h6 class="fw-bold mb-1">Tandai Selesai?</h6>
+          <p class="text-muted small mb-3">Booking ini akan ditandai sebagai selesai.</p>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-light rounded-3 flex-fill fw-semibold" data-bs-dismiss="modal">Batal</button>
+            <button class="btn btn-sm rounded-3 flex-fill fw-semibold" style="background:#16a34a;color:#fff;" id="selesaiConfirmBtn">Ya, Selesai</button>
+          </div>
         </div>
       </div>
     </div>
@@ -260,39 +368,20 @@
       document.getElementById('sidebar').classList.toggle('collapsed');
       document.getElementById('mainContent').classList.toggle('collapsed');
     }
+  
+    let tolakForm = null;
+    document.querySelectorAll('.js-tolak').forEach(f => {
+      f.addEventListener('submit', function(e) { e.preventDefault(); tolakForm=this; new bootstrap.Modal(document.getElementById('tolakModal')).show(); });
+    });
+    document.getElementById('tolakConfirmBtn').addEventListener('click', () => { if(tolakForm) tolakForm.submit(); });
 
-    function filterBooking(status, btn) {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.booking-row').forEach(row => {
-        if (status === 'semua' || row.dataset.status === status) {
-          row.style.display = '';
-        } else {
-          row.style.display = 'none';
-        }
-      });
-    }
+    let selesaiForm = null;
+    document.querySelectorAll('.js-selesai').forEach(f => {
+      f.addEventListener('submit', function(e) { e.preventDefault(); selesaiForm=this; new bootstrap.Modal(document.getElementById('selesaiModal')).show(); });
+    });
+    document.getElementById('selesaiConfirmBtn').addEventListener('click', () => { if(selesaiForm) selesaiForm.submit(); });
 
-    const bookingData = @json($bookingsJson);
-
-    function showDetail(id) {
-      const d = bookingData[id];
-      if (!d) return;
-      document.getElementById('modalBody').innerHTML = `
-        <div class="row g-3">
-          <div class="col-6"><div style="font-size:.7rem;color:#8fa3b8;font-weight:700;">PENYEWA</div><div class="fw-semibold">${d.penyewa}</div></div>
-          <div class="col-6"><div style="font-size:.7rem;color:#8fa3b8;font-weight:700;">EMAIL</div><div>${d.email}</div></div>
-          <div class="col-6"><div style="font-size:.7rem;color:#8fa3b8;font-weight:700;">TELEPON</div><div>${d.telepon}</div></div>
-          <div class="col-6"><div style="font-size:.7rem;color:#8fa3b8;font-weight:700;">STATUS</div><div><span class="s-pill s-${d.status}">${d.status}</span></div></div>
-          <div class="col-6"><div style="font-size:.7rem;color:#8fa3b8;font-weight:700;">KOST</div><div class="fw-semibold">${d.kost}</div></div>
-          <div class="col-6"><div style="font-size:.7rem;color:#8fa3b8;font-weight:700;">KAMAR</div><div>No. ${d.kamar}</div></div>
-          <div class="col-6"><div style="font-size:.7rem;color:#8fa3b8;font-weight:700;">TANGGAL MASUK</div><div>${d.masuk}</div></div>
-          <div class="col-6"><div style="font-size:.7rem;color:#8fa3b8;font-weight:700;">DURASI</div><div>${d.durasi}</div></div>
-          <div class="col-12"><div style="font-size:.7rem;color:#8fa3b8;font-weight:700;">CATATAN</div><div>${d.catatan}</div></div>
-        </div>
-      `;
-      new bootstrap.Modal(document.getElementById('detailModal')).show();
-    }
+   
   </script>
 </body>
 </html>

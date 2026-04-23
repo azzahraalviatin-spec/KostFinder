@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kost;
+use App\Models\Room;
 use App\Models\Review;
 use App\Models\Favorite;
 use Illuminate\Http\Request;
@@ -28,6 +29,7 @@ class HomeController extends Controller
             'max_price'       => $request->integer('max_price'),
             'location_mode'   => trim((string) $request->string('location_mode', 'daerah')),
             'location_detail' => trim((string) $request->string('location_detail')),
+            'sewa' => trim((string) $request->string('sewa')),
             'facilities'      => array_filter(array_map('trim', explode(',', (string) $request->string('facilities')))),
         ];
 
@@ -139,6 +141,38 @@ class HomeController extends Controller
                 ->toArray()
             : [];
 
+// ── Query kamar untuk section rekomendasi (per kamar) ──
+$rooms = Room::query()
+    ->whereHas('kost', function ($q) {
+        $q->where('status', 'aktif')
+          ->whereHas('owner', function ($q2) {
+              $q2->where('status_verifikasi_identitas', 'disetujui');
+          });
+    })
+
+    ->with([
+        'mainImage',
+        'kost' => function($q) {
+            $q->select('id_kost','nama_kost','alamat','kota','tipe_kost','foto_utama')
+              ->withAvg('reviews','rating');
+        },
+    ])
+
+    ->where('status_kamar', 'tersedia')
+
+    // ✅ PINDAH KE SINI (SETELAH STATUS)
+    ->when($filters['sewa'] === 'harian', function ($q) {
+        $q->where('aktif_harian', 1)
+          ->whereNotNull('harga_harian');
+    })
+    ->when($filters['sewa'] === 'bulanan', function ($q) {
+        $q->where('aktif_bulanan', 1)
+          ->whereNotNull('harga_per_bulan');
+    })
+
+    ->latest()
+    ->limit(12)
+    ->get();
         // ── Data gambar kota ──
         $kotaList = [
             'surabaya'   => [
@@ -192,6 +226,7 @@ class HomeController extends Controller
             'kosts',
             'filters',
             'stats',
+            'rooms',
             'cityOptions',
             'featuredCities',
             'kotaList',

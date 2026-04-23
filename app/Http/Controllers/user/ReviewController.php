@@ -1,15 +1,30 @@
 <?php
+
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use App\Models\Booking;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Notifications\ReviewBaruNotification;
-use App\Models\User;
 
 class ReviewController extends Controller
 {
+    /**
+     * Menampilkan daftar ulasan milik user
+     */
+    public function index()
+    {
+        // Ambil ulasan yang dibuat oleh user yang sedang login
+        $reviews = Review::where('user_id', auth()->id())->get();
+
+        return view('user.ulasan.index', compact('reviews'));
+    }
+
+    /**
+     * Menyimpan ulasan baru
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -28,7 +43,7 @@ class ReviewController extends Controller
                     ->where('status_booking', 'selesai')
                     ->firstOrFail();
 
-        // Cek sudah pernah review
+        // Cek jika sudah pernah review
         $sudahReview = Review::where('booking_id', $booking->id_booking)->exists();
         if ($sudahReview) {
             return response()->json(['error' => 'Kamu sudah memberikan review untuk kos ini.'], 422);
@@ -44,6 +59,7 @@ class ReviewController extends Controller
 
         // Hitung rating rata-rata
         $ratingRata = round(($request->rating + $request->rating_kebersihan + $request->rating_fasilitas + $request->rating_lokasi + $request->rating_harga) / 5);
+        
         $review = Review::create([
             'user_id'           => auth()->id(),
             'kost_id'           => $booking->room->kost->id_kost,
@@ -57,11 +73,11 @@ class ReviewController extends Controller
             'foto_review'       => $fotos ?: null,
         ]);
         
-        // ✅ Kirim notifikasi ke admin
+        // Kirim notifikasi ke admin
         $admin = User::where('role', 'admin')->first();
         if ($admin) {
             $admin->notify(new ReviewBaruNotification($review));
-        };
+        }
 
         return response()->json(['success' => true]);
     }

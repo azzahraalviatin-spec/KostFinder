@@ -5,16 +5,24 @@ use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\KosController;
+use App\Http\Controllers\User\KeluhanController as UserKeluhanController;
+use App\Http\Controllers\Owner\KeluhanController as OwnerKeluhanController;
 
+Route::get('/carikos', [KosController::class, 'cari'])->name('carikos');
 // ── HOMEPAGE ──
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/cari-kost', [App\Http\Controllers\KostDetailController::class, 'index'])->name('kost.cari');
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/hubungi-kami', [App\Http\Controllers\HubungiController::class, 'index'])->name('hubungi.kami');
+Route::post('/hubungi-kami', [App\Http\Controllers\HubungiController::class, 'store'])->name('hubungi.store');
+
 // ── DETAIL KOST PUBLIK ──
 Route::get('/kost/{kost}', [App\Http\Controllers\KostDetailController::class, 'show'])->name('kost.show');
 
 // ── LANDING PEMILIK KOST ──
 Route::get('/panduan-pemilik-kost', [App\Http\Controllers\OwnerLandingController::class, 'index'])->name('owner.landing');
-Route::view('/Panduan', 'panduan')->name('panduan');
+Route::view('/panduan', 'panduan')->name('panduan');
 
 // ── DASHBOARD USER ──
 Route::middleware(['auth', 'role.user'])->prefix('user')->name('user.')->group(function () {
@@ -36,6 +44,7 @@ Route::middleware(['auth', 'role.user'])->prefix('user')->name('user.')->group(f
     Route::post('/favorit/toggle', [App\Http\Controllers\User\FavoritController::class, 'toggle'])->name('favorit.toggle');
     Route::delete('/favorit/{id}', [App\Http\Controllers\User\FavoritController::class, 'destroy'])->name('favorit.destroy');
     Route::post('/review', [App\Http\Controllers\User\ReviewController::class, 'store'])->name('review.store');
+    Route::get('/ulasan', [App\Http\Controllers\User\ReviewController::class, 'index'])->name('ulasan.index');
 });
 
 // ── DASHBOARD ADMIN ──
@@ -107,32 +116,53 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+
 // ── OWNER ROUTES ──
 Route::prefix('owner')->name('owner.')->middleware(['auth', 'role.owner'])->group(function () {
-    Route::get('/search', [App\Http\Controllers\Owner\DashboardController::class, 'search'])->name('search');
+
+    // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\Owner\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/search', [App\Http\Controllers\Owner\DashboardController::class, 'search'])->name('search');
+
+    // ================= KELUHAN =================
+    Route::prefix('keluhan')->name('keluhan.')->group(function () {
+        Route::get('/', [OwnerKeluhanController::class, 'index'])->name('index');
+        Route::get('/{id}', [OwnerKeluhanController::class, 'show'])->name('show');
+        Route::post('/update-status/{id}', [OwnerKeluhanController::class, 'updateStatus'])->name('updateStatus');
+    });
+
+    // ================= KOST =================
     Route::resource('kost', App\Http\Controllers\Owner\KostController::class);
     Route::resource('kamar', App\Http\Controllers\Owner\KamarController::class);
 
-    // Booking
+    // ================= BOOKING =================
     Route::get('/booking', [App\Http\Controllers\Owner\BookingController::class, 'index'])->name('booking.index');
+    Route::get('/booking/{booking}', [App\Http\Controllers\Owner\BookingController::class, 'show'])->name('booking.show');
     Route::patch('/booking/{booking}/terima', [App\Http\Controllers\Owner\BookingController::class, 'terima'])->name('booking.terima');
     Route::patch('/booking/{booking}/tolak', [App\Http\Controllers\Owner\BookingController::class, 'tolak'])->name('booking.tolak');
     Route::patch('/booking/{booking}/selesai', [App\Http\Controllers\Owner\BookingController::class, 'selesai'])->name('booking.selesai');
 
-    // Statistik
+    // ================= STATISTIK =================
     Route::get('/statistik', [App\Http\Controllers\Owner\StatistikController::class, 'index'])->name('statistik');
+    Route::get('/export-excel', [App\Http\Controllers\Owner\StatistikController::class, 'exportExcel'])->name('export.excel');
 
-    // Pengaturan
+    // ================= PENGATURAN =================
     Route::get('/pengaturan', [App\Http\Controllers\Owner\PengaturanController::class, 'index'])->name('pengaturan');
     Route::patch('/pengaturan', [App\Http\Controllers\Owner\PengaturanController::class, 'update'])->name('pengaturan.update');
     Route::patch('/pengaturan/password', [App\Http\Controllers\Owner\PengaturanController::class, 'updatePassword'])->name('pengaturan.password');
     Route::patch('/pengaturan/notifikasi', [App\Http\Controllers\Owner\PengaturanController::class, 'updateNotifikasi'])->name('pengaturan.notifikasi');
     Route::delete('/pengaturan/akun', [App\Http\Controllers\Owner\PengaturanController::class, 'hapusAkun'])->name('akun.hapus');
 
-    // ================= ULASAN ================= ✅
+    // ================= ULASAN =================
     Route::get('/ulasan', [App\Http\Controllers\Owner\ReviewController::class, 'index'])->name('review.index');
     Route::post('/ulasan', [App\Http\Controllers\Owner\ReviewController::class, 'store'])->name('review.store');
-});
+    Route::post('/ulasan/{review}/reply', [App\Http\Controllers\Owner\ReviewController::class, 'reply'])->name('review.reply');
+    Route::post('/ulasan/{review}/report', [App\Http\Controllers\Owner\ReviewController::class, 'report'])->name('review.report');
 
+});
+// ================= USER KELUHAN =================
+Route::get('/keluhan', [UserKeluhanController::class, 'index'])->name('keluhan.index');
+Route::get('/keluhan/pilih', [UserKeluhanController::class, 'pilih'])->name('keluhan.pilih');
+Route::get('/keluhan/create/{id}', [UserKeluhanController::class, 'create'])->name('keluhan.create');
+Route::post('/keluhan/store', [UserKeluhanController::class, 'store'])->name('keluhan.store');
 require __DIR__.'/auth.php';

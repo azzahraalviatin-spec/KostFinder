@@ -51,13 +51,15 @@
       <i class="bi bi-graph-up"></i><span>Statistik</span>
     </a>
 
-    {{-- ✅ MENU ULASAN --}}
     <a href="{{ route('owner.review.index') }}"
        class="menu-item {{ request()->routeIs('owner.review.*') ? 'active' : '' }}">
       <i class="bi bi-star"></i><span>Ulasan Saya</span>
-      @if(!auth()->user()->ownerReview)
-       
-      @endif
+    </a>
+
+    {{-- KELUHAN -- fix pakai menu-item bukan nav-link --}}
+    <a href="{{ route('owner.keluhan.index') }}"
+       class="menu-item {{ request()->routeIs('owner.keluhan.*') || request()->is('owner/keluhan*') ? 'active' : '' }}">
+      <i class="bi bi-exclamation-circle"></i><span>Keluhan</span>
     </a>
 
     <div class="menu-label" style="margin-top:.5rem;">AKUN</div>
@@ -87,8 +89,8 @@
       @endif
     </div>
     <div class="user-info">
-      <div class="user-name" style="font-size:.82rem;font-weight:700;">{{ auth()->user()->name }}</div>
-      <div class="user-role" style="display:flex;align-items:center;gap:.3rem;">
+      <div class="user-name" style="font-size:.82rem;font-weight:700;color:#fff;">{{ auth()->user()->name }}</div>
+      <div class="user-role" style="display:flex;align-items:center;gap:.3rem;color:rgba(255,255,255,.7);">
         <span style="width:6px;height:6px;background:#22c55e;border-radius:50%;display:inline-block;"></span>
         Pemilik Kost
       </div>
