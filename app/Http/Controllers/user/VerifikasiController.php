@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class VerifikasiController extends Controller
 {
+    public function index()
+    {
+        return view('user.verifikasi');
+    }
+
     public function updateEmail(Request $request)
     {
         $request->validate([
@@ -23,16 +28,24 @@ class VerifikasiController extends Controller
             ->with('success', 'Email berhasil diperbarui!');
     }
 
-    public function updateHp(Request $request)
-    {
-        $request->validate(['no_hp' => 'required|string|max:20']);
-        
-        auth()->user()->update([
-            'no_hp' => '+62'.$request->no_hp
-        ]);
-    
-        return back()->with('success', 'Nomor HP berhasil diperbarui!');
-    }
+public function updateHP(Request $request)
+{
+    $request->validate([
+        'no_hp' => 'required',
+    ]);
+
+    $user = auth()->user();
+
+    // 🔥 FORMAT +62
+    $user->no_hp = '+62' . ltrim($request->no_hp, '0');
+
+    $user->save();
+
+    // 🔥 WAJIB
+    $user->refresh();
+
+    return back()->with('success', 'Nomor HP berhasil diubah');
+}
     public function updateIdentitas(Request $request)
     {
      

@@ -28,6 +28,13 @@ class PengaturanController extends Controller
             'foto_ktp'         => 'nullable|image|mimes:jpg,jpeg,png|max:3048',
             'foto_selfie'      => 'nullable|image|mimes:jpg,jpeg,png|max:3048',
             'foto_kepemilikan' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5048',
+            'alamat'        => 'nullable|string|max:255',
+'kota_properti' => 'nullable|string|max:100',
+'provinsi'      => 'nullable|string|max:100',
+'kecamatan'     => 'nullable|string|max:100',
+'kelurahan'     => 'nullable|string|max:100',
+'kode_pos'      => 'nullable|string|max:10',
+'maps_url'      => 'nullable|url|max:500',
         ]);
 
         // Upload foto profil
@@ -70,9 +77,16 @@ class PengaturanController extends Controller
         // Update data profil
         if ($request->name)  $user->name  = $request->name;
         if ($request->email) $user->email = $request->email;
-        $user->no_hp = $request->no_hp;
-        $user->kota  = $request->kota;
-        $user->save();
+        $user->no_hp         = $request->no_hp;
+$user->kota          = $request->kota;
+$user->alamat        = $request->alamat;
+$user->kota_properti = $request->kota_properti;
+$user->provinsi      = $request->provinsi;
+$user->kecamatan     = $request->kecamatan;
+$user->kelurahan     = $request->kelurahan;
+$user->kode_pos      = $request->kode_pos;
+$user->maps_url      = $request->maps_url;
+$user->save();
 
         if ($adaDokumenBaru) {
             return back()->with('success', '📋 Dokumen berhasil dikirim! Admin akan memverifikasi dalam 1×24 jam.');

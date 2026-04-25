@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
@@ -11,14 +10,12 @@ use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
-    // Tampilkan form review di dashboard owner
     public function index()
     {
         $owner_review = OwnerReview::where('user_id', Auth::id())->latest()->first();
 
-        // Ulasan penyewa ke kos milik owner ini
         $reviews = Review::whereHas('kost', function ($q) {
-            $q->where('owner_id', Auth::id());
+                $q->where('owner_id', Auth::id());
             })
             ->with(['user', 'reply', 'kost'])
             ->where('status', 'approved')
@@ -26,16 +23,17 @@ class ReviewController extends Controller
             ->get();
 
         $pending_reviews = Review::whereHas('kost', function ($q) {
-            $q->where('owner_id', Auth::id());
+                $q->where('owner_id', Auth::id());
             })
+            ->with(['user', 'kost'])
             ->where('status', 'pending')
             ->latest()
             ->get();
 
-        $belum_dibalas = $reviews->whereNull('reply')->count();
-        $rata_rating = $reviews->avg('rating');
+        $belum_dibalas = $reviews->filter(fn($r) => is_null($r->reply))->count();
+        $rata_rating   = $reviews->avg('rating') ?? 0;
 
-        return view('owner.review', compact(
+        return view('owner.ulasan', compact(
             'owner_review',
             'reviews',
             'pending_reviews',
@@ -44,7 +42,6 @@ class ReviewController extends Controller
         ));
     }
 
-    // Simpan feedback owner ke platform
     public function store(Request $request)
     {
         $request->validate([
@@ -71,19 +68,16 @@ class ReviewController extends Controller
         return back()->with('success', 'Ulasan berhasil dikirim! Menunggu persetujuan admin.');
     }
 
-    // Balas ulasan penyewa
     public function reply(Request $request, Review $review)
     {
         $request->validate([
             'balasan' => 'required|string|min:5|max:500',
         ]);
 
-        // Pastikan review ini milik kos si owner
-        if ($review->kost->user_id !== Auth::id()) {
+        if ($review->kost->owner_id !== Auth::id()) {
             abort(403);
         }
 
-        // Cek sudah dibalas belum
         if ($review->reply) {
             return back()->with('error', 'Ulasan ini sudah dibalas.');
         }
@@ -97,14 +91,13 @@ class ReviewController extends Controller
         return back()->with('success', 'Balasan berhasil dikirim!');
     }
 
-    // Laporkan ulasan
     public function report(Request $request, Review $review)
     {
         $request->validate([
             'report_reason' => 'required|string|min:10|max:300',
         ]);
 
-        if ($review->kost->user_id !== Auth::id()) {
+        if ($review->kost->owner_id !== Auth::id()) {
             abort(403);
         }
 

@@ -382,7 +382,7 @@
 
     {{-- PAGE HEADER --}}
     <div class="page-header">
-      <h4>Kamar {{ $kamar->nomor_kamar }} &mdash; {{ $kamar->kost->nama_kost }}</h4>
+      <h4>{{ $kamar->nomor_kamar }} &mdash; {{ $kamar->kost->nama_kost }}</h4>
       <small class="text-muted">
         <i class="bi bi-geo-alt-fill me-1" style="color:var(--primary)"></i>
         {{ $kamar->kost->alamat }}
@@ -434,7 +434,7 @@
           <h6><i class="bi bi-info-circle"></i> Informasi Kamar</h6>
           <div class="row g-3">
             <div class="col-6">
-              <div class="info-label">Nomor Kamar</div>
+              <div class="info-label">Tipe / Nama Kamar</div>
               <div class="info-value">{{ $kamar->nomor_kamar }}</div>
             </div>
             <div class="col-6">
@@ -464,14 +464,13 @@
               </div>
             </div>
             <div class="col-6">
-              <div class="info-label">Ukuran Kamar</div>
-              <div class="info-value">{{ $kamar->ukuran ?? '-' }}</div>
+              <div class="info-label">Informasi Listrik</div>
+              <div class="info-value">{{ $kamar->listrik ?? 'Belum diatur' }}</div>
             </div>
-          </div>
-        </div>
-        <div class="col-6">
-              <div class="info-label">Ukuran Kamar</div>
-              <div class="info-value">{{ $kamar->ukuran ?? '-' }}</div>
+
+            <div class="col-12">
+              <div class="info-label">Aturan Khusus Kamar</div>
+              <div class="info-value" style="font-style: italic;">{{ $kamar->aturan_kamar ?? '-' }}</div>
             </div>
 
             {{-- TAMBAHKAN INI --}}

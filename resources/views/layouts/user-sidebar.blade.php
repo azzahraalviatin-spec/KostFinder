@@ -14,10 +14,27 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f7f3f0; }
 
-    .uf-body { display: flex; flex-direction: column; min-height: 100vh; }
-    .uf-middle { display: flex; flex: 1; align-items: flex-start; padding: 1rem; gap: 1rem; }
+    /* ══ LAYOUT UTAMA ══
+       uf-body  = flex column, full height
+       uf-wrap  = area tengah (sidebar + konten), flex: 1
+       uf-footer-area = footer yang full width, di luar uf-wrap
+    */
+    .uf-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-    /* ══ SIDEBAR WRAPPER (untuk tombol MENU + sidebar) ══ */
+    /* Wrapper sidebar + konten — flex: 1 agar menekan footer ke bawah */
+    .uf-wrap {
+      display: flex;
+      flex: 1;
+      align-items: flex-start;
+      padding: 1rem;
+      gap: 1rem;
+    }
+
+    /* ══ SIDEBAR WRAPPER ══ */
     .uf-sidebar-wrap {
       flex-shrink: 0;
       display: flex;
@@ -143,7 +160,10 @@
 
     /* ══ MAIN AREA ══ */
     .uf-main-area {
-      flex: 1; display: flex; flex-direction: column; min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
     }
 
     /* Subbar */
@@ -162,13 +182,22 @@
 
     /* Content */
     .uf-content { flex: 1; }
-    @media (max-width: 768px) { .uf-middle { padding: .75rem; gap: .75rem; } }
+
+    /* ══ FOOTER AREA — full width, di luar sidebar ══ */
+    .uf-footer-area {
+      width: 100%;
+      margin-top: auto; /* dorong ke bawah jika konten pendek */
+    }
+
+    @media (max-width: 768px) {
+      .uf-wrap { padding: .75rem; gap: .75rem; }
+    }
 
     /* Mobile */
     @media (max-width: 991px) {
       .uf-sidebar-wrap { position: fixed; top: 70px; left: 1rem; z-index: 500; }
       .uf-sidebar { box-shadow: 0 12px 40px rgba(0,0,0,.2); }
-      .uf-middle { padding-top: 3.5rem; }
+      .uf-wrap { padding-top: 3.5rem; }
     }
 
     .uf-backdrop {
@@ -184,13 +213,15 @@
 
 <div class="uf-body">
 
+  {{-- ══ NAVBAR ══ --}}
   @include('layouts.navigation')
 
   <div class="uf-backdrop" id="ufBackdrop" onclick="closeSidebar()"></div>
 
-  <div class="uf-middle">
+  {{-- ══ TENGAH: Sidebar + Konten ══ --}}
+  <div class="uf-wrap">
 
-    {{-- ══ SIDEBAR WRAP ══ --}}
+    {{-- SIDEBAR WRAP --}}
     <div class="uf-sidebar-wrap" id="ufSidebarWrap">
 
       {{-- Tombol MENU --}}
@@ -235,8 +266,8 @@
           <div class="uf-sb-section">Aktivitas</div>
 
           <a href="{{ route('user.ulasan.index') }}" class="uf-sb-item {{ request()->routeIs('user.ulasan*') ? 'active' : '' }}">
-   <i class="bi bi-star-fill"></i> Ulasanku
-</a>
+            <i class="bi bi-star-fill"></i> Ulasanku
+          </a>
           <a href="{{ route('keluhan.index') }}" class="uf-sb-item {{ request()->routeIs('keluhan*') ? 'active' : '' }}">
             <i class="bi bi-chat-left-text-fill"></i> Keluhanku
           </a>
@@ -247,9 +278,23 @@
           <a href="{{ route('kost.cari') }}" class="uf-sb-item">
             <i class="bi bi-search"></i> Cari Kos
           </a>
-          <a href="{{ route('user.profil') }}" class="uf-sb-item {{ request()->routeIs('user.profil*') ? 'active' : '' }}">
-            <i class="bi bi-person-circle"></i> Profil Saya
-          </a>
+          <div class="uf-sb-item-wrap">
+            <a href="#" onclick="toggleProfilSubmenu(event)" class="uf-sb-item {{ request()->routeIs('user.profil*', 'user.verifikasi*', 'user.pengaturan*') ? 'active' : '' }}">
+              <i class="bi bi-person-circle"></i> Profil Saya
+              <i class="bi bi-chevron-down ms-auto" id="profilChevron" style="font-size:.7rem; transition:transform .3s; {{ request()->routeIs('user.profil*', 'user.verifikasi*', 'user.pengaturan*') ? 'transform:rotate(-180deg);' : '' }}"></i>
+            </a>
+            <div class="uf-sb-submenu" id="profilSubmenu" style="display: {{ request()->routeIs('user.profil*', 'user.verifikasi*', 'user.pengaturan*') ? 'block' : 'none' }}; padding-left: 1.5rem; margin-top: 0.2rem;">
+              <a href="{{ route('user.profil') }}" class="uf-sb-item {{ request()->routeIs('user.profil*') ? 'active' : '' }}" style="font-size: .8rem; padding: .4rem .9rem; margin-bottom: .2rem; min-height: auto;">
+                Data Diri
+              </a>
+           <a href="{{ route('user.verifikasi.index') }}" class="uf-sb-item {{ request()->routeIs('user.verifikasi*') ? 'active' : '' }}" style="font-size: .8rem; padding: .4rem .9rem; margin-bottom: .2rem; min-height: auto;">
+  Verifikasi Akun
+</a>
+<a href="{{ route('user.pengaturan.index') }}" class="uf-sb-item {{ request()->routeIs('user.pengaturan*') ? 'active' : '' }}" style="font-size: .8rem; padding: .4rem .9rem; margin-bottom: .2rem; min-height: auto;">
+  Pengaturan
+</a>
+            </div>
+          </div>
 
           <div class="uf-sb-div" style="margin-top:.5rem;"></div>
           <form method="POST" action="{{ route('logout') }}">
@@ -263,7 +308,7 @@
       </aside>
     </div>
 
-    {{-- ══ MAIN AREA ══ --}}
+    {{-- MAIN AREA (konten halaman) --}}
     <div class="uf-main-area">
 
       <div class="uf-subbar">
@@ -277,13 +322,19 @@
         @yield('content')
       </div>
 
-      @include('layouts.footer')
-
     </div>
+    {{-- akhir .uf-main-area --}}
 
+  </div>
+  {{-- akhir .uf-wrap —— FOOTER HARUS DI LUAR SINI --}}
+
+  {{-- ══ FOOTER: full width dari kiri ke kanan ══ --}}
+  <div class="uf-footer-area">
+    @include('layouts.footer')
   </div>
 
 </div>
+{{-- akhir .uf-body --}}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -297,7 +348,6 @@
     isOpen = !isOpen;
     sidebar.classList.toggle('collapsed', !isOpen);
     chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(-90deg)';
-    // Mobile backdrop
     if (window.innerWidth < 992) {
       backdrop.classList.toggle('open', isOpen);
     }
@@ -310,12 +360,48 @@
     backdrop.classList.remove('open');
   }
 
+  function toggleProfilSubmenu(e) {
+    e.preventDefault();
+    const sub = document.getElementById('profilSubmenu');
+    const chev = document.getElementById('profilChevron');
+    if (sub.style.display === 'none') {
+      sub.style.display = 'block';
+      chev.style.transform = 'rotate(-180deg)';
+    } else {
+      sub.style.display = 'none';
+      chev.style.transform = 'rotate(0deg)';
+    }
+  }
+
   window.addEventListener('resize', () => {
     if (window.innerWidth >= 992) {
       backdrop.classList.remove('open');
     }
   });
 </script>
+
+@if(session('success'))
+<script>
+  Swal.fire({
+    icon: 'success',
+    title: 'Berhasil!',
+    text: '{{ session('success') }}',
+    showConfirmButton: false,
+    timer: 2000
+  });
+</script>
+@endif
+
+@if(session('error'))
+<script>
+  Swal.fire({
+    icon: 'error',
+    title: 'Oops...',
+    text: '{{ session('error') }}',
+    confirmButtonColor: '#E8401C'
+  });
+</script>
+@endif
 
 @yield('scripts')
 </body>

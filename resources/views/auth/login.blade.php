@@ -505,9 +505,19 @@
       }
     }
 
-    @media (max-width: 575px) {
-      .auth-shell {
-        padding: 0;
+@media (max-width: 575px) {
+  .visual-panel { min-height: 80px; }
+  .visual-badge { display: none; }
+  .visual-copy { display: none; }
+  .form-panel {
+    border-radius: 24px 24px 0 0;
+    margin-top: -24px;
+    position: relative;
+    z-index: 2;
+  }
+
+
+
       }
 
       .auth-card {
@@ -535,6 +545,46 @@
         margin-bottom: 24px;
       }
     }
+
+    @media (max-width: 575px) {
+  .auth-shell { padding: 0; }
+  .auth-card {
+    border-radius: 0;
+    min-height: 100vh;
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+  .visual-panel {
+    order: 1;
+    min-height: 240px;
+    flex-shrink: 0;
+  }
+  .visual-content { padding: 28px 20px; }
+  .visual-title { font-size: 1.5rem; }
+  .visual-text, .visual-caption { display: none; }
+  .visual-badge { font-size: .78rem; padding: 8px 12px; }
+  .form-panel {
+    order: 2;
+    flex: 1;
+    padding: 24px 18px 32px;
+    border-radius: 24px 24px 0 0;
+    margin-top: -20px;
+    position: relative;
+    z-index: 2;
+    background: #fff;
+  }
+  .brand-link { margin-bottom: 16px; }
+  .brand-icon { width: 44px; height: 44px; font-size: 1.1rem; border-radius: 14px; }
+  .brand-title { font-size: 1.1rem; }
+  .brand-subtitle { font-size: .78rem; }
+  .form-title { font-size: 1.4rem; }
+  .form-lead { font-size: .85rem; margin-bottom: 16px; }
+  .highlight-row { display: none; }
+  .form-control { min-height: 50px; font-size: .88rem; }
+  .btn-login { min-height: 50px; font-size: .9rem; }
+  .btn-google { min-height: 48px; font-size: .88rem; }
+}
   </style>
 </head>
 <body>

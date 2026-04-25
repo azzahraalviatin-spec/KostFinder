@@ -1126,7 +1126,7 @@
         <div class="split-header reveal">
             <div class="kicker">Maju Bersama KostFinder</div>
             <h2 class="sec-h serif">Kelola kos secara mandiri atau<br>serahkan ke sistem yang lebih rapi.</h2>
-            <p class="sec-sub" style="max-width:580px;">
+            <p class="sec-sub" style="max-width:580px; margin-inline:auto;">
                 Dengan berbagai produk dan layanan, Anda bisa pilih cara pengelolaan yang paling sesuai dengan kebutuhan bisnis properti Anda.
             </p>
 
@@ -1135,8 +1135,8 @@
                 <button class="split-tab active" onclick="switchTab('mandiri', this)">
                     <i class="bi bi-person-check"></i> Kelola Kos Mandiri
                 </button>
-                <button class="split-tab" onclick="switchTab('managed', this)">
-                    <i class="bi bi-stars"></i> Dikelola KostFinder
+                <button class="split-tab" style="opacity: 0.7; cursor: not-allowed;" onclick="alert('Fitur Dikelola KostFinder akan segera rilis! Untuk saat ini, silakan jelajahi fitur Kelola Kos Mandiri terlebih dahulu.'); return false;">
+                    <i class="bi bi-stars"></i> Dikelola KostFinder <span style="font-size:0.7rem; background:var(--g); color:#fff; padding:2px 6px; border-radius:4px; margin-left:4px;">Segera</span>
                 </button>
             </div>
         </div>

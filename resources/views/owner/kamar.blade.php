@@ -157,7 +157,7 @@
                   <i class="bi bi-house" style="font-size:.7rem;color:var(--primary);"></i>
                   {{ $room->kost->nama_kost ?? '—' }}
                 </div>
-                <div class="kamar-nomor">Kamar {{ $room->nomor_kamar }}</div>
+                <div class="kamar-nomor">{{ $room->nomor_kamar }}</div>
 
                 {{-- Harga --}}
                 <div class="mt-1">
@@ -177,6 +177,9 @@
                 <div class="kamar-info">
                   @if($room->tipe_kamar)
                     <span class="kamar-tag"><i class="bi bi-tag" style="font-size:.65rem;"></i>{{ $room->tipe_kamar }}</span>
+                  @endif
+                  @if($room->listrik)
+                    <span class="kamar-tag"><i class="bi bi-lightning-charge" style="font-size:.65rem;"></i>{{ $room->listrik }}</span>
                   @endif
                   @if($room->luas_kamar)
                     <span class="kamar-tag"><i class="bi bi-arrows-angle-expand" style="font-size:.65rem;"></i>{{ $room->luas_kamar }} m²</span>

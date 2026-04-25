@@ -19,7 +19,7 @@ class ReviewController extends Controller
         // Ambil ulasan yang dibuat oleh user yang sedang login
         $reviews = Review::where('user_id', auth()->id())->get();
 
-        return view('user.ulasan.index', compact('reviews'));
+        return view('user.ulasan', compact('reviews'));
     }
 
     /**

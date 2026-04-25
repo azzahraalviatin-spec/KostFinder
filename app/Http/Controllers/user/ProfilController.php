@@ -52,7 +52,7 @@ class ProfilController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('user.profil.edit')
-            ->with('success', 'Profil berhasil diperbarui!');
+        return redirect()->route('user.profil', ['tab' => 'profil'])
+            ->with('status', 'profile-updated');
     }
 }

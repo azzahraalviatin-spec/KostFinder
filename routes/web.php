@@ -45,6 +45,8 @@ Route::middleware(['auth', 'role.user'])->prefix('user')->name('user.')->group(f
     Route::delete('/favorit/{id}', [App\Http\Controllers\User\FavoritController::class, 'destroy'])->name('favorit.destroy');
     Route::post('/review', [App\Http\Controllers\User\ReviewController::class, 'store'])->name('review.store');
     Route::get('/ulasan', [App\Http\Controllers\User\ReviewController::class, 'index'])->name('ulasan.index');
+Route::get('/verifikasi', [App\Http\Controllers\User\VerifikasiController::class, 'index'])->name('verifikasi.index');
+Route::get('/pengaturan', [App\Http\Controllers\User\PengaturanController::class, 'index'])->name('pengaturan.index');
 });
 
 // ── DASHBOARD ADMIN ──
@@ -116,7 +118,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 // ── OWNER ROUTES ──
 Route::prefix('owner')->name('owner.')->middleware(['auth', 'role.owner'])->group(function () {
 
@@ -165,4 +166,8 @@ Route::get('/keluhan', [UserKeluhanController::class, 'index'])->name('keluhan.i
 Route::get('/keluhan/pilih', [UserKeluhanController::class, 'pilih'])->name('keluhan.pilih');
 Route::get('/keluhan/create/{id}', [UserKeluhanController::class, 'create'])->name('keluhan.create');
 Route::post('/keluhan/store', [UserKeluhanController::class, 'store'])->name('keluhan.store');
+// Fallback: jika ada yang akses /logout via GET, redirect ke home
+Route::get('/logout', function () {
+    return redirect('/');
+})->name('logout.get');
 require __DIR__.'/auth.php';

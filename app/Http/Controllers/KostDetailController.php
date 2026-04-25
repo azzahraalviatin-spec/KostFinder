@@ -37,8 +37,23 @@ class KostDetailController extends Controller
 
         if ($request->filled('fasilitas')) {
             foreach ($request->fasilitas as $f) {
-                $query->whereJsonContains('fasilitas', $f);
+                $query->where(function ($q) use ($f) {
+                    $q->whereJsonContains('fasilitas', $f)
+                      ->orWhereHas('rooms', function ($qRoom) use ($f) {
+                          $qRoom->whereJsonContains('fasilitas', $f);
+                      });
+                });
             }
+        }
+
+        if ($request->filled('aturan')) {
+            foreach ($request->aturan as $a) {
+                $query->whereJsonContains('aturan', $a);
+            }
+        }
+
+        if ($request->filled('q_aturan')) {
+            $query->where('aturan', 'like', '%' . $request->q_aturan . '%');
         }
 
         match ($request->get('sort', 'terbaru')) {
@@ -73,7 +88,16 @@ return view('cari-kost', compact('kosts', 'kostsMap'));
         abort_if($kost->status != 'aktif', 404);
         abort_if($kost->owner->status_verifikasi_identitas !== 'disetujui', 404);
 
-        $kost->load(['rooms.images', 'reviews.user', 'owner', 'bookings']);
+        $kost->load(['rooms.images', 'owner', 'bookings', 'reviews' => function($q) {
+            $q->where('status', 'approved')->with(['user', 'reply']);
+        }]);
+
+        if (auth()->check()) {
+            \App\Models\RecentlyViewedKost::updateOrCreate(
+                ['user_id' => auth()->id(), 'kost_id' => $kost->id_kost],
+                ['updated_at' => now()]
+            );
+        }
 
         $viewed = session('recently_viewed', []);
         $viewed = array_filter($viewed, fn($id) => $id != $kost->id_kost);

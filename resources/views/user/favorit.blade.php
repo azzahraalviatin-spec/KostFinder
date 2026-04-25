@@ -92,6 +92,8 @@
   $tab  = request('tab', 'favorit');
   $favorit = \App\Models\Favorite::where('user_id', $user->id)
               ->with('kost')->latest()->get();
+  $dilihat = \App\Models\RecentlyViewedKost::where('user_id', $user->id)
+              ->with('kost')->orderBy('updated_at', 'desc')->get();
 @endphp
 
 {{-- TABS --}}
@@ -144,10 +146,67 @@
 @endif
 
 @if($tab == 'dilihat')
-  <div class="empty-box">
-    <i class="bi bi-eye"></i>
-    <p>Belum ada riwayat kos yang dilihat.</p>
-  </div>
+  @if($dilihat->count())
+    <div style="display:flex; justify-content:flex-end; margin-bottom: 1rem;">
+      <form id="formClearHistory" action="{{ route('user.favorit.clearHistory') }}" method="POST">
+        @csrf @method('DELETE')
+        <button type="button" onclick="confirmClearHistory()" style="background:#fff; border:1px solid #fecaca; color:#dc2626; padding:.4rem .85rem; border-radius:.5rem; font-size:.8rem; font-weight:600; cursor:pointer; transition:all .2s;">
+          <i class="bi bi-trash3"></i> Hapus Riwayat
+        </button>
+      </form>
+    </div>
+    
+    <div class="fav-grid">
+      @foreach($dilihat as $view)
+        @if($view->kost)
+        <div class="kost-card">
+          <div class="kost-card-img">
+            @if($view->kost->foto_utama)
+              <img src="{{ asset('storage/'.$view->kost->foto_utama) }}">
+            @else
+              <div style="height:155px;display:flex;align-items:center;justify-content:center;background:#f7f3f0;font-size:2.5rem;">🏠</div>
+            @endif
+            <span class="kost-badge">{{ $view->kost->tipe_kost ?? 'Kos' }}</span>
+          </div>
+          <div class="kost-card-body">
+            <div class="kost-name">{{ $view->kost->nama_kost }}</div>
+            <div class="kost-loc"><i class="bi bi-geo-alt"></i> {{ $view->kost->kota }}</div>
+            <span class="kost-type">Kos {{ $view->kost->tipe_kost }}</span>
+            <div class="kost-price">Rp {{ number_format($view->kost->harga_mulai ?? 0, 0, ',', '.') }}/bulan</div>
+            <div style="font-size:0.7rem; color:#8fa3b8; margin-top:0.4rem;"><i class="bi bi-clock-history"></i> Dilihat {{ $view->updated_at->diffForHumans() }}</div>
+            <a href="{{ route('kost.show', $view->kost->id_kost) }}" class="btn-lihat" style="background:#f0f4f8; color:#475569;">Lihat Kembali</a>
+          </div>
+        </div>
+        @endif
+      @endforeach
+    </div>
+  @else
+    <div class="empty-box">
+      <i class="bi bi-eye"></i>
+      <p>Belum ada riwayat kos yang dilihat.</p>
+    </div>
+  @endif
 @endif
 
+@endsection
+
+@section('scripts')
+<script>
+  function confirmClearHistory() {
+    Swal.fire({
+      title: 'Hapus Riwayat?',
+      text: "Semua riwayat kos yang pernah Anda lihat akan dihapus.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#8fa3b8',
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById('formClearHistory').submit();
+      }
+    })
+  }
+</script>
 @endsection

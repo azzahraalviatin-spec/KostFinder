@@ -284,21 +284,12 @@
     <div class="container-fluid px-3 px-md-4">
         <div class="d-flex gap-2 overflow-auto pb-1" style="scrollbar-width:none">
         <div class="tipe-wrap">
-    <button class="filter-pill {{ request('tipe') ? 'active' : '' }}" onclick="toggleTipe(event)">
-        <i class="bi bi-people"></i> 
-        {{ request('tipe') ?: 'Semua Tipe Kos' }} 
-        <i class="bi bi-chevron-down ms-1"></i>
-    </button>
-
-    <div class="tipe-panel" id="panelTipe">
-        <h6 class="fw-bold mb-3">Pilih Kategori</h6>
-        <div class="tipe-row" onclick="filterGender('Putra')">👦 Putra</div>
-        <div class="tipe-row" onclick="filterGender('Putri')">👧 Putri</div>
-        <div class="tipe-row" onclick="filterGender('Campur')">👫 Campur</div>
-        <hr>
-        <button class="btn btn-sm text-danger w-100" onclick="filterGender('')">Hapus Filter</button>
-    </div>
-</div>
+            <button class="filter-pill {{ request('tipe') ? 'active' : '' }}" data-bs-toggle="modal" data-bs-target="#modalTipe">
+                <i class="bi bi-people"></i> 
+                {{ request('tipe') ?: 'Semua Tipe Kos' }} 
+                <i class="bi bi-chevron-down ms-1"></i>
+            </button>
+        </div>
 
 
             <button class="filter-pill {{ request('durasi') ? 'active':'' }}" data-bs-toggle="modal" data-bs-target="#modalDurasi">
@@ -350,10 +341,12 @@
             @foreach($kosts as $kost)
             @php
                 $tipe          = strtolower($kost->tipe_kost ?? 'campur');
-                $fas           = is_array($kost->fasilitas) ? $kost->fasilitas : [];
+                $fas           = $kost->fasilitas;
+                if (is_string($fas)) $fas = json_decode($fas, true);
+                if (!is_array($fas)) $fas = [];
                 $kamarTersedia = $kost->kamar_tersedia ?? 0;
                 $kamarTotal    = $kost->kamar_total ?? 0;
-                  @endphp
+            @endphp
                   <a href="{{ route('kost.show', $kost->id_kost) }}"
                class="kost-card" id="card-{{ $kost->id_kost }}"
                onmouseenter="highlightMarker({{ $kost->id_kost }})"
@@ -436,6 +429,36 @@
     </div>
 
     <div class="map-panel"><div id="map"></div></div>
+</div>
+
+{{-- MODAL TIPE KOS --}}
+<div class="modal fade" id="modalTipe" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">Pilih Kategori Kos</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('kost.cari') }}" method="GET">
+                @if(request('q')) <input type="hidden" name="q" value="{{ request('q') }}">@endif
+                <div class="modal-body">
+                    <p style="font-size:.85rem;color:#64748b">Pilih tipe kos sesuai kebutuhanmu.</p>
+                    <div class="d-flex flex-column gap-2">
+                        @foreach(['Putra'=>'👦 Putra', 'Putri'=>'👧 Putri', 'Campur'=>'👫 Campur'] as $val=>$label)
+                        <label class="d-flex align-items-center gap-3 p-3 rounded-3 border" style="cursor:pointer;border-color:#e2e8f0 !important">
+                            <input type="radio" name="tipe" value="{{ $val }}" class="form-check-input m-0" {{ request('tipe')==$val ? 'checked':'' }}>
+                            <span style="font-size:.9rem;font-weight:500">{{ $label }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <a href="{{ route('kost.cari', request()->except(['tipe'])) }}" class="btn btn-light rounded-pill px-4">Reset</a>
+                    <button type="submit" class="btn rounded-pill px-4 text-white fw-semibold" style="background:var(--primary)">Terapkan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 {{-- MODAL HARGA --}}
@@ -618,31 +641,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
- function toggleTipe(e) {
-        e.stopPropagation(); 
-        const panel = document.getElementById('panelTipe');
-        // Tutup pop-up lain jika ada
-        document.querySelectorAll('.tipe-panel').forEach(p => {
-            if(p !== panel) p.classList.remove('show');
-        });
-        panel.classList.toggle('show');
-    }
-
-    function filterGender(tipe) {
-        const url = new URL(window.location.href);
-        if (tipe) {
-            url.searchParams.set('tipe', tipe);
-        } else {
-            url.searchParams.delete('tipe');
-        }
-        window.location.href = url.href; // Halaman refresh, tombol otomatis orange karena class active di Blade
-    }
-
-    // Klik di luar buat nutup
-    window.onclick = function(event) {
-        const panel = document.getElementById('panelTipe');
-        if (panel) panel.classList.remove('show');
-    };
     // 2. INISIALISASI MAP (Hanya satu kali)
     let map, markers = {}, allBounds = [];
     const kostsData = @json($kostsMap->values());

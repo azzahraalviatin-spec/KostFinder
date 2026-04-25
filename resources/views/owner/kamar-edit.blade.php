@@ -86,8 +86,9 @@
             </div>
 
             <div class="col-md-6">
-              <label class="form-label">Nomor Kamar</label>
-              <input type="text" name="nomor_kamar" class="form-control" value="{{ old('nomor_kamar', $kamar->nomor_kamar) }}" required>
+              <label class="form-label">Tipe / Nama Kamar</label>
+              <input type="text" name="nomor_kamar" class="form-control" value="{{ old('nomor_kamar', $kamar->nomor_kamar) }}" placeholder="Contoh: Tipe A, Kamar 101, dll" required>
+              <small class="text-muted">Gunakan ini sebagai identitas kamar.</small>
             </div>
 
             <div class="col-12">
@@ -145,14 +146,24 @@
               </select>
             </div>
             <div class="col-md-6">
-  <label class="form-label">Tipe Kamar</label>
-  <select name="tipe_kamar" class="form-select">
-    <option value="">-- Pilih Tipe --</option>
-    <option value="Standard" {{ old('tipe_kamar', $kamar->tipe_kamar) === 'Standard' ? 'selected' : '' }}>Standard</option>
-    <option value="Deluxe" {{ old('tipe_kamar', $kamar->tipe_kamar) === 'Deluxe' ? 'selected' : '' }}>Deluxe</option>
-    <option value="VIP" {{ old('tipe_kamar', $kamar->tipe_kamar) === 'VIP' ? 'selected' : '' }}>VIP</option>
-  </select>
-</div>
+              <label class="form-label">Kategori Tipe</label>
+              <select name="tipe_kamar" class="form-select">
+                <option value="">-- Pilih Kategori --</option>
+                <option value="Standard" {{ old('tipe_kamar', $kamar->tipe_kamar) === 'Standard' ? 'selected' : '' }}>Standard</option>
+                <option value="Deluxe" {{ old('tipe_kamar', $kamar->tipe_kamar) === 'Deluxe' ? 'selected' : '' }}>Deluxe</option>
+                <option value="VIP" {{ old('tipe_kamar', $kamar->tipe_kamar) === 'VIP' ? 'selected' : '' }}>VIP</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Informasi Listrik</label>
+              <select name="listrik" class="form-select">
+                <option value="">-- Pilih Info Listrik --</option>
+                <option value="Termasuk Listrik" {{ old('listrik', $kamar->listrik) === 'Termasuk Listrik' ? 'selected' : '' }}>Sudah Termasuk Listrik</option>
+                <option value="Token Sendiri" {{ old('listrik', $kamar->listrik) === 'Token Sendiri' ? 'selected' : '' }}>Beli Token Sendiri (Meteran di kamar)</option>
+                <option value="Bayar Sesuai Pemakaian" {{ old('listrik', $kamar->listrik) === 'Bayar Sesuai Pemakaian' ? 'selected' : '' }}>Bayar di luar sewa (Sesuai pemakaian)</option>
+              </select>
+            </div>
 
 <div class="col-md-6">
   <label class="form-label">Ukuran Kamar</label>
@@ -162,6 +173,12 @@
 <div class="col-12">
   <label class="form-label">Deskripsi Kamar</label>
   <textarea name="deskripsi" rows="2" class="form-control" placeholder="Contoh: Kamar nyaman dengan ventilasi baik">{{ old('deskripsi', $kamar->deskripsi) }}</textarea>
+</div>
+
+<div class="col-12">
+  <label class="form-label">Aturan Khusus Kamar</label>
+  <textarea name="aturan_kamar" rows="2" class="form-control" placeholder="Contoh: Maksimal 2 orang, Tidak boleh membawa hewan, dll">{{ old('aturan_kamar', $kamar->aturan_kamar) }}</textarea>
+  <small class="text-muted">Opsional, isi jika ada aturan spesifik untuk tipe kamar ini.</small>
 </div>
 <div class="col-12">
   <label class="form-label">Fasilitas Kamar</label>

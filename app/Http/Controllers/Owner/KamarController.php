@@ -34,13 +34,15 @@ class KamarController extends Controller
     {
         $validated = $request->validate([
             'kost_id'         => 'required|exists:kosts,id_kost',
-            'nomor_kamar'     => 'required|string|max:50',
+            'nomor_kamar'     => 'nullable|string|max:50',
             'harga_per_bulan' => 'nullable|integer|min:0',
             'harga_harian'    => 'nullable|integer|min:0',
             'status_kamar'    => 'required|in:tersedia,terisi',
             'tipe_kamar'      => 'nullable|string',
             'ukuran'          => 'nullable|string|max:50',
             'deskripsi'       => 'nullable|string',
+            'aturan_kamar'    => 'nullable|string',
+            'listrik'         => 'nullable|string|max:100',
             'fasilitas'       => 'nullable|array',
             'fasilitas.*'     => 'string',
            'foto_kamar'      => 'nullable|array',
@@ -53,7 +55,7 @@ class KamarController extends Controller
 
         $room = Room::create([
             'kost_id'         => $kost->id_kost,
-            'nomor_kamar'     => $validated['nomor_kamar'],
+            'nomor_kamar'     => $validated['nomor_kamar'] ?? $validated['tipe_kamar'],
             'harga_per_bulan' => $validated['harga_per_bulan'] ?? 0,
             'harga_harian'    => $validated['harga_harian'] ?? null,
             'aktif_bulanan'   => $request->has('aktif_bulanan') ? 1 : 0,
@@ -62,6 +64,8 @@ class KamarController extends Controller
             'tipe_kamar'      => $validated['tipe_kamar'] ?? null,
             'ukuran'          => $validated['ukuran'] ?? null,
             'deskripsi'       => $validated['deskripsi'] ?? null,
+            'aturan_kamar'    => $validated['aturan_kamar'] ?? null,
+            'listrik'         => $validated['listrik'] ?? null,
             'fasilitas'       => $validated['fasilitas'] ?? null,
         ]);
 
@@ -109,13 +113,15 @@ class KamarController extends Controller
 
         $validated = $request->validate([
             'kost_id'         => 'required|exists:kosts,id_kost',
-            'nomor_kamar'     => 'required|string|max:50',
+            'nomor_kamar'     => 'nullable|string|max:50',
             'harga_per_bulan' => 'nullable|integer|min:0',
             'harga_harian'    => 'nullable|integer|min:0',
             'status_kamar'    => 'required|in:tersedia,terisi',
             'tipe_kamar'      => 'nullable|string',
             'ukuran'          => 'nullable|string|max:50',
             'deskripsi'       => 'nullable|string',
+            'aturan_kamar'    => 'nullable|string',
+            'listrik'         => 'nullable|string|max:100',
             'fasilitas'       => 'nullable|array',
             'fasilitas.*'     => 'string',
 'foto_kamar'      => 'nullable|array',
@@ -128,7 +134,7 @@ class KamarController extends Controller
 
         $kamar->update([
             'kost_id'         => $kost->id_kost,
-            'nomor_kamar'     => $validated['nomor_kamar'],
+            'nomor_kamar'     => $validated['nomor_kamar'] ?? $validated['tipe_kamar'],
             'harga_per_bulan' => $validated['harga_per_bulan'] ?? 0,
             'harga_harian'    => $validated['harga_harian'] ?? null,
             'aktif_bulanan'   => $request->has('aktif_bulanan') ? 1 : 0,
@@ -137,6 +143,8 @@ class KamarController extends Controller
             'tipe_kamar'      => $validated['tipe_kamar'] ?? null,
             'ukuran'          => $validated['ukuran'] ?? null,
             'deskripsi'       => $validated['deskripsi'] ?? null,
+            'aturan_kamar'    => $validated['aturan_kamar'] ?? null,
+            'listrik'         => $validated['listrik'] ?? null,
             'fasilitas'       => $validated['fasilitas'] ?? null,
         ]);
 

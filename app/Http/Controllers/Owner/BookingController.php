@@ -10,7 +10,7 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->query('status', 'semua');
+        $status          = $request->query('status', 'semua');
         $allowedStatuses = ['pending', 'diterima', 'ditolak', 'selesai'];
 
         if (!in_array($status, $allowedStatuses, true) && $status !== 'semua') {
@@ -18,13 +18,13 @@ class BookingController extends Controller
         }
 
         $allBookings = $this->ownerBookingsQuery()->get();
-        $bookings = $status === 'semua'
+        $bookings    = $status === 'semua'
             ? $allBookings
             : $allBookings->where('status_booking', $status)->values();
 
         return view('owner.booking', [
-            'allBookings' => $allBookings,
-            'bookings' => $bookings,
+            'allBookings'  => $allBookings,
+            'bookings'     => $bookings,
             'activeStatus' => $status,
         ]);
     }
@@ -32,7 +32,6 @@ class BookingController extends Controller
     public function show(Booking $booking)
     {
         $booking = $this->findOwnerBooking($booking->getKey());
-
         return view('owner.booking-show', compact('booking'));
     }
 
@@ -49,22 +48,36 @@ class BookingController extends Controller
         $request->validate([
             'alasan_batal' => 'nullable|string|max:300',
         ]);
-    
+
         $booking = $this->findOwnerBooking($booking->getKey());
         $booking->update([
             'status_booking' => 'ditolak',
             'alasan_batal'   => $request->alasan_batal ?? 'Tidak ada alasan yang diberikan.',
         ]);
-    
+
         return back()->with('success', 'Booking berhasil ditolak!');
     }
 
     public function selesai(Booking $booking)
     {
         $booking = $this->findOwnerBooking($booking->getKey());
-        $booking->update(['status_booking' => 'selesai']);
 
-        return back()->with('success', 'Booking ditandai selesai!');
+        // ── HITUNG PENDAPATAN ──
+        // Ambil total_harga dari booking, fallback ke harga kamar × durasi
+        $totalHarga = $booking->total_harga
+            ?? (($booking->room->harga ?? 0) * ($booking->durasi_sewa ?? 1));
+
+        // Komisi admin 10%, pendapatan owner 90%
+        $komisiAdmin      = round($totalHarga * 0.10);
+        $pendapatanOwner  = $totalHarga - $komisiAdmin;
+
+        $booking->update([
+            'status_booking'    => 'selesai',
+            'komisi_admin'      => $komisiAdmin,
+            'pendapatan_owner'  => $pendapatanOwner,
+        ]);
+
+        return back()->with('success', 'Booking ditandai selesai! Pendapatan Rp ' . number_format($pendapatanOwner, 0, ',', '.') . ' telah dicatat.');
     }
 
     private function ownerBookingsQuery()

@@ -77,16 +77,6 @@
 @php
   $user = auth()->user();
 
-  // Ambil keluhan user - sesuaikan model dengan yang ada di project
-  $keluhanList = [];
-  try {
-    $keluhanList = \App\Models\Keluhan::where('user_id', $user->id)
-                    ->with(['booking.room.kost'])
-                    ->latest()->get();
-  } catch(\Exception $e) {
-    $keluhanList = collect([]);
-  }
-
   // Booking aktif/selesai untuk pilihan keluhan
   $bookingAktif = \App\Models\Booking::where('user_id', $user->id)
                    ->whereIn('status_booking', ['diterima', 'selesai'])
@@ -111,17 +101,19 @@
   @endif
 
   {{-- LIST KELUHAN --}}
-  @if($keluhanList->count())
-    @foreach($keluhanList as $keluhan)
+  @if($keluhans->count())
+    @foreach($keluhans as $keluhan)
     @php
-      $st = $keluhan->status ?? 'open';
+      $st = $keluhan->status ?? 'pending';
       $stClass = match($st) {
+        'diproses' => 'badge-proses',
         'proses'  => 'badge-proses',
         'selesai' => 'badge-selesai',
         'ditolak' => 'badge-ditolak',
         default   => 'badge-open',
       };
       $stLabel = match($st) {
+        'diproses' => '🔄 Diproses',
         'proses'  => '🔄 Diproses',
         'selesai' => '✅ Selesai',
         'ditolak' => '❌ Ditolak',
@@ -137,8 +129,8 @@
         <span class="badge-status {{ $stClass }}">{{ $stLabel }}</span>
       </div>
 
-      <div class="keluhan-judul">{{ $keluhan->judul ?? 'Keluhan' }}</div>
-      <div class="keluhan-isi">{{ $keluhan->isi ?? $keluhan->deskripsi ?? '-' }}</div>
+      <div class="keluhan-judul">{{ $keluhan->jenis ?? 'Keluhan' }}</div>
+      <div class="keluhan-isi">{{ $keluhan->deskripsi ?? '-' }}</div>
       <div class="keluhan-date">
         <i class="bi bi-clock"></i>
         {{ \Carbon\Carbon::parse($keluhan->created_at)->translatedFormat('d F Y, H:i') }}
@@ -173,7 +165,7 @@
   <div style="background:#fff;border-radius:1rem;padding:1.6rem;width:100%;max-width:460px;margin:1rem;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;">
     <div style="font-weight:800;font-size:.98rem;color:var(--dark);margin-bottom:1rem;">📢 Buat Keluhan</div>
 
-    <form method="POST" action="#">
+    <form method="POST" action="{{ route('keluhan.store') }}">
       @csrf
 
       <div class="mb-3">
@@ -189,13 +181,13 @@
       </div>
 
       <div class="mb-3">
-        <label style="font-size:.8rem;font-weight:700;color:#444;margin-bottom:.4rem;display:block;">Judul Keluhan:</label>
-        <input type="text" name="judul" class="form-control form-control-sm" placeholder="Contoh: AC rusak, kamar bocor, dll" style="border-radius:.6rem;font-size:.82rem;" required>
+        <label style="font-size:.8rem;font-weight:700;color:#444;margin-bottom:.4rem;display:block;">Jenis Keluhan:</label>
+        <input type="text" name="jenis" class="form-control form-control-sm" placeholder="Contoh: AC rusak, kamar bocor, dll" style="border-radius:.6rem;font-size:.82rem;" required>
       </div>
 
       <div class="mb-3">
         <label style="font-size:.8rem;font-weight:700;color:#444;margin-bottom:.4rem;display:block;">Deskripsi:</label>
-        <textarea name="isi" class="form-control" rows="4" placeholder="Ceritakan keluhanmu secara detail..." style="font-size:.82rem;border-radius:.6rem;resize:none;" required></textarea>
+        <textarea name="deskripsi" class="form-control" rows="4" placeholder="Ceritakan keluhanmu secara detail..." style="font-size:.82rem;border-radius:.6rem;resize:none;" required></textarea>
       </div>
 
       <div class="d-flex gap-2">

@@ -130,7 +130,11 @@
                 <option value="diproses" {{ $keluhan->status == 'diproses' ? 'selected' : '' }}>🔄 Diproses</option>
                 <option value="selesai"  {{ $keluhan->status == 'selesai'  ? 'selected' : '' }}>✅ Selesai</option>
               </select>
-              <button type="submit" class="btn-update"><i class="bi bi-check-circle"></i> Simpan Perubahan</button>
+
+              <div style="font-size:.78rem;font-weight:700;color:#374151;margin-bottom:.4rem;margin-top:.8rem;">Balasan untuk Penghuni (Opsional)</div>
+              <textarea name="balasan" class="select-status" rows="3" placeholder="Tulis tanggapan atau solusi untuk keluhan ini..." style="resize:none;">{{ $keluhan->balasan }}</textarea>
+
+              <button type="submit" class="btn-update mt-2"><i class="bi bi-check-circle"></i> Simpan Perubahan</button>
             </form>
           </div>
         </div>

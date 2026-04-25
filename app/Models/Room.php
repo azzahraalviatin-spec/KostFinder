@@ -21,6 +21,8 @@ class Room extends Model
         'ukuran',
         'deskripsi',
         'fasilitas',
+        'aturan_kamar',
+        'listrik',
     ];
 
     protected $casts = [

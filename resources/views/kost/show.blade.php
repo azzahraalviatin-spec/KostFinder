@@ -693,6 +693,15 @@ body { background: var(--bg); }
                   </div>
                   <div style="font-size:.76rem;color:#f59e0b;margin:.18rem 0;">@for($i=1;$i<=5;$i++)<i class="bi bi-star{{ $i<=$rv->rating?'-fill':'' }}"></i>@endfor</div>
                   @if($rv->komentar)<p style="font-size:.79rem;color:#555;margin:0;line-height:1.55;">{{ $rv->komentar }}</p>@endif
+                  
+                  @if($rv->reply)
+                  <div style="background:#f8fafc; border-left:3px solid var(--primary); padding:10px 12px; margin-top:12px; border-radius:6px;">
+                    <div style="font-weight:700; font-size:0.75rem; color:var(--primary); margin-bottom:4px; display:flex; align-items:center; gap:5px;">
+                      <i class="bi bi-reply-fill"></i> Balasan dari Pemilik Kos
+                    </div>
+                    <div style="font-size:0.78rem; color:#475569; line-height:1.5;">{{ $rv->reply->balasan }}</div>
+                  </div>
+                  @endif
                 </div>
               </div>
             </div>

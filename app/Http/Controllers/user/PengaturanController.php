@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Auth;
 
 class PengaturanController extends Controller
 {
+public function index()
+{
+    return view('user.pengaturan');
+}
     public function updatePrivasi(Request $request)
     {
         $user = Auth::user();

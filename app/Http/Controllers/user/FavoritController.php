@@ -54,13 +54,22 @@ class FavoritController extends Controller
         return redirect()->route('user.favorit')
             ->with('success', 'Kos berhasil dihapus dari favorit!');
     }
-    public function destroy($id)
+    public function destroy(\Illuminate\Http\Request $request, $id)
     {
         $fav = \App\Models\Favorite::where('id', $id)
                     ->where('user_id', auth()->id())  // ← keamanan
                     ->firstOrFail();
         $fav->delete();
     
-        return response()->json(['success' => true]);
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+        return back()->with('success', 'Kos dihapus dari favorit.');
+    }
+
+    public function clearHistory()
+    {
+        \App\Models\RecentlyViewedKost::where('user_id', auth()->id())->delete();
+        return back()->with('success', 'Riwayat berhasil dihapus!');
     }
 }
