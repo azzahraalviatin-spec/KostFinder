@@ -31,125 +31,140 @@
 @php $user = auth()->user(); @endphp
 
 @if(session('success'))
-<div class="alert alert-success" style="border-radius:.75rem;font-size:.85rem;">✅ {{ session('success') }}</div>
+<div class="alert alert-success d-flex align-items-center" style="border-radius:1rem; font-size:.85rem; border:none; background:#ecfdf5; color:#065f46; box-shadow:0 4px 12px rgba(0,0,0,.03); margin-bottom:1.5rem;">
+  <i class="bi bi-check-circle-fill me-2"></i>
+  <div>{{ session('success') }}</div>
+</div>
 @endif
 
-{{-- GANTI PASSWORD --}}
-<div class="setting-section">
-  <div class="setting-title"><i class="bi bi-lock-fill" style="color:var(--primary);"></i> Ganti Password</div>
-  <form method="POST" action="{{ route('user.profil.update') }}" class="form-setting">
-    @csrf @method('PATCH')
-    <input type="hidden" name="section" value="password">
-    <div class="mb-2">
-      <label>Password Lama</label>
-      <input type="password" name="current_password" class="form-control" placeholder="••••••••" required>
-      @error('current_password')<div style="color:#dc2626;font-size:.75rem;margin-top:.3rem;">{{ $message }}</div>@enderror
+<div class="row g-4">
+  
+  {{-- KIRI: GANTI PASSWORD --}}
+  <div class="col-12 col-lg-6">
+    <div class="setting-section h-100">
+      <div class="setting-title"><i class="bi bi-shield-lock-fill" style="color:var(--primary);"></i> Keamanan Akun</div>
+      <div style="font-size:.78rem; color:#8fa3b8; margin-bottom:1.5rem;">Perbarui password Anda secara berkala untuk menjaga keamanan akun.</div>
+      
+      <form method="POST" action="{{ route('user.profil.update') }}" class="form-setting">
+        @csrf @method('PATCH')
+        <input type="hidden" name="section" value="password">
+        <div class="mb-3">
+          <label>Password Lama</label>
+          <input type="password" name="current_password" class="form-control" placeholder="Masukkan password saat ini" required>
+          @error('current_password')<div style="color:#dc2626;font-size:.75rem;margin-top:.3rem;">{{ $message }}</div>@enderror
+        </div>
+        <div class="mb-3">
+          <label>Password Baru</label>
+          <input type="password" name="password" class="form-control" placeholder="Minimal 8 karakter" required>
+          @error('password')<div style="color:#dc2626;font-size:.75rem;margin-top:.3rem;">{{ $message }}</div>@enderror
+        </div>
+        <div class="mb-4">
+          <label>Konfirmasi Password Baru</label>
+          <input type="password" name="password_confirmation" class="form-control" placeholder="Ulangi password baru" required>
+        </div>
+        <button type="submit" class="btn-save w-100">Update Password</button>
+      </form>
     </div>
-    <div class="mb-2">
-      <label>Password Baru</label>
-      <input type="password" name="password" class="form-control" placeholder="••••••••" required>
-      @error('password')<div style="color:#dc2626;font-size:.75rem;margin-top:.3rem;">{{ $message }}</div>@enderror
-    </div>
-    <div class="mb-3">
-      <label>Konfirmasi Password Baru</label>
-      <input type="password" name="password_confirmation" class="form-control" placeholder="••••••••" required>
-    </div>
-    <button type="submit" class="btn-save">Simpan Password</button>
-  </form>
-</div>
+  </div>
 
-{{-- NOTIFIKASI --}}
-<div class="setting-section">
-  <div class="setting-title"><i class="bi bi-bell-fill" style="color:var(--primary);"></i> Notifikasi</div>
-  <form method="POST" action="{{ route('user.pengaturan.notifikasi') }}" class="form-setting">
-    @csrf @method('PATCH')
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <div class="toggle-label">Notifikasi Booking</div>
-        <div class="toggle-sub">Update status pemesanan kost kamu</div>
-      </div>
-      <div class="form-check form-switch mb-0">
-        <input class="form-check-input" type="checkbox" name="notif_booking" value="1" {{ $user->notif_booking ? 'checked' : '' }}>
-      </div>
+  {{-- KANAN: NOTIFIKASI --}}
+  <div class="col-12 col-lg-6">
+    <div class="setting-section h-100">
+      <div class="setting-title"><i class="bi bi-bell-fill" style="color:var(--primary);"></i> Notifikasi</div>
+      <div style="font-size:.78rem; color:#8fa3b8; margin-bottom:1.5rem;">Atur bagaimana Anda ingin menerima pembaruan dari KostFinder.</div>
+      
+      <form method="POST" action="{{ route('user.pengaturan.notifikasi') }}" class="form-setting">
+        @csrf @method('PATCH')
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Pemesanan Kost</div>
+            <div class="toggle-sub">Status booking dan konfirmasi owner</div>
+          </div>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" name="notif_booking" value="1" {{ $user->notif_booking ? 'checked' : '' }}>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Pembayaran</div>
+            <div class="toggle-sub">Reminder dan status transaksi</div>
+          </div>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" name="notif_pembayaran" value="1" {{ $user->notif_pembayaran ? 'checked' : '' }}>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Pesan Chat</div>
+            <div class="toggle-sub">Pesan baru dari pemilik kost</div>
+          </div>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" name="notif_chat" value="1" {{ $user->notif_chat ? 'checked' : '' }}>
+          </div>
+        </div>
+        <div class="mt-4">
+          <button type="submit" class="btn-save w-100">Simpan Notifikasi</button>
+        </div>
+      </form>
     </div>
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <div class="toggle-label">Notifikasi Pembayaran</div>
-        <div class="toggle-sub">Konfirmasi dan reminder pembayaran</div>
-      </div>
-      <div class="form-check form-switch mb-0">
-        <input class="form-check-input" type="checkbox" name="notif_pembayaran" value="1" {{ $user->notif_pembayaran ? 'checked' : '' }}>
-      </div>
-    </div>
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <div class="toggle-label">Notifikasi Promo</div>
-        <div class="toggle-sub">Info promo dan penawaran menarik</div>
-      </div>
-      <div class="form-check form-switch mb-0">
-        <input class="form-check-input" type="checkbox" name="notif_promo" value="1" {{ $user->notif_promo ? 'checked' : '' }}>
-      </div>
-    </div>
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <div class="toggle-label">Notifikasi Chat</div>
-        <div class="toggle-sub">Pesan baru dari pemilik kost</div>
-      </div>
-      <div class="form-check form-switch mb-0">
-        <input class="form-check-input" type="checkbox" name="notif_chat" value="1" {{ $user->notif_chat ? 'checked' : '' }}>
-      </div>
-    </div>
-    <div class="mt-3">
-      <button type="submit" class="btn-save">Simpan Notifikasi</button>
-    </div>
-  </form>
-</div>
+  </div>
 
-{{-- PRIVASI --}}
-<div class="setting-section">
-  <div class="setting-title"><i class="bi bi-shield-fill" style="color:var(--primary);"></i> Privasi</div>
-  <form method="POST" action="{{ route('user.pengaturan.privasi') }}" class="form-setting">
-    @csrf @method('PATCH')
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <div class="toggle-label">Info Umum</div>
-        <div class="toggle-sub">Tampilkan info umum profilmu</div>
-      </div>
-      <div class="form-check form-switch mb-0">
-        <input class="form-check-input" type="checkbox" name="notif_info_umum" value="1" {{ $user->notif_info_umum ? 'checked' : '' }}>
-      </div>
+  {{-- BAWAH: PRIVASI --}}
+  <div class="col-12">
+    <div class="setting-section">
+      <div class="setting-title"><i class="bi bi-eye-slash-fill" style="color:var(--primary);"></i> Preferensi & Privasi</div>
+      <div style="font-size:.78rem; color:#8fa3b8; margin-bottom:1.2rem;">Kelola privasi data dan riwayat aktivitas pencarian Anda.</div>
+      
+      <form method="POST" action="{{ route('user.pengaturan.privasi') }}" class="form-setting">
+        @csrf @method('PATCH')
+        <div class="row">
+          <div class="col-md-6">
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Info Umum Profil</div>
+                <div class="toggle-sub">Tampilkan nama dan foto profil secara publik</div>
+              </div>
+              <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" name="notif_info_umum" value="1" {{ $user->notif_info_umum ? 'checked' : '' }}>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Akses Data Diri</div>
+                <div class="toggle-sub">Izinkan layanan pihak ketiga (opsional)</div>
+              </div>
+              <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" name="notif_data_diri" value="1" {{ $user->notif_data_diri ? 'checked' : '' }}>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Simpan Riwayat Aktivitas</div>
+                <div class="toggle-sub">Membantu mempercepat pencarian sebelumnya</div>
+              </div>
+              <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" name="notif_aktivitas" value="1" {{ $user->notif_aktivitas ? 'checked' : '' }}>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Rekomendasi Berbasis Data</div>
+                <div class="toggle-sub">Personalisasi kost sesuai minat Anda</div>
+              </div>
+              <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" name="notif_pencarian" value="1" {{ $user->notif_pencarian ? 'checked' : '' }}>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 d-flex justify-content-end">
+          <button type="submit" class="btn-save px-5">Simpan Preferensi</button>
+        </div>
+      </form>
     </div>
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <div class="toggle-label">Data Diri</div>
-        <div class="toggle-sub">Izinkan akses data diri untuk layanan</div>
-      </div>
-      <div class="form-check form-switch mb-0">
-        <input class="form-check-input" type="checkbox" name="notif_data_diri" value="1" {{ $user->notif_data_diri ? 'checked' : '' }}>
-      </div>
-    </div>
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <div class="toggle-label">Riwayat Aktivitas</div>
-        <div class="toggle-sub">Simpan riwayat pencarian kost</div>
-      </div>
-      <div class="form-check form-switch mb-0">
-        <input class="form-check-input" type="checkbox" name="notif_aktivitas" value="1" {{ $user->notif_aktivitas ? 'checked' : '' }}>
-      </div>
-    </div>
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <div class="toggle-label">Data Pencarian</div>
-        <div class="toggle-sub">Gunakan data pencarian untuk rekomendasi</div>
-      </div>
-      <div class="form-check form-switch mb-0">
-        <input class="form-check-input" type="checkbox" name="notif_pencarian" value="1" {{ $user->notif_pencarian ? 'checked' : '' }}>
-      </div>
-    </div>
-    <div class="mt-3">
-      <button type="submit" class="btn-save">Simpan Privasi</button>
-    </div>
-  </form>
-</div>
+  </div>
 
+</div>
 @endsection

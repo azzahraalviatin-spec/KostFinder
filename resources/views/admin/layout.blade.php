@@ -80,7 +80,7 @@
             <div class="brand-icon"><i class="bi bi-shield-check"></i></div>
             <div class="brand-text">
                 <div class="name">Kost<span>Finder</span></div>
-                <div class="sub">Panel Admin</div>
+                <div class="sub">Admin Panel</div>
             </div>
         </div>
 
@@ -101,15 +101,12 @@
             <a href="{{ route('admin.bookings') }}" class="menu-item {{ request()->routeIs('admin.bookings*') ? 'active' : '' }}">
                 <i class="bi bi-journal-check"></i><span>Monitoring Booking</span>
             </a>
-            <a href="{{ route('admin.promos.index') }}" class="menu-item {{ request()->routeIs('admin.promos*') ? 'active' : '' }}">
-                <i class="bi bi-megaphone"></i><span>Kelola Promo</span>
-            </a>
 
             {{-- ✅ MENU KELOLA ULASAN --}}
             <a href="{{ route('admin.reviews.index') }}" class="menu-item {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">
                 <i class="bi bi-star"></i><span>Kelola Ulasan</span>
                 @php
-                    $pendingUlasan = \App\Models\OwnerReview::where('status','pending')->count();
+                    $pendingUlasan = \App\Models\Review::where('status','pending')->count();
                 @endphp
                 @if($pendingUlasan > 0)
                     <span style="margin-left:auto;background:linear-gradient(135deg,#e8401c,#ff7043);color:#fff;font-size:.6rem;font-weight:700;padding:.1rem .45rem;border-radius:999px;">
@@ -119,9 +116,6 @@
             </a>
             <a href="{{ route('admin.reports') }}" class="menu-item {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-bar-graph"></i><span>Laporan Sistem</span>
-            </a>
-            <a href="{{ route('admin.activities') }}" class="menu-item {{ request()->routeIs('admin.activities*') ? 'active' : '' }}">
-                <i class="bi bi-activity"></i><span>Aktivitas Sistem</span>
             </a>
             <a href="{{ route('admin.settings') }}" 
    class="menu-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
@@ -141,7 +135,7 @@
             <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}</div>
             <div class="user-info">
                 <div class="user-name">{{ auth()->user()->name ?? 'Admin' }}</div>
-                <div class="user-role">Administrator</div>
+                <div class="user-role">Admin</div>
             </div>
         </div>
     </aside>
@@ -216,7 +210,7 @@
         </div>
 
         <footer class="owner-footer">
-            © {{ date('Y') }} KostFinder - Panel Admin
+            © {{ date('Y') }} KostFinder - Admin Panel
         </footer>
     </div>
 

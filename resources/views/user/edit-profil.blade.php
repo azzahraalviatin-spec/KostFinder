@@ -142,17 +142,6 @@
         </div>
       </div>
       <div class="form-row-item">
-        <div class="form-row-label">Pendidikan Terakhir</div>
-        <div class="form-row-input">
-          <select name="pendidikan" id="selPendidikan">
-            <option value="">Pilih pendidikan</option>
-            <option value="s1" {{ auth()->user()->pendidikan=='s1'?'selected':'' }}>S1</option>
-            <option value="s2" {{ auth()->user()->pendidikan=='s2'?'selected':'' }}>S2</option>
-            <option value="sma" {{ auth()->user()->pendidikan=='sma'?'selected':'' }}>SMA/SMK</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row-item">
         <div class="form-row-label">Status</div>
         <div class="form-row-input">
           <select name="status_pernikahan" id="selStatus">
@@ -199,7 +188,6 @@ $(document).ready(function() {
   $('#selKota').select2({ ...tagsOpt, placeholder: 'Pilih atau ketik kota asal' });
   $('#selInstansi').select2({ ...tagsOpt, placeholder: 'Pilih atau ketik kampus/sekolah' });
   $('#selPekerjaan').select2({ ...tagsOpt, placeholder: 'Pilih atau ketik pekerjaan' });
-  $('#selPendidikan').select2({ ...tagsOpt, placeholder: 'Pilih atau ketik pendidikan terakhir' });
   $('#selJK').select2({ ...tagsOpt, placeholder: 'Pilih jenis kelamin' });
   $('#selStatus').select2({ placeholder: 'Pilih status', width: '100%', allowClear: true });
 });

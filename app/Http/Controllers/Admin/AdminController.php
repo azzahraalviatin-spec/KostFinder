@@ -372,7 +372,7 @@ class AdminController extends Controller
                 $query->whereDate('tanggal_masuk', '<=', $endDate);
             })
             ->latest()
-            ->paginate(12)
+            ->paginate(10)
             ->withQueryString();
 
         return view('admin.bookings', compact('bookings'));
@@ -441,7 +441,7 @@ class AdminController extends Controller
                 'bookings.created_at'
             )
             ->latest('bookings.created_at')
-            ->limit(10)
+            ->limit(5)
             ->get();
 
         $topKostsThisMonth = DB::table('bookings')
@@ -737,10 +737,15 @@ public function updateSettings(Request $request)
 
     $user->save();
 
-    // ✅ Notifikasi
+    // ✅ Notifikasi & Pengaturan Bisnis
     $settings = Setting::first() ?? new Setting();
     $settings->notif_booking = $request->has('notif_booking');
     $settings->notif_user    = $request->has('notif_user');
+    $settings->whatsapp_cs   = $request->whatsapp_cs;
+    $settings->email_support = $request->email_support;
+    $settings->instagram_link = $request->instagram_link;
+    $settings->tiktok_link    = $request->tiktok_link;
+    $settings->komisi_admin   = $request->komisi_admin;
     $settings->save();
 
     return back()->with('success', 'Pengaturan berhasil disimpan!');
@@ -760,4 +765,36 @@ public function readAllNotifications()
     auth()->user()->unreadNotifications->markAsRead();
     return back()->with('status', 'Semua notifikasi sudah dibaca.');
 }
+    public function showBooking(Booking $booking)
+    {
+        $booking->load(['user', 'room.kost.owner']);
+        return view('admin.booking-show', compact('booking'));
+    }
+
+    public function updateBookingStatus(Request $request, Booking $booking, $status)
+    {
+        abort_unless(in_array($status, ['diterima', 'ditolak'], true), 400);
+
+        $booking->update(['status_booking' => $status]);
+
+        $statusText = $status === 'diterima' ? 'disetujui' : 'ditolak';
+
+        $this->logActivity($request, 'update_booking_status', 'booking', $booking->id_booking, $booking->user_id, [
+            'status' => $status,
+            'booking_id' => $booking->id_booking,
+        ]);
+
+        return back()->with('status', "✅ Pesanan berhasil {$statusText}!");
+    }
+
+    public function destroyBooking(Request $request, Booking $booking)
+    {
+        $this->logActivity($request, 'delete_booking', 'booking', $booking->id_booking, $booking->user_id, [
+            'booking_id' => $booking->id_booking,
+        ]);
+
+        $booking->delete();
+
+        return back()->with('status', '✅ Data booking berhasil dihapus.');
+    }
 }

@@ -59,11 +59,13 @@
     .sb-diterima { background:rgba(34,197,94,.2); color:#4ade80; }
     .sb-ditolak  { background:rgba(239,68,68,.2); color:#f87171; }
     .sb-selesai  { background:rgba(148,163,184,.2); color:#94a3b8; }
+    .sb-dibatalkan{ background:rgba(148,163,184,.15); color:#94a3b8; }
     .sbadge-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
     .sb-pending .sbadge-dot { background:#fb923c; }
     .sb-diterima .sbadge-dot { background:#4ade80; }
     .sb-ditolak .sbadge-dot { background:#f87171; }
     .sb-selesai .sbadge-dot { background:#94a3b8; }
+    .sb-dibatalkan .sbadge-dot { background:#cbd5e1; }
     .section { padding:1.25rem 1.75rem; border-bottom:1px solid #f0f4f8; }
     .section:last-child { border-bottom:0; }
     .section-title { font-size:.7rem; font-weight:700; color:#94a3b8; letter-spacing:.08em; text-transform:uppercase; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
@@ -117,7 +119,7 @@
 </head>
 <body>
   @php
-    $statusClass = ['pending'=>'sb-pending','diterima'=>'sb-diterima','ditolak'=>'sb-ditolak','selesai'=>'sb-selesai'];
+    $statusClass = ['pending'=>'sb-pending','diterima'=>'sb-diterima','ditolak'=>'sb-ditolak','selesai'=>'sb-selesai','dibatalkan'=>'sb-dibatalkan'];
     $step = ['pending'=>1,'diterima'=>2,'selesai'=>3,'ditolak'=>99][$booking->status_booking] ?? 0;
     $colors = ['#e8401c','#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899'];
     $avatarColor = $colors[ord(strtoupper(substr($booking->user->name ?? 'U',0,1))) % count($colors)];
@@ -155,7 +157,13 @@
             <div class="hero-status">
               <span class="sbadge {{ $statusClass[$booking->status_booking] ?? 'sb-selesai' }}">
                 <span class="sbadge-dot"></span>
-                {{ ucfirst($booking->status_booking) }}
+                @if($booking->status_booking === 'ditolak')
+                  Ditolak Owner
+                @elseif($booking->status_booking === 'dibatalkan')
+                  Dibatalkan User
+                @else
+                  {{ ucfirst($booking->status_booking) }}
+                @endif
               </span>
             </div>
           </div>
@@ -310,6 +318,15 @@
                 <div class="booking-step">
                   <div class="step-icon step-reject"><i class="bi bi-x"></i></div>
                   <div><div class="step-title" style="color:#dc2626;">Booking Ditolak</div><div class="step-sub">Owner menolak permintaan</div></div>
+                </div>
+              @elseif($booking->status_booking === 'dibatalkan')
+                <div class="booking-step">
+                  <div class="step-icon step-done"><i class="bi bi-check"></i></div>
+                  <div><div class="step-title">Booking Masuk</div><div class="step-sub">Permintaan diterima sistem</div></div>
+                </div>
+                <div class="booking-step">
+                  <div class="step-icon step-wait"><i class="bi bi-x"></i></div>
+                  <div><div class="step-title" style="color:#94a3b8;">Booking Dibatalkan</div><div class="step-sub">Penyewa membatalkan pesanan</div></div>
                 </div>
               @else
                 <div class="booking-step">

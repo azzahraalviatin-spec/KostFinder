@@ -33,20 +33,24 @@ class KamarController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kost_id'         => 'required|exists:kosts,id_kost',
-            'nomor_kamar'     => 'nullable|string|max:50',
-            'harga_per_bulan' => 'nullable|integer|min:0',
-            'harga_harian'    => 'nullable|integer|min:0',
-            'status_kamar'    => 'required|in:tersedia,terisi',
-            'tipe_kamar'      => 'nullable|string',
-            'ukuran'          => 'nullable|string|max:50',
-            'deskripsi'       => 'nullable|string',
-            'aturan_kamar'    => 'nullable|string',
-            'listrik'         => 'nullable|string|max:100',
-            'fasilitas'       => 'nullable|array',
-            'fasilitas.*'     => 'string',
-           'foto_kamar'      => 'nullable|array',
-           'foto_kamar.*'    => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'kost_id'                   => 'required|exists:kosts,id_kost',
+            'nomor_kamar'               => 'nullable|string|max:50',
+            'harga_per_bulan'           => 'nullable|integer|min:0',
+            'harga_harian'              => 'nullable|integer|min:0',
+            'status_kamar'              => 'required|in:tersedia,terisi',
+            'tipe_kamar'                => 'nullable|string',
+            'ukuran'                    => 'nullable|string|max:50',
+            'deskripsi'                 => 'nullable|string',
+            'aturan_kamar'              => 'nullable|string',
+            'listrik'                   => 'nullable|string|max:100',
+            'fasilitas'                 => 'nullable|array',
+            'fasilitas.*'               => 'string',
+            'foto_kamar'                => 'nullable|array',
+            'foto_kamar.*'              => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            // Foto fasilitas kamar
+            'foto_fasilitas'            => 'nullable|array',
+            'foto_fasilitas.*.file'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'foto_fasilitas.*.judul'    => 'nullable|string|max:100',
         ]);
 
         $kost = Kost::where('id_kost', $validated['kost_id'])
@@ -69,7 +73,11 @@ class KamarController extends Controller
             'fasilitas'       => $validated['fasilitas'] ?? null,
         ]);
 
+        // Upload foto kamar (tipe: kamar)
         $this->syncRoomImages($room, $request, false);
+
+        // Upload foto fasilitas kamar (tipe: fasilitas)
+        $this->syncFasilitasImages($room, $request);
 
         return redirect()->route('owner.kamar.index')->with('success', 'Kamar berhasil ditambahkan.');
     }
@@ -78,19 +86,19 @@ class KamarController extends Controller
     {
         $kamar->load(['images', 'bookings.user', 'kost']);
         $kost = $kamar->kost;
-    
-        // 🔥 FIX fasilitas biar selalu array
+
         if (is_string($kost->fasilitas)) {
             $decoded = json_decode($kost->fasilitas, true);
-    
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $kost->fasilitas = $decoded;
-            } else {
-                $kost->fasilitas = explode(',', $kost->fasilitas);
-            }
+            $kost->fasilitas = json_last_error() === JSON_ERROR_NONE
+                ? $decoded
+                : explode(',', $kost->fasilitas);
         }
-    
-        return view('owner.kamar-show', compact('kamar', 'kost'));
+
+        // Pisahkan foto kamar dan foto fasilitas kamar
+        $fotoKamar     = $kamar->images->where('tipe_foto', 'kamar');
+        $fotoFasilitas = $kamar->images->where('tipe_foto', 'fasilitas');
+
+        return view('owner.kamar-show', compact('kamar', 'kost', 'fotoKamar', 'fotoFasilitas'));
     }
 
     public function edit(Room $kamar)
@@ -102,30 +110,40 @@ class KamarController extends Controller
             ->orderBy('nama_kost')
             ->get();
 
-        return view('owner.kamar-edit', compact('kamar', 'kosts'));
+        // Pisahkan foto kamar dan foto fasilitas
+        $fotoKamar     = $kamar->images->where('tipe_foto', 'kamar');
+        $fotoFasilitas = $kamar->images->where('tipe_foto', 'fasilitas');
+
+        return view('owner.kamar-edit', compact('kamar', 'kosts', 'fotoKamar', 'fotoFasilitas'));
     }
 
     public function update(Request $request, Room $kamar)
     {
-
         $kamar->load(['kost', 'mainImage', 'images']);
         $this->authorizeOwner($kamar);
 
         $validated = $request->validate([
-            'kost_id'         => 'required|exists:kosts,id_kost',
-            'nomor_kamar'     => 'nullable|string|max:50',
-            'harga_per_bulan' => 'nullable|integer|min:0',
-            'harga_harian'    => 'nullable|integer|min:0',
-            'status_kamar'    => 'required|in:tersedia,terisi',
-            'tipe_kamar'      => 'nullable|string',
-            'ukuran'          => 'nullable|string|max:50',
-            'deskripsi'       => 'nullable|string',
-            'aturan_kamar'    => 'nullable|string',
-            'listrik'         => 'nullable|string|max:100',
-            'fasilitas'       => 'nullable|array',
-            'fasilitas.*'     => 'string',
-'foto_kamar'      => 'nullable|array',
-'foto_kamar.*'    => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'kost_id'                   => 'required|exists:kosts,id_kost',
+            'nomor_kamar'               => 'nullable|string|max:50',
+            'harga_per_bulan'           => 'nullable|integer|min:0',
+            'harga_harian'              => 'nullable|integer|min:0',
+            'status_kamar'              => 'required|in:tersedia,terisi',
+            'tipe_kamar'                => 'nullable|string',
+            'ukuran'                    => 'nullable|string|max:50',
+            'deskripsi'                 => 'nullable|string',
+            'aturan_kamar'              => 'nullable|string',
+            'listrik'                   => 'nullable|string|max:100',
+            'fasilitas'                 => 'nullable|array',
+            'fasilitas.*'               => 'string',
+            'foto_kamar'                => 'nullable|array',
+            'foto_kamar.*'              => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            // Foto fasilitas kamar
+            'foto_fasilitas'            => 'nullable|array',
+            'foto_fasilitas.*.file'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'foto_fasilitas.*.judul'    => 'nullable|string|max:100',
+            // Hapus foto fasilitas tertentu
+            'hapus_fasilitas_ids'       => 'nullable|array',
+            'hapus_fasilitas_ids.*'     => 'integer',
         ]);
 
         $kost = Kost::where('id_kost', $validated['kost_id'])
@@ -148,7 +166,23 @@ class KamarController extends Controller
             'fasilitas'       => $validated['fasilitas'] ?? null,
         ]);
 
+        // Upload foto kamar utama
         $this->syncRoomImages($kamar, $request, true);
+
+        // Hapus foto fasilitas yang dipilih
+        if (!empty($validated['hapus_fasilitas_ids'])) {
+            $toDelete = RoomImage::whereIn('id', $validated['hapus_fasilitas_ids'])
+                ->where('room_id', $kamar->id_room)
+                ->where('tipe_foto', 'fasilitas')
+                ->get();
+            foreach ($toDelete as $img) {
+                Storage::disk('public')->delete($img->foto_path);
+                $img->delete();
+            }
+        }
+
+        // Upload foto fasilitas baru
+        $this->syncFasilitasImages($kamar, $request);
 
         return redirect()->route('owner.kamar.index')->with('success', 'Kamar berhasil diupdate.');
     }
@@ -167,38 +201,84 @@ class KamarController extends Controller
         return redirect()->route('owner.kamar.index')->with('success', 'Kamar berhasil dihapus.');
     }
 
+    // ===================== PRIVATE HELPERS =====================
+
+    /**
+     * Sync foto utama kamar (tipe: kamar)
+     */
     private function syncRoomImages(Room $room, Request $request, bool $replaceExisting): void
     {
         if (!$request->hasFile('foto_kamar')) {
             return;
         }
-    
+
         if ($request->boolean('hapus_semua_foto')) {
-            foreach ($room->images as $image) {
+            $existing = $room->images()->where('tipe_foto', 'kamar')->get();
+            foreach ($existing as $image) {
                 Storage::disk('public')->delete($image->foto_path);
             }
-            $room->images()->delete();
+            $room->images()->where('tipe_foto', 'kamar')->delete();
         }
-    
-        $existingCount = $room->images()->count();
-        $sisaSlot = 6 - $existingCount;
-    
-        if ($sisaSlot <= 0) {
-            return;
-        }
-    
-        $files = array_slice($request->file('foto_kamar'), 0, $sisaSlot);
+
+        $existingCount = $room->images()->where('tipe_foto', 'kamar')->count();
+        $sisaSlot      = 6 - $existingCount;
+
+        if ($sisaSlot <= 0) return;
+
+        $files         = array_slice($request->file('foto_kamar'), 0, $sisaSlot);
         $isFirstExisting = $existingCount === 0;
-    
+
         foreach ($files as $index => $file) {
             $path = $file->store('kamar', 'public');
             RoomImage::create([
                 'room_id'   => $room->id_room,
                 'foto_path' => $path,
+                'judul'     => null,
+                'tipe_foto' => 'kamar',
                 'is_utama'  => $isFirstExisting && $index === 0,
             ]);
         }
     }
+
+    /**
+     * Sync foto fasilitas kamar (tipe: fasilitas)
+     * Input: foto_fasilitas[0][file], foto_fasilitas[0][judul], dst.
+     */
+    private function syncFasilitasImages(Room $room, Request $request): void
+    {
+        if (!$request->has('foto_fasilitas')) {
+            return;
+        }
+
+        $existingCount = $room->images()->where('tipe_foto', 'fasilitas')->count();
+        $sisaSlot      = 10 - $existingCount; // max 10 foto fasilitas
+
+        if ($sisaSlot <= 0) return;
+
+        $items   = $request->input('foto_fasilitas', []);
+        $files   = $request->file('foto_fasilitas', []);
+        $count   = 0;
+
+        foreach ($files as $index => $item) {
+            if ($count >= $sisaSlot) break;
+
+            $file  = $item['file'] ?? null;
+            $judul = $items[$index]['judul'] ?? null;
+
+            if (!$file || !$file->isValid()) continue;
+
+            $path = $file->store('kamar/fasilitas', 'public');
+            RoomImage::create([
+                'room_id'   => $room->id_room,
+                'foto_path' => $path,
+                'judul'     => $judul,
+                'tipe_foto' => 'fasilitas',
+                'is_utama'  => false,
+            ]);
+            $count++;
+        }
+    }
+
     private function authorizeOwner(Room $room): void
     {
         abort_if($room->kost->owner_id !== auth()->id(), 403);

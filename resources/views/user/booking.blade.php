@@ -10,8 +10,36 @@
 
   #bookingList {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+  @media (max-width: 1100px) {
+    #bookingList { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    #bookingList { grid-template-columns: 1fr; }
+  }
+
+  /* Pagination */
+  .pagination-wrap {
+    display: flex; justify-content: center; align-items: center;
+    gap: .4rem; margin-top: 2rem; flex-wrap: wrap;
+  }
+  .pagination-wrap .page-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: .5rem;
+    border: 1.5px solid #e4e9f0; background: #fff;
+    font-size: .82rem; font-weight: 700; color: #555;
+    text-decoration: none; transition: all .2s;
+  }
+  .pagination-wrap .page-link:hover {
+    border-color: var(--primary); color: var(--primary); background: #fff5f2;
+  }
+  .pagination-wrap .page-link.active {
+    background: var(--primary); border-color: var(--primary); color: #fff;
+  }
+  .pagination-wrap .page-link.disabled {
+    opacity: .4; pointer-events: none;
   }
 
   /* Filter tabs */
@@ -126,13 +154,12 @@
 @section('content')
 
 @php
-  $tab = request('tab', 'semua');
   $tabs = [
     'semua'    => 'Semua',
     'pending'  => 'Menunggu Konfirmasi',
     'diterima' => 'Check In',
-    'selesai'  => 'Selesai',
-    'batal'    => 'Dibatalkan',
+    'selesai'    => 'Selesai',
+    'dibatalkan' => 'Dibatalkan',
   ];
 @endphp
 
@@ -159,14 +186,7 @@
   </div>
 
   {{-- LIST --}}
-  @php
-    $filtered = $bookings->filter(function($b) use ($tab) {
-      if ($tab === 'semua') return true;
-      return $b->status_booking === $tab;
-    });
-  @endphp
-
-  @if($filtered->isEmpty())
+  @if($bookings->isEmpty())
     <div class="empty-wrap">
       <i class="bi bi-calendar-x"></i>
       <div style="font-weight:700;font-size:.92rem;color:#555;">Belum ada pesanan</div>
@@ -177,22 +197,24 @@
     </div>
   @else
     <div id="bookingList">
-      @foreach($filtered as $booking)
+      @foreach($bookings as $booking)
       @php
         $status = $booking->status_booking;
         $pillClass = match($status) {
-          'pending'  => 'pill-pending',
-          'diterima' => 'pill-diterima',
-          'ditolak'  => 'pill-ditolak',
-          'selesai'  => 'pill-selesai',
-          default    => 'pill-dibatalkan',
+          'pending'    => 'pill-pending',
+          'diterima'   => 'pill-diterima',
+          'ditolak'    => 'pill-ditolak',
+          'selesai'    => 'pill-selesai',
+          'dibatalkan' => 'pill-dibatalkan',
+          default      => 'pill-dibatalkan',
         };
         $statusLabel = match($status) {
-          'pending'  => '⏳ Menunggu',
-          'diterima' => '✅ Diterima',
-          'ditolak'  => '❌ Ditolak',
-          'selesai'  => '🏁 Selesai',
-          default    => '🚫 Dibatalkan',
+          'pending'    => '⏳ Menunggu',
+          'diterima'   => '✅ Diterima',
+          'ditolak'    => '❌ Ditolak Owner',
+          'selesai'    => '🏁 Selesai',
+          'dibatalkan' => '🚫 Dibatalkan',
+          default      => '🚫 Dibatalkan',
         };
         $namaKost = $booking->room->kost->nama_kost ?? '-';
         $imgUrl = $booking->room->kost->foto_utama_url ?? asset('images/default-kost.jpg');
@@ -222,10 +244,9 @@
           'is_pending' => $booking->status_booking === 'pending',
           'status_booking' => $booking->status_booking
         ];
-        $bookingDataJson = htmlspecialchars(json_encode($bookingData), ENT_QUOTES, 'UTF-8');
       @endphp
 
-      <div class="booking-card" data-nama="{{ strtolower($namaKost) }}" data-booking="{{ $bookingDataJson }}">
+      <div class="booking-card" data-nama="{{ strtolower($namaKost) }}" data-booking="{{ json_encode($bookingData) }}">
         
         <div style="width:100%; height:160px; position:relative; overflow:hidden;">
           <img src="{{ $imgUrl }}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://placehold.co/600x400/eeeeee/aaaaaa?text=No+Image';">
@@ -260,6 +281,31 @@
       </div>
       @endforeach
     </div>
+
+    {{-- PAGINATION --}}
+    @if($bookings->hasPages())
+    <div class="pagination-wrap">
+      {{-- Prev --}}
+      @if($bookings->onFirstPage())
+        <span class="page-link disabled"><i class="bi bi-chevron-left"></i></span>
+      @else
+        <a class="page-link" href="{{ $bookings->previousPageUrl() }}"><i class="bi bi-chevron-left"></i></a>
+      @endif
+
+      {{-- Page Numbers --}}
+      @foreach($bookings->getUrlRange(1, $bookings->lastPage()) as $page => $url)
+        <a class="page-link {{ $page == $bookings->currentPage() ? 'active' : '' }}" href="{{ $url }}">{{ $page }}</a>
+      @endforeach
+
+      {{-- Next --}}
+      @if($bookings->hasMorePages())
+        <a class="page-link" href="{{ $bookings->nextPageUrl() }}"><i class="bi bi-chevron-right"></i></a>
+      @else
+        <span class="page-link disabled"><i class="bi bi-chevron-right"></i></span>
+      @endif
+    </div>
+    @endif
+
   @endif
 
 </div>
@@ -363,9 +409,9 @@
       </div>
     `;
 
-    if(data.status_bayar === 'menunggu') {
+    if(data.status_booking !== 'selesai' && data.status_bayar === 'menunggu') {
       bodyHtml += `<div class="notif-box warning"><i class="bi bi-clock"></i> Bukti pembayaran dikirim — menunggu konfirmasi owner</div>`;
-    } else if(data.status_bayar === 'lunas') {
+    } else if(data.status_booking === 'selesai' || data.status_bayar === 'lunas') {
       bodyHtml += `<div class="notif-box success"><i class="bi bi-check-circle"></i> Pembayaran sudah dikonfirmasi owner</div>`;
     } else if(data.status_bayar === 'ditolak') {
       bodyHtml += `<div class="notif-box danger"><i class="bi bi-x-circle"></i> Pembayaran ditolak — silakan hubungi owner</div>`;

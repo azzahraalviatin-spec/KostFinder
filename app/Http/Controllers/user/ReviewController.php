@@ -79,6 +79,12 @@ class ReviewController extends Controller
             $admin->notify(new ReviewBaruNotification($review));
         }
 
+        // Kirim notifikasi ke owner kos
+        $owner = $review->kost->owner;
+        if ($owner) {
+            $owner->notify(new ReviewBaruNotification($review));
+        }
+
         return response()->json(['success' => true]);
     }
 }

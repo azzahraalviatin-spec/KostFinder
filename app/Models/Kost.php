@@ -77,5 +77,9 @@ class Kost extends Model
             'id_room'
         );
     }
+    public function generalFacilities()
+    {
+        return $this->hasMany(KostFacility::class, 'kost_id', 'id_kost');
+    }
     
 }

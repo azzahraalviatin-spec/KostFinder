@@ -1,7 +1,7 @@
 @extends('admin.layout')
 
-@section('title', 'Dashboard Admin')
-@section('page_title', 'Selamat datang, '.(auth()->user()->name ?? 'Admin').'!')
+@section('title', 'Admin Dashboard')
+@section('page_title', 'Selamat datang, '.(auth()->user()->name ?: 'Admin').'!')
 
 @section('content')
 <div class="row g-3 mb-3">

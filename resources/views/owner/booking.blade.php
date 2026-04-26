@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -46,13 +46,14 @@
     .owner-footer { background:#fff; border-top:1px solid #e4e9f0; padding:.8rem 1.5rem; text-align:center; color:#8fa3b8; font-size:.72rem; }
 
     /* STAT CARDS */
-    .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+    .stat-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:1.5rem; }
     .stat-card { border-radius:16px; padding:1.1rem 1.25rem; display:flex; align-items:center; gap:1rem; position:relative; overflow:hidden; }
     .stat-card::after { content:''; position:absolute; right:-16px; top:-16px; width:80px; height:80px; border-radius:50%; opacity:.12; background:#fff; }
     .stat-card.total  { background:linear-gradient(135deg,#1e2d3d,#2d4a6b); }
     .stat-card.pending { background:linear-gradient(135deg,#f97316,#fb923c); }
     .stat-card.diterima { background:linear-gradient(135deg,#16a34a,#22c55e); }
     .stat-card.ditolak { background:linear-gradient(135deg,#dc2626,#ef4444); }
+    .stat-card.selesai { background:linear-gradient(135deg,#64748b,#94a3b8); }
     .stat-icon-wrap { width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#fff; flex-shrink:0; }
     .stat-num { font-size:1.8rem; font-weight:800; color:#fff; line-height:1; }
     .stat-lbl { font-size:.72rem; color:rgba(255,255,255,.75); margin-top:3px; font-weight:500; }
@@ -110,6 +111,9 @@
 .fpill.active.f-selesai {
   background: linear-gradient(135deg,#64748b,#94a3b8);
 }
+.fpill.active.f-dibatalkan {
+  background: linear-gradient(135deg,#94a3b8,#cbd5e1);
+}
 .filter-wrap {
   display: flex;
   gap: .5rem;
@@ -129,11 +133,13 @@ table { width:100%; border-collapse:collapse; }
     .sbadge-diterima { background:#f0fdf4; color:#16a34a; }
     .sbadge-ditolak { background:#fef2f2; color:#dc2626; }
     .sbadge-selesai { background:#f1f5f9; color:#64748b; }
+    .sbadge-dibatalkan { background:#f8fafc; color:#94a3b8; }
     .sbadge-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
     .sbadge-pending .sbadge-dot { background:#ea580c; }
     .sbadge-diterima .sbadge-dot { background:#16a34a; }
     .sbadge-ditolak .sbadge-dot { background:#dc2626; }
     .sbadge-selesai .sbadge-dot { background:#94a3b8; }
+    .sbadge-dibatalkan .sbadge-dot { background:#cbd5e1; }
     .aksi-wrap { display:flex; gap:.35rem; }
     .abtn { width:32px; height:32px; border-radius:9px; border:0; display:inline-flex; align-items:center; justify-content:center; font-size:.82rem; cursor:pointer; transition:all .15s; }
     .abtn:hover { transform:translateY(-1px); }
@@ -168,29 +174,36 @@ table { width:100%; border-collapse:collapse; }
         <div class="stat-card total">
           <div class="stat-icon-wrap"><i class="bi bi-journal-check"></i></div>
           <div>
-            <div class="stat-num">{{ $bookings->count() }}</div>
+            <div class="stat-num">{{ $allBookings->count() }}</div>
             <div class="stat-lbl">Total Booking</div>
           </div>
         </div>
         <div class="stat-card pending">
           <div class="stat-icon-wrap"><i class="bi bi-clock-history"></i></div>
           <div>
-            <div class="stat-num">{{ $bookings->where('status_booking','pending')->count() }}</div>
+            <div class="stat-num">{{ $allBookings->where('status_booking','pending')->count() }}</div>
             <div class="stat-lbl">Menunggu</div>
           </div>
         </div>
         <div class="stat-card diterima">
           <div class="stat-icon-wrap"><i class="bi bi-check-circle"></i></div>
           <div>
-            <div class="stat-num">{{ $bookings->where('status_booking','diterima')->count() }}</div>
+            <div class="stat-num">{{ $allBookings->where('status_booking','diterima')->count() }}</div>
             <div class="stat-lbl">Diterima</div>
           </div>
         </div>
         <div class="stat-card ditolak">
           <div class="stat-icon-wrap"><i class="bi bi-x-circle"></i></div>
           <div>
-            <div class="stat-num">{{ $bookings->where('status_booking','ditolak')->count() }}</div>
-            <div class="stat-lbl">Ditolak</div>
+            <div class="stat-num">{{ $allBookings->whereIn('status_booking',['ditolak','dibatalkan'])->count() }}</div>
+            <div class="stat-lbl">Batal/Tolak</div>
+          </div>
+        </div>
+        <div class="stat-card selesai">
+          <div class="stat-icon-wrap"><i class="bi bi-flag"></i></div>
+          <div>
+            <div class="stat-num">{{ $allBookings->where('status_booking','selesai')->count() }}</div>
+            <div class="stat-lbl">Selesai</div>
           </div>
         </div>
       </div>
@@ -206,11 +219,9 @@ table { width:100%; border-collapse:collapse; }
           <a href="?status=semua" class="fpill f-semua {{ $activeStatus=='semua'?'active':'' }}">Semua</a>
 
 <a href="?status=pending" class="fpill f-pending {{ $activeStatus=='pending'?'active':'' }}">Pending</a>
-
 <a href="?status=diterima" class="fpill f-diterima {{ $activeStatus=='diterima'?'active':'' }}">Diterima</a>
-
 <a href="?status=ditolak" class="fpill f-ditolak {{ $activeStatus=='ditolak'?'active':'' }}">Ditolak</a>
-
+<a href="?status=dibatalkan" class="fpill f-dibatalkan {{ $activeStatus=='dibatalkan'?'active':'' }}">Dibatalkan</a>
 <a href="?status=selesai" class="fpill f-selesai {{ $activeStatus=='selesai'?'active':'' }}">Selesai</a>
  </div>
         </div>
@@ -261,7 +272,13 @@ table { width:100%; border-collapse:collapse; }
                 <td>
                   <span class="sbadge sbadge-{{ $booking->status_booking }}">
                     <span class="sbadge-dot"></span>
-                    {{ ucfirst($booking->status_booking) }}
+                    @if($booking->status_booking === 'ditolak')
+                      Ditolak Owner
+                    @elseif($booking->status_booking === 'dibatalkan')
+                      Dibatalkan User
+                    @else
+                      {{ ucfirst($booking->status_booking) }}
+                    @endif
                   </span>
                 </td>
                 <td>

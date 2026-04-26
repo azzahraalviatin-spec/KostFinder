@@ -12,7 +12,7 @@ class KeluhanController extends Controller
     {
         $keluhans = \App\Models\Keluhan::whereHas('booking', function($query) {
             $query->where('user_id', auth()->id());
-        })->with('booking.room.kost')->latest()->get();
+        })->with('booking.room.kost')->latest()->paginate(4);
 
         return view('user.keluhan', compact('keluhans'));
     }

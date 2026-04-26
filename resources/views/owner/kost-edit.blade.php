@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Edit Kost - KostFinder</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -251,6 +252,36 @@
                 @endforeach
               </div>
             </div>
+            
+            {{-- Fasilitas Berfoto --}}
+            <div class="form-card">
+              <h6><i class="bi bi-camera" style="color:var(--primary)"></i> Fasilitas Umum Berfoto</h6>
+              <p style="font-size:.76rem;color:var(--muted);margin-top:-.5rem;margin-bottom:.85rem;">Upload foto fasilitas umum beserta namanya (Misal: Foto Dapur, Judul: "Dapur Bersama").</p>
+              
+              {{-- List yang sudah ada --}}
+              <div id="facilityGallery" class="row g-3 mb-3">
+                @foreach($kost->generalFacilities as $fac)
+                  <div class="col-6 col-md-4 facility-item">
+                    <div class="card h-100 border-0 shadow-sm overflow-hidden" style="border-radius:.8rem; background:#f8fafc;">
+                      <img src="{{ asset('storage/'.$fac->foto) }}" class="card-img-top" style="height:100px; object-fit:cover;">
+                      <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold" style="font-size:.72rem;">{{ $fac->nama }}</span>
+                        <div class="form-check form-switch p-0 m-0">
+                          <input type="checkbox" name="hapus_fasilitas[]" value="{{ $fac->id }}" class="btn-check" id="del_fac_{{ $fac->id }}">
+                          <label class="btn btn-sm btn-outline-danger py-0 px-1" for="del_fac_{{ $fac->id }}" style="font-size:.65rem;"><i class="bi bi-trash"></i></label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+
+              {{-- Tombol Tambah --}}
+              <div id="newFacilityContainer"></div>
+              <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addNewFacilityRow()" style="border-radius:.5rem; font-size:.78rem; font-weight:700;">
+                <i class="bi bi-plus-lg me-1"></i> Tambah Foto Fasilitas
+              </button>
+            </div>
 
             {{-- Aturan --}}
             <div class="form-card">
@@ -260,98 +291,106 @@
             </div>
 
             {{-- Foto Properti --}}
-            <div class="form-card">
-              <h6><i class="bi bi-images" style="color:var(--primary)"></i> Foto Properti Kost</h6>
-
-              <div class="upload-section">
-
-                {{-- Foto yang sudah ada --}}
-                @if($kost->images && $kost->images->count() > 0)
-                  <div class="mb-3">
-                    <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;">
-                      Foto Saat Ini ({{ $kost->images->count() }} foto)
-                    </div>
-                    <div class="foto-existing-grid">
-                      @foreach($kost->images as $i => $img)
-                        <div class="foto-existing-item">
-                          @if($i === 0)
-                            <span class="foto-existing-badge"><i class="bi bi-star-fill me-1" style="font-size:.55rem;"></i>Cover</span>
-                          @else
-                            <span class="foto-existing-num">Foto {{ $i + 1 }}</span>
-                          @endif
-                          <img src="{{ asset('storage/'.$img->image_path) }}" alt="Foto {{ $i + 1 }}">
-                        </div>
-                      @endforeach
-                    </div>
-                    <div class="foto-warning mt-2">
-                      <i class="bi bi-arrow-repeat me-1"></i>
-                      Upload foto baru di bawah untuk <strong>mengganti</strong> semua foto di atas.
-                    </div>
-                  </div>
-                @else
-                  <div style="background:#f8fafc;border:1.5px dashed var(--line);border-radius:.9rem;padding:1.2rem;text-align:center;margin-bottom:1rem;color:var(--muted);font-size:.8rem;">
-                    <i class="bi bi-image" style="font-size:1.8rem;display:block;margin-bottom:.4rem;opacity:.3;"></i>
-                    Belum ada foto. Upload foto baru di bawah.
-                  </div>
-                @endif
-
-                {{-- Drop Zone --}}
-                <div class="drop-zone" id="dropZone">
-                  <div class="drop-zone-icon">
-                    <i class="bi bi-cloud-arrow-up-fill"></i>
-                  </div>
-                  <div class="drop-zone-title">Upload Foto Baru</div>
-                  <div class="drop-zone-sub">
-                    Seret & lepas foto di sini, atau klik tombol di bawah<br>
-                    untuk memilih dari galeri perangkat kamu
-                  </div>
-                  <button type="button" class="btn-pilih-foto" onclick="document.getElementById('fotoInput').click()">
-                    <i class="bi bi-folder2-open"></i> Pilih Foto
-                  </button>
-                  <div class="drop-zone-hint">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Maks. <strong>6 foto</strong> &bull; Format: JPG, PNG, WEBP &bull; Ukuran maks. <strong>2 MB</strong> per foto
-                  </div>
-                </div>
-
-                <input type="file" name="foto_kost[]" id="fotoInput"
-                       accept="image/jpeg,image/png,image/webp" multiple>
-
-                {{-- Info bar --}}
-                <div class="foto-info-bar" id="fotoInfoBar" style="display:none;">
-                  <div class="foto-info-left">
-                    <i class="bi bi-images"></i>
-                    <span id="fotoInfoText">0 dari 6 foto dipilih</span>
-                  </div>
-                  <div class="foto-counter" id="fotoDots">
-                    <div class="counter-dot" id="dot1"></div>
-                    <div class="counter-dot" id="dot2"></div>
-                    <div class="counter-dot" id="dot3"></div>
-                    <div class="counter-dot" id="dot4"></div>
-                    <div class="counter-dot" id="dot5"></div>
-                    <div class="counter-dot" id="dot6"></div>
-                  </div>
-                </div>
-
-                {{-- Preview grid --}}
-                <div class="preview-grid" id="previewGrid"></div>
-
-                {{-- Tips --}}
-                <div class="tips-box">
-                  <div class="tips-title">
-                    <i class="bi bi-lightbulb-fill" style="color:#f59e0b"></i>
-                    Tips foto profesional ala Mamikos
-                  </div>
-                  <ul>
-                    <li>Foto <strong>tampak depan bangunan</strong> sebagai foto utama/cover</li>
-                    <li>Pastikan pencahayaan <strong>terang & natural</strong>, hindari foto blur</li>
-                    <li>Ambil dari sudut yang memperlihatkan <strong>luas ruangan</strong></li>
-                    <li>Foto kedua bisa area <strong>kamar, dapur, atau fasilitas</strong> unggulan</li>
-                  </ul>
-                </div>
-
-              </div>
+          <div class="form-card">
+  <h6><i class="bi bi-images" style="color:var(--primary)"></i> Foto Properti Kost</h6>
+ 
+  <div class="upload-section">
+ 
+    {{-- ✅ FOTO YANG SUDAH ADA + TOMBOL HAPUS INDIVIDUAL --}}
+    @if($kost->images && $kost->images->count() > 0)
+      <div class="mb-3">
+        <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;">
+          Foto Saat Ini ({{ $kost->images->count() }} foto) — Klik 🗑️ untuk hapus satu foto
+        </div>
+ 
+        {{-- Grid foto existing --}}
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;" id="existingFotoGrid">
+          @foreach($kost->images as $i => $img)
+            <div class="foto-existing-item" id="foto-item-{{ $img->id }}" style="position:relative;border-radius:.9rem;overflow:hidden;border:1.5px solid var(--line);">
+ 
+              {{-- Badge cover --}}
+              @if($i === 0)
+                <span style="position:absolute;top:8px;left:8px;background:linear-gradient(135deg,#e8401c,#ff7043);color:#fff;font-size:.6rem;font-weight:800;padding:.25rem .6rem;border-radius:999px;z-index:2;">
+                  ⭐ Cover
+                </span>
+              @else
+                <span style="position:absolute;top:8px;left:8px;background:rgba(17,24,39,.65);color:#fff;font-size:.6rem;font-weight:700;padding:.25rem .6rem;border-radius:999px;z-index:2;">
+                  Foto {{ $i + 1 }}
+                </span>
+              @endif
+ 
+              {{-- ✅ TOMBOL HAPUS INDIVIDUAL --}}
+              <button type="button"
+                onclick="hapusFotoKost({{ $img->id }}, {{ $kost->id_kost }}, this)"
+                style="position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;background:rgba(220,38,38,.85);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;font-size:.8rem;transition:.2s;"
+                title="Hapus foto ini"
+                onmouseover="this.style.background='rgba(185,28,28,1)'"
+                onmouseout="this.style.background='rgba(220,38,38,.85)'">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+ 
+              <img src="{{ asset('storage/'.$img->image_path) }}"
+                   alt="Foto {{ $i + 1 }}"
+                   style="width:100%;height:120px;object-fit:cover;display:block;">
             </div>
+          @endforeach
+        </div>
+ 
+        {{-- Info --}}
+        <div style="margin-top:.65rem;background:#fff8f2;border:1px solid #ffd0c0;border-left:3px solid var(--primary);border-radius:.65rem;padding:.6rem .9rem;font-size:.75rem;color:#9a3412;">
+          <i class="bi bi-info-circle me-1"></i>
+          Upload foto baru di bawah untuk <strong>menambah</strong> foto (maks. 6 total).
+          Atau klik tombol 🗑️ merah untuk hapus foto satu per satu.
+        </div>
+      </div>
+    @else
+      <div style="background:#f8fafc;border:1.5px dashed var(--line);border-radius:.9rem;padding:1.2rem;text-align:center;margin-bottom:1rem;color:var(--muted);font-size:.8rem;">
+        <i class="bi bi-image" style="font-size:1.8rem;display:block;margin-bottom:.4rem;opacity:.3;"></i>
+        Belum ada foto. Upload foto baru di bawah.
+      </div>
+    @endif
+ 
+    {{-- Drop Zone upload foto baru --}}
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-zone-icon"><i class="bi bi-cloud-arrow-up-fill"></i></div>
+      <div class="drop-zone-title">Upload Foto Baru</div>
+      <div class="drop-zone-sub">
+        Seret & lepas foto di sini, atau klik tombol di bawah
+      </div>
+      <button type="button" class="btn-pilih-foto" onclick="document.getElementById('fotoInput').click()">
+        <i class="bi bi-folder2-open"></i> Pilih Foto
+      </button>
+      <div class="drop-zone-hint">
+        <i class="bi bi-info-circle me-1"></i>
+        Maks. <strong>6 foto</strong> &bull; Format: JPG, PNG, WEBP &bull; Maks. <strong>2 MB</strong> per foto
+      </div>
+    </div>
+ 
+    <input type="file" name="foto_kost[]" id="fotoInput" accept="image/jpeg,image/png,image/webp" multiple>
+ 
+    {{-- Info bar & preview --}}
+    <div class="foto-info-bar" id="fotoInfoBar" style="display:none;">
+      <div class="foto-info-left"><i class="bi bi-images"></i><span id="fotoInfoText">0 foto dipilih</span></div>
+      <div class="foto-counter" id="fotoDots">
+        <div class="counter-dot" id="dot1"></div><div class="counter-dot" id="dot2"></div>
+        <div class="counter-dot" id="dot3"></div><div class="counter-dot" id="dot4"></div>
+        <div class="counter-dot" id="dot5"></div><div class="counter-dot" id="dot6"></div>
+      </div>
+    </div>
+    <div class="preview-grid" id="previewGrid"></div>
+ 
+    {{-- Tips --}}
+    <div class="tips-box">
+      <div class="tips-title"><i class="bi bi-lightbulb-fill" style="color:#f59e0b"></i> Tips foto profesional</div>
+      <ul>
+        <li>Foto <strong>tampak depan bangunan</strong> sebagai foto utama/cover</li>
+        <li>Pastikan pencahayaan <strong>terang & natural</strong>, hindari foto blur</li>
+        <li>Ambil dari sudut yang memperlihatkan <strong>luas ruangan</strong></li>
+      </ul>
+    </div>
+ 
+  </div>
+</div>
 
           </div>
           {{-- END KOLOM KIRI --}}
@@ -606,6 +645,132 @@ document.getElementById('kostForm').addEventListener('submit', function() {
       dropZone.after(div);
       setTimeout(() => div.remove(), 4000);
     }
+    function addNewFacilityRow() {
+      const container = document.getElementById('newFacilityContainer');
+      const div = document.createElement('div');
+      div.className = 'row g-2 mb-2 align-items-center bg-light p-2 rounded-3 border-dashed';
+      div.style.border = '1px dashed #d1d5db';
+      div.innerHTML = `
+        <div class="col-md-5">
+          <input type="file" name="new_facility_photo[]" class="form-control form-control-sm" accept="image/*" required>
+        </div>
+        <div class="col-md-5">
+          <input type="text" name="new_facility_name[]" class="form-control form-control-sm" placeholder="Nama Fasilitas (Dapur, Parkir, dll)" required>
+        </div>
+        <div class="col-md-2 text-end">
+          <button type="button" class="btn btn-sm btn-danger py-1" onclick="this.closest('.row').remove()"><i class="bi bi-trash"></i></button>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+    // ✅ HAPUS FOTO INDIVIDUAL via AJAX
+async function hapusFotoKost(imageId, kostId, btn) {
+  if (!confirm('Yakin hapus foto ini?')) return;
+ 
+  // Disable tombol saat proses
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+ 
+  try {
+    const response = await fetch(`/owner/kost/${kostId}/image/${imageId}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      }
+    });
+ 
+    const data = await response.json();
+ 
+    if (data.success) {
+      // Animasi hapus card foto
+      const card = document.getElementById('foto-item-' + imageId);
+      if (card) {
+        card.style.transition = 'all .3s ease';
+        card.style.transform  = 'scale(.8)';
+        card.style.opacity    = '0';
+        setTimeout(() => {
+          card.remove();
+          // Update badge nomor foto yang tersisa
+          refreshFotoBadges();
+        }, 300);
+      }
+ 
+      // Tampilkan notif sukses
+      showToast('Foto berhasil dihapus!', 'success');
+ 
+      // Kalau semua foto habis, tampilkan placeholder
+      if (data.remaining === 0) {
+        const grid = document.getElementById('existingFotoGrid');
+        if (grid) {
+          grid.closest('.mb-3').innerHTML = `
+            <div style="background:#f8fafc;border:1.5px dashed var(--line);border-radius:.9rem;padding:1.2rem;text-align:center;margin-bottom:1rem;color:var(--muted);font-size:.8rem;">
+              <i class="bi bi-image" style="font-size:1.8rem;display:block;margin-bottom:.4rem;opacity:.3;"></i>
+              Belum ada foto. Upload foto baru di bawah.
+            </div>`;
+        }
+      }
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-trash-fill"></i>';
+      showToast('Gagal menghapus foto.', 'error');
+    }
+  } catch (e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-trash-fill"></i>';
+    showToast('Terjadi kesalahan. Coba lagi.', 'error');
+  }
+}
+ 
+// Update badge nomor setelah hapus
+function refreshFotoBadges() {
+  const items = document.querySelectorAll('#existingFotoGrid .foto-existing-item');
+  items.forEach((item, i) => {
+    const badge = item.querySelector('span');
+    if (!badge) return;
+    if (i === 0) {
+      badge.innerHTML = '⭐ Cover';
+      badge.style.background = 'linear-gradient(135deg,#e8401c,#ff7043)';
+    } else {
+      badge.innerHTML = `Foto ${i + 1}`;
+      badge.style.background = 'rgba(17,24,39,.65)';
+    }
+  });
+}
+ 
+// Toast notifikasi kecil
+function showToast(msg, type) {
+  const existing = document.getElementById('fotoToast');
+  if (existing) existing.remove();
+ 
+  const toast = document.createElement('div');
+  toast.id = 'fotoToast';
+  toast.style.cssText = `
+    position:fixed;bottom:24px;right:24px;z-index:9999;
+    background:${type === 'success' ? '#16a34a' : '#dc2626'};
+    color:#fff;padding:.75rem 1.2rem;border-radius:.75rem;
+    font-size:.82rem;font-weight:700;
+    box-shadow:0 8px 24px rgba(0,0,0,.2);
+    display:flex;align-items:center;gap:.5rem;
+    animation:slideInToast .3s ease;
+  `;
+  toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'x-circle-fill'}"></i> ${msg}`;
+  document.body.appendChild(toast);
+ 
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity .3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 2800);
+}
+</script>
+ 
+<style>
+@keyframes slideInToast {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
   </script>
 </body>
 </html>

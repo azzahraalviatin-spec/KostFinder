@@ -11,7 +11,8 @@ class PengaturanController extends Controller
 {
     public function index()
     {
-        return view('owner.Pengaturan');
+        $banks = \App\Models\OwnerBankAccount::where('user_id', auth()->id())->get();
+        return view('owner.Pengaturan', compact('banks'));
     }
 
     public function update(Request $request)
@@ -124,6 +125,40 @@ $user->save();
         $user->save();
 
         return back()->with('success', 'Pengaturan notifikasi disimpan!');
+    }
+
+    public function storeBank(Request $request)
+    {
+        $user_id = auth()->id();
+        $count = \App\Models\OwnerBankAccount::where('user_id', $user_id)->count();
+
+        if ($count >= 5) {
+            return back()->with('error', '❌ Maksimal 5 rekening bank yang bisa didaftarkan.');
+        }
+
+        $request->validate([
+            'nama_bank'      => 'required|string|max:100',
+            'nomor_rekening' => 'required|string|max:30',
+            'nama_pemilik'   => 'required|string|max:100',
+        ]);
+
+        \App\Models\OwnerBankAccount::create([
+            'user_id'        => $user_id,
+            'nama_bank'      => $request->nama_bank,
+            'nomor_rekening' => $request->nomor_rekening,
+            'nama_pemilik'   => $request->nama_pemilik,
+            'is_primary'     => ($count === 0), // Bank pertama jadi primary
+        ]);
+
+        return back()->with('success', '✅ Rekening bank berhasil ditambahkan!');
+    }
+
+    public function deleteBank($id)
+    {
+        $bank = \App\Models\OwnerBankAccount::where('user_id', auth()->id())->where('id', $id)->firstOrFail();
+        $bank->delete();
+
+        return back()->with('success', '🗑️ Rekening bank berhasil dihapus!');
     }
 
     public function hapusAkun()

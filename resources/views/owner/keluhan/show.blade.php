@@ -48,21 +48,102 @@
     .owner-footer { background:#fff; border-top:1px solid #e4e9f0; padding:.8rem 1.5rem; text-align:center; color:#8fa3b8; font-size:.72rem; }
 
     /* SHOW STYLES */
-    .detail-wrap { max-width:680px; }
-    .back-btn { display:inline-flex; align-items:center; gap:.4rem; color:#6b7280; font-size:.82rem; font-weight:600; text-decoration:none; margin-bottom:1.25rem; padding:.38rem .85rem; border-radius:.5rem; border:1.5px solid #e4e9f0; background:#fff; transition:all .2s; }
-    .back-btn:hover { border-color:var(--primary); color:var(--primary); }
-    .detail-card { background:#fff; border-radius:.85rem; border:1px solid #e4e9f0; overflow:hidden; margin-bottom:1rem; box-shadow:0 2px 6px rgba(0,0,0,.04); }
-    .detail-head { padding:1rem 1.2rem; border-bottom:1px solid #f0f3f8; display:flex; justify-content:space-between; align-items:center; }
-    .detail-body { padding:1.2rem; }
-    .info-row { display:flex; gap:.5rem; margin-bottom:.7rem; }
-    .info-label { font-size:.76rem; font-weight:700; color:var(--muted); min-width:110px; flex-shrink:0; }
-    .info-val   { font-size:.82rem; font-weight:600; color:#374151; }
-    .desc-box { background:#f7f3f0; border-radius:.75rem; padding:1rem; font-size:.83rem; color:#374151; line-height:1.7; margin-top:.5rem; }
-    .status-pill { font-size:.7rem; font-weight:700; padding:.22rem .7rem; border-radius:99px; }
-    .select-status { width:100%; padding:.55rem .9rem; border:1.5px solid #e4e9f0; border-radius:.65rem; font-size:.83rem; font-weight:600; color:#374151; background:#fff; outline:none; margin-bottom:.85rem; }
-    .select-status:focus { border-color:var(--primary); }
-    .btn-update { background:var(--primary); color:#fff; border:0; border-radius:.65rem; padding:.55rem 1.2rem; font-size:.83rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:.4rem; transition:background .18s; }
-    .btn-update:hover { background:#c73015; }
+    .detail-wrap { max-width:800px; margin: 0 auto; }
+    .back-btn { 
+      display:inline-flex; 
+      align-items:center; 
+      gap:.6rem; 
+      background: linear-gradient(135deg, #ff8c00, #e8401c);
+      color:#fff; 
+      font-size:.85rem; 
+      font-weight:700; 
+      text-decoration:none; 
+      margin-bottom:1.5rem; 
+      padding:.5rem 1.2rem; 
+      border-radius:10px; 
+      box-shadow: 0 4px 15px rgba(232, 64, 28, 0.25);
+      transition:all .3s ease; 
+      border: none;
+    }
+    .back-btn:hover { 
+      transform: translateX(-5px);
+      box-shadow: 0 6px 20px rgba(232, 64, 28, 0.4);
+      color: #fff;
+    }
+    .detail-card { 
+      background:#fff; 
+      border-radius:20px; 
+      border:1px solid rgba(228, 233, 240, 0.8); 
+      overflow:hidden; 
+      margin-bottom:1.5rem; 
+      box-shadow:0 10px 30px rgba(0,0,0,0.03); 
+    }
+    .detail-head { 
+      padding:1.25rem 1.5rem; 
+      border-bottom:1px solid #f0f3f8; 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center;
+      background: #fafbfc;
+    }
+    .detail-body { padding:1.5rem; }
+    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
+    .info-item { display: flex; flex-direction: column; gap: 0.35rem; }
+    .info-label { font-size:.72rem; font-weight:700; color:var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+    .info-val { font-size:.9rem; font-weight:700; color:#1e293b; display: flex; align-items: center; gap: 0.5rem; }
+    .desc-box { 
+      background:#f8fafc; 
+      border-radius:15px; 
+      padding:1.25rem; 
+      font-size:.88rem; 
+      color:#334155; 
+      line-height:1.8; 
+      margin-top:.5rem;
+      border: 1px solid #f1f5f9;
+    }
+    .status-pill { font-size:.72rem; font-weight:800; padding:.35rem .9rem; border-radius:99px; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .select-status { 
+      width:100%; 
+      padding:.75rem 1rem; 
+      border:2px solid #f1f5f9; 
+      border-radius:12px; 
+      font-size:.88rem; 
+      font-weight:600; 
+      color:#1e293b; 
+      background:#fff; 
+      outline:none; 
+      margin-bottom:1.25rem;
+      transition: all 0.2s;
+    }
+    .select-status:focus { border-color:var(--primary); background: #fff; }
+    .btn-update { 
+      background: linear-gradient(135deg, var(--dark), #2d3748);
+      color:#fff; 
+      border:0; 
+      border-radius:12px; 
+      padding:.75rem 1.5rem; 
+      font-size:.88rem; 
+      font-weight:700; 
+      cursor:pointer; 
+      display:inline-flex; 
+      align-items:center; 
+      gap:.6rem; 
+      transition:all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .btn-update:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    .img-preview {
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      border-radius: 15px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+    }
   </style>
 </head>
 <body>
@@ -77,39 +158,71 @@
       <div class="detail-wrap">
 
         <a href="{{ route('owner.keluhan.index') }}" class="back-btn">
-          <i class="bi bi-arrow-left"></i> Kembali
+          <i class="bi bi-arrow-left-short" style="font-size:1.4rem;"></i> Kembali
         </a>
 
         @if(session('success'))
-          <div class="alert alert-success mb-3" style="font-size:.82rem;border-radius:.75rem;">{{ session('success') }}</div>
+          <div class="alert alert-success border-0 shadow-sm mb-4" style="border-radius:15px; font-size:.85rem; background: #dcfce7; color: #166534;">
+            <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+          </div>
         @endif
 
         <div class="detail-card">
           <div class="detail-head">
             <div>
-              <div style="font-size:1rem;font-weight:800;color:var(--dark);">{{ $keluhan->judul ?? $keluhan->jenis ?? 'Detail Keluhan' }}</div>
-              <div style="font-size:.76rem;color:var(--muted);margin-top:.15rem;"><i class="bi bi-clock me-1"></i>{{ \Carbon\Carbon::parse($keluhan->created_at)->translatedFormat('d F Y, H:i') }}</div>
+              <div style="font-size:1.1rem;font-weight:800;color:var(--dark);">{{ $keluhan->judul ?? $keluhan->jenis ?? 'Detail Keluhan' }}</div>
+              <div style="font-size:.78rem;color:var(--muted);margin-top:.2rem;">
+                <i class="bi bi-calendar3 me-1"></i> {{ \Carbon\Carbon::parse($keluhan->created_at)->translatedFormat('d F Y') }}
+                <span class="mx-2">•</span>
+                <i class="bi bi-clock me-1"></i> {{ \Carbon\Carbon::parse($keluhan->created_at)->format('H:i') }} WIB
+              </div>
             </div>
             @php
               $st = $keluhan->status ?? 'pending';
-              $stStyles = ['pending'=>'background:#fff7ed;color:#ea580c;','diproses'=>'background:#eff6ff;color:#3b82f6;','selesai'=>'background:#f0fdf4;color:#16a34a;'];
+              $stStyles = [
+                'pending'  => 'background:#fff7ed;color:#ea580c;border:1px solid #ffedd5;',
+                'diproses' => 'background:#eff6ff;color:#3b82f6;border:1px solid #dbeafe;',
+                'selesai'  => 'background:#f0fdf4;color:#16a34a;border:1px solid #dcfce7;'
+              ];
               $stLabels = ['pending'=>'⏳ Pending','diproses'=>'🔄 Diproses','selesai'=>'✅ Selesai'];
             @endphp
-            <span class="status-pill" style="{{ $stStyles[$st] ?? $stStyles['pending'] }}">{{ $stLabels[$st] ?? ucfirst($st) }}</span>
+            <span class="status-pill" style="{{ $stStyles[$st] ?? $stStyles['pending'] }}">
+              {{ $stLabels[$st] ?? ucfirst($st) }}
+            </span>
           </div>
           <div class="detail-body">
-            <div class="info-row"><span class="info-label">🏠 Kost</span><span class="info-val">{{ $keluhan->booking->room->kost->nama_kost ?? '-' }}</span></div>
-            <div class="info-row"><span class="info-label">🚪 Kamar</span><span class="info-val">{{ $keluhan->booking->room->nomor_kamar ?? '-' }}</span></div>
-            <div class="info-row"><span class="info-label">👤 Penghuni</span><span class="info-val">{{ $keluhan->booking->user->name ?? '-' }}</span></div>
-            <div class="info-row"><span class="info-label">📋 Jenis</span><span class="info-val">{{ $keluhan->jenis ?? '-' }}</span></div>
-            <div style="margin-top:.5rem;">
-              <div style="font-size:.76rem;font-weight:700;color:var(--muted);margin-bottom:.35rem;">📝 Deskripsi</div>
-              <div class="desc-box">{{ $keluhan->deskripsi ?? $keluhan->isi ?? '-' }}</div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">🏠 Kost</span>
+                <span class="info-val">{{ $keluhan->booking->room->kost->nama_kost ?? '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">🚪 Nomor Kamar</span>
+                <span class="info-val">Kamar {{ $keluhan->booking->room->nomor_kamar ?? '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">👤 Nama Penghuni</span>
+                <span class="info-val">{{ $keluhan->booking->user->name ?? '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">📋 Jenis Keluhan</span>
+                <span class="info-val">{{ $keluhan->jenis ?? '-' }}</span>
+              </div>
             </div>
+
+            <div style="margin-top:1.5rem;">
+              <span class="info-label">📝 Deskripsi Keluhan</span>
+              <div class="desc-box">
+                {{ $keluhan->deskripsi ?? $keluhan->isi ?? '-' }}
+              </div>
+            </div>
+
             @if($keluhan->foto)
-              <div style="margin-top:1rem;">
-                <div style="font-size:.76rem;font-weight:700;color:var(--muted);margin-bottom:.35rem;">📷 Foto</div>
-                <img src="{{ asset('storage/'.$keluhan->foto) }}" class="rounded-3" style="max-width:100%;max-height:280px;object-fit:cover;border:1px solid #edf0f7;">
+              <div style="margin-top:1.5rem;">
+                <span class="info-label">📷 Foto Lampiran</span>
+                <div class="mt-2">
+                  <img src="{{ asset('storage/'.$keluhan->foto) }}" class="img-preview shadow-sm" alt="foto keluhan">
+                </div>
               </div>
             @endif
           </div>
@@ -117,24 +230,34 @@
 
         <div class="detail-card">
           <div class="detail-head">
-            <div style="font-weight:800;font-size:.9rem;color:var(--dark);">
-              <i class="bi bi-pencil-square me-2" style="color:var(--primary);"></i>Update Status
+            <div style="font-weight:800;font-size:.95rem;color:var(--dark);">
+              <i class="bi bi-pencil-square me-2" style="color:var(--primary);"></i> Tindak Lanjut Pemilik
             </div>
           </div>
           <div class="detail-body">
-            <form action="{{ route('owner.keluhan.updateStatus', $keluhan->id_keluhan) }}" method="POST">
+            <form action="{{ route('owner.keluhan.updateStatus', $keluhan->id) }}" method="POST">
               @csrf
-              <div style="font-size:.78rem;font-weight:700;color:#374151;margin-bottom:.4rem;">Pilih Status</div>
-              <select name="status" class="select-status">
-                <option value="pending"  {{ $keluhan->status == 'pending'  ? 'selected' : '' }}>⏳ Pending</option>
-                <option value="diproses" {{ $keluhan->status == 'diproses' ? 'selected' : '' }}>🔄 Diproses</option>
-                <option value="selesai"  {{ $keluhan->status == 'selesai'  ? 'selected' : '' }}>✅ Selesai</option>
-              </select>
+              <div class="row">
+                <div class="col-md-6">
+                  <div style="font-size:.8rem;font-weight:700;color:#475569;margin-bottom:.5rem;">Update Status</div>
+                  <select name="status" class="select-status">
+                    <option value="pending"  {{ $keluhan->status == 'pending'  ? 'selected' : '' }}>⏳ Menunggu (Pending)</option>
+                    <option value="diproses" {{ $keluhan->status == 'diproses' ? 'selected' : '' }}>🔄 Sedang Diproses</option>
+                    <option value="selesai"  {{ $keluhan->status == 'selesai'  ? 'selected' : '' }}>✅ Sudah Selesai</option>
+                  </select>
+                </div>
+              </div>
 
-              <div style="font-size:.78rem;font-weight:700;color:#374151;margin-bottom:.4rem;margin-top:.8rem;">Balasan untuk Penghuni (Opsional)</div>
-              <textarea name="balasan" class="select-status" rows="3" placeholder="Tulis tanggapan atau solusi untuk keluhan ini..." style="resize:none;">{{ $keluhan->balasan }}</textarea>
+              <div style="font-size:.8rem;font-weight:700;color:#475569;margin-bottom:.5rem;margin-top:.5rem;">Berikan Tanggapan ke Penghuni</div>
+              <textarea name="balasan" class="select-status" rows="4" 
+                placeholder="Tulis solusi atau informasi untuk penghuni agar mereka tahu keluhan sedang ditangani..." 
+                style="resize:none;">{{ $keluhan->balasan }}</textarea>
 
-              <button type="submit" class="btn-update mt-2"><i class="bi bi-check-circle"></i> Simpan Perubahan</button>
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn-update">
+                  <i class="bi bi-send-fill"></i> Simpan & Update Penghuni
+                </button>
+              </div>
             </form>
           </div>
         </div>

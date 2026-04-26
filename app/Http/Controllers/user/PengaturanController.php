@@ -23,7 +23,7 @@ public function index()
             'notif_pencarian'  => $request->has('notif_pencarian'),
         ]);
 
-        return redirect()->route('user.profil', ['tab' => 'pengaturan'])
+        return redirect()->route('user.pengaturan.index')
             ->with('success', 'Pengaturan privasi berhasil disimpan!');
     }
 
@@ -34,11 +34,10 @@ public function index()
         $user->update([
             'notif_booking'    => $request->has('notif_booking'),
             'notif_pembayaran' => $request->has('notif_pembayaran'),
-            'notif_promo'      => $request->has('notif_promo'),
             'notif_chat'       => $request->has('notif_chat'),
         ]);
 
-        return redirect()->route('user.profil', ['tab' => 'pengaturan'])
+        return redirect()->route('user.pengaturan.index')
             ->with('success', 'Pengaturan notifikasi berhasil disimpan!');
     }
 }

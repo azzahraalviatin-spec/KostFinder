@@ -113,6 +113,55 @@
   <h4 style="font-size:1.3rem;font-weight:700;color:var(--dark);margin:0;">
     Selamat datang, {{ auth()->user()->name }}! 
   </h4>
+  @if(isset($total_bank_accounts) && $total_bank_accounts == 0)
+    <div class="alert alert-warning border-0 shadow-sm mt-3 d-flex align-items-center" style="border-radius:12px; background: #fff7ed; border-left: 4px solid #ea580c !important;">
+      <i class="bi bi-exclamation-triangle-fill fs-4 me-3" style="color: #ea580c;"></i>
+      <div>
+        <div style="font-weight: 800; color: #9a3412; font-size: .88rem;">Pembayaran Belum Diatur!</div>
+        <div style="font-size: .78rem; color: #c2410c;">Anda wajib mengisi nomor rekening agar penyewa bisa melakukan pembayaran saat booking. 
+          <a href="{{ route('owner.pengaturan') }}?tab=pembayaran" class="fw-bold" style="color: #ea580c; text-decoration: underline;">Atur Sekarang →</a>
+        </div>
+      </div>
+    </div>
+  @endif
+
+  @php
+    $user = auth()->user();
+    $statusVerif = $user->status_verifikasi_identitas ?? 'belum_ada';
+  @endphp
+
+  @if($statusVerif !== 'disetujui')
+    <div class="alert border-0 shadow-sm mt-3 d-flex align-items-center" 
+      style="border-radius:12px; 
+      @if($statusVerif == 'pending') background: #eff6ff; border-left: 4px solid #3b82f6 !important;
+      @elseif($statusVerif == 'ditolak') background: #fef2f2; border-left: 4px solid #dc2626 !important;
+      @else background: #fff1f2; border-left: 4px solid #f43f5e !important; @endif">
+      
+      @if($statusVerif == 'pending')
+        <i class="bi bi-hourglass-split fs-4 me-3" style="color: #3b82f6;"></i>
+        <div>
+          <div style="font-weight: 800; color: #1e40af; font-size: .88rem;">Identitas Sedang Ditinjau</div>
+          <div style="font-size: .78rem; color: #1e40af;">Admin sedang memverifikasi KTP Anda. Mohon tunggu maksimal 1x24 jam.</div>
+        </div>
+      @elseif($statusVerif == 'ditolak')
+        <i class="bi bi-x-circle-fill fs-4 me-3" style="color: #dc2626;"></i>
+        <div>
+          <div style="font-weight: 800; color: #991b1b; font-size: .88rem;">Verifikasi Identitas Ditolak</div>
+          <div style="font-size: .78rem; color: #991b1b;">{{ $user->catatan_verifikasi ?? 'Data KTP tidak valid atau foto kurang jelas.' }} 
+            <a href="{{ route('owner.pengaturan') }}?tab=akun" class="fw-bold" style="color: #dc2626; text-decoration: underline;">Upload Ulang →</a>
+          </div>
+        </div>
+      @else
+        <i class="bi bi-person-badge-fill fs-4 me-3" style="color: #f43f5e;"></i>
+        <div>
+          <div style="font-weight: 800; color: #9f1239; font-size: .88rem;">Wajib Verifikasi Identitas!</div>
+          <div style="font-size: .78rem; color: #9f1239;">Silakan upload KTP dan Foto Selfie untuk keamanan dan kepercayaan penyewa. 
+            <a href="{{ route('owner.pengaturan') }}?tab=akun" class="fw-bold" style="color: #f43f5e; text-decoration: underline;">Verifikasi Sekarang →</a>
+          </div>
+        </div>
+      @endif
+    </div>
+  @endif
 </div>
  
       {{-- STAT CARDS --}}

@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Owner;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use App\Notifications\BookingStatusNotification;
 
 class BookingController extends Controller
 {
     public function index(Request $request)
     {
         $status          = $request->query('status', 'semua');
-        $allowedStatuses = ['pending', 'diterima', 'ditolak', 'selesai'];
+        $allowedStatuses = ['pending', 'diterima', 'ditolak', 'selesai', 'dibatalkan'];
 
         if (!in_array($status, $allowedStatuses, true) && $status !== 'semua') {
             $status = 'semua';
@@ -40,6 +41,9 @@ class BookingController extends Controller
         $booking = $this->findOwnerBooking($booking->getKey());
         $booking->update(['status_booking' => 'diterima']);
 
+        // 🔔 NOTIFIKASI KE USER
+        $booking->user->notify(new BookingStatusNotification($booking));
+
         return back()->with('success', 'Booking berhasil diterima!');
     }
 
@@ -55,6 +59,9 @@ class BookingController extends Controller
             'alasan_batal'   => $request->alasan_batal ?? 'Tidak ada alasan yang diberikan.',
         ]);
 
+        // 🔔 NOTIFIKASI KE USER
+        $booking->user->notify(new BookingStatusNotification($booking));
+
         return back()->with('success', 'Booking berhasil ditolak!');
     }
 
@@ -67,8 +74,11 @@ class BookingController extends Controller
         $totalHarga = $booking->total_harga
             ?? (($booking->room->harga ?? 0) * ($booking->durasi_sewa ?? 1));
 
-        // Komisi admin 10%, pendapatan owner 90%
-        $komisiAdmin      = round($totalHarga * 0.10);
+        // Ambil komisi dari settings, default 10% jika tidak ada
+        $settings = \App\Models\Setting::first();
+        $persenKomisi = $settings ? ($settings->komisi_admin / 100) : 0.10;
+
+        $komisiAdmin      = round($totalHarga * $persenKomisi);
         $pendapatanOwner  = $totalHarga - $komisiAdmin;
 
         $booking->update([

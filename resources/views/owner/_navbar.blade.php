@@ -2,36 +2,136 @@
      _navbar.blade.php  –  KostFinder Panel Owner
      ============================================================ --}}
 
-<div class="topbar">
+<style>
+  .topbar {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    background: #fff;
+    border-bottom: 1px solid #f0f3f8;
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+  }
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0 1rem;
+    border-radius: 999px;
+    height: 42px;
+    width: 280px;
+    transition: all .2s;
+  }
+  .search-box:focus-within {
+    background: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(232, 64, 28, 0.08);
+  }
+  .search-box input {
+    border: none;
+    background: transparent;
+    font-size: .85rem;
+    color: var(--dark);
+    width: 100%;
+    outline: none;
+  }
+  .icon-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+    text-decoration: none;
+  }
+  .icon-btn:hover {
+    background: #f8fafc;
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+  .icon-btn i { font-size: 1.2rem; }
+  .notif-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border: 2px solid #fff;
+    border-radius: 50%;
+  }
+  .sidebar-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: #fff5f2;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .sidebar-toggle-btn:hover { background: var(--primary); color: #fff; }
 
-{{-- KIRI: toggle + tanggal (tanpa garis/divider) --}}
-<div class="topbar-left">
-  <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
-    <i class="bi bi-list"></i>
-  </button>
-  <span style="font-size:.85rem;font-weight:600;color:var(--dark);">
-    {{ now()->translatedFormat('l, d F Y') }}
-  </span>
-</div>
+  @media (max-width: 768px) {
+    .topbar-left span { display: none; }
+    .search-box { width: 150px; }
+  }
+</style>
+
+<div class="topbar">
+  {{-- KIRI: toggle + tanggal --}}
+  <div class="topbar-left">
+    <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+      <i class="bi bi-list"></i>
+    </button>
+    <div style="display: flex; flex-direction: column;">
+      <span style="font-size: .85rem; font-weight: 700; color: #1e293b;">
+        {{ now()->translatedFormat('l, d F Y') }}
+      </span>
+      <span style="font-size: .7rem; color: #94a3b8; font-weight: 500;">Panel Pemilik Kost</span>
+    </div>
+  </div>
 
   {{-- KANAN: search + notif + gear --}}
   <div class="topbar-right">
-
     {{-- SEARCH --}}
     @php
       $searchEnabled = request()->routeIs('owner.kost.*', 'owner.kamar.*', 'owner.booking.index');
     @endphp
     <div style="position:relative;">
-      <div class="search-box" style="{{ !$searchEnabled ? 'background:#f3f4f6;cursor:not-allowed;' : '' }}">
-        <i class="bi bi-search" style="font-size:.85rem;color:{{ $searchEnabled ? 'var(--muted)' : '#c5cdd8' }};"></i>
+      <div class="search-box" style="{{ !$searchEnabled ? 'opacity: 0.6; cursor:not-allowed;' : '' }}">
+        <i class="bi bi-search" style="color: {{ $searchEnabled ? '#64748b' : '#cbd5e1' }};"></i>
         <input type="text"
                id="globalSearch"
                autocomplete="off"
                placeholder="{{ $searchEnabled ? 'Cari kost atau kamar...' : 'Pencarian tidak tersedia' }}"
                {{ !$searchEnabled ? 'disabled' : '' }}>
       </div>
-      <div id="searchDropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:280px;background:#fff;border-radius:.75rem;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:9999;overflow:hidden;">
-        <div id="searchResults" style="max-height:300px;overflow-y:auto;"></div>
+      <div id="searchDropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:320px;background:#fff;border-radius:1rem;border:1px solid #e2e8f0;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);z-index:9999;overflow:hidden;">
+        <div id="searchResults" style="max-height:350px;overflow-y:auto;"></div>
       </div>
     </div>
 
@@ -41,22 +141,22 @@
         ->where('status_booking','pending')->count();
     @endphp
     <div style="position:relative;">
-      <button class="icon-btn" id="notifBtn" onclick="toggleNotif()">
+      <button class="icon-btn" id="notifBtn" onclick="toggleNotif()" title="Notifikasi">
         <i class="bi bi-bell"></i>
         @if($notifCount > 0)
           <span class="notif-dot" id="notifDot"></span>
         @endif
       </button>
 
-      <div id="notifDropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:300px;background:#fff;border-radius:.75rem;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:9999;overflow:hidden;">
-        <div style="padding:.75rem 1rem;border-bottom:1px solid #f0f3f8;display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:.82rem;font-weight:700;color:var(--dark);">Notifikasi</span>
+      <div id="notifDropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:320px;background:#fff;border-radius:1rem;border:1px solid #e2e8f0;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);z-index:9999;overflow:hidden;">
+        <div style="padding:1rem; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; background: #f8fafc;">
+          <span style="font-size:.85rem; font-weight:800; color:#1e293b;">Notifikasi</span>
           @if($notifCount > 0)
-            <span style="background:var(--primary);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;">{{ $notifCount }} baru</span>
+            <span style="background:#ef4444; color:#fff; font-size:.65rem; font-weight:700; padding:.2rem .6rem; border-radius:999px;">{{ $notifCount }} baru</span>
           @endif
         </div>
 
-        <div style="max-height:320px;overflow-y:auto;">
+        <div style="max-height:350px; overflow-y:auto;">
           @php
             $notifBookings = \App\Models\Booking::whereHas('room.kost', fn($q) => $q->where('owner_id', auth()->id()))
               ->where('status_booking','pending')
@@ -66,31 +166,32 @@
 
           @forelse($notifBookings as $nb)
             <a href="{{ route('owner.booking.index') }}"
-               style="display:flex;align-items:flex-start;gap:.7rem;padding:.75rem 1rem;text-decoration:none;border-bottom:1px solid #f8fafd;transition:background .15s;background:#fff;"
-               onmouseover="this.style.background='#f8fafd'"
+               style="display:flex; align-items:flex-start; gap:.8rem; padding:1rem; text-decoration:none; border-bottom:1px solid #f1f5f9; transition:all .2s; background:#fff;"
+               onmouseover="this.style.background='#f8fafc'"
                onmouseout="this.style.background='#fff'">
-              <div style="width:32px;height:32px;border-radius:50%;background:#fff5f2;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;">📋</div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:.8rem;font-weight:600;color:var(--dark);">Booking Baru Masuk</div>
-                <div style="font-size:.73rem;color:var(--muted);margin-top:.15rem;">
-                  {{ $nb->user->name ?? '—' }} → {{ optional($nb->room->kost)->nama_kost ?? '—' }}
+              <div style="width:36px; height:36px; border-radius:10px; background:#fff5f2; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem;">📋</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:.8rem; font-weight:700; color:#1e293b;">Booking Baru</div>
+                <div style="font-size:.75rem; color:#64748b; margin-top:.2rem; line-height: 1.4;">
+                  <strong>{{ $nb->user->name ?? 'User' }}</strong> memesan di <strong>{{ optional($nb->room->kost)->nama_kost ?? 'Kost' }}</strong>
                 </div>
-                <div style="font-size:.7rem;color:#bbb;margin-top:.1rem;">{{ $nb->created_at->diffForHumans() }}</div>
+                <div style="font-size:.65rem; color:#94a3b8; margin-top:.4rem; display:flex; align-items:center; gap:.3rem;">
+                   <i class="bi bi-clock"></i> {{ $nb->created_at->diffForHumans() }}
+                </div>
               </div>
-              <span style="background:#fff7ed;color:#ea580c;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;flex-shrink:0;">Pending</span>
             </a>
           @empty
-            <div style="text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.82rem;">
-              <i class="bi bi-bell-slash" style="font-size:1.5rem;display:block;margin-bottom:.4rem;opacity:.3;"></i>
-              Tidak ada notifikasi baru
+            <div style="text-align:center; padding:3rem 1.5rem; color:#94a3b8;">
+              <i class="bi bi-bell-slash" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.2;"></i>
+              <div style="font-size:.85rem;">Tidak ada notifikasi baru</div>
             </div>
           @endforelse
         </div>
 
         @if($notifCount > 0)
-          <div style="padding:.6rem 1rem;border-top:1px solid #f0f3f8;text-align:center;">
-            <a href="{{ route('owner.booking.index') }}" style="font-size:.78rem;color:var(--primary);font-weight:600;text-decoration:none;">
-              Lihat Semua Booking →
+          <div style="padding:.8rem; background:#f8fafc; text-align:center; border-top: 1px solid #f1f5f9;">
+            <a href="{{ route('owner.booking.index') }}" style="font-size:.78rem; color:var(--primary); font-weight:700; text-decoration:none;">
+              Lihat Semua Aktivitas <i class="bi bi-arrow-right ms-1"></i>
             </a>
           </div>
         @endif
@@ -98,10 +199,9 @@
     </div>
 
     {{-- GEAR --}}
-    <a href="{{ route('owner.pengaturan') }}" class="icon-btn">
-      <i class="bi bi-gear"></i>
+    <a href="{{ route('owner.pengaturan') }}" class="icon-btn" title="Pengaturan Akun">
+      <i class="bi bi-person-gear"></i>
     </a>
-
   </div>
 </div>
 

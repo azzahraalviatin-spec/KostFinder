@@ -146,7 +146,7 @@
               <div class="kel-date"><i class="bi bi-clock me-1"></i>{{ \Carbon\Carbon::parse($keluhan->created_at)->translatedFormat('d M Y, H:i') }}</div>
             </div>
             <div class="kel-card-foot">
-              <a href="{{ route('owner.keluhan.show', $keluhan->id_keluhan) }}" class="btn-detail">
+              <a href="{{ route('owner.keluhan.show', $keluhan->id) }}" class="btn-detail">
                 <i class="bi bi-eye"></i> Lihat Detail
               </a>
             </div>

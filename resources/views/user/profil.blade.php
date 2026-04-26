@@ -5,7 +5,7 @@
 @section('content')
 @php
   $user = auth()->user();
-  $fields = ['name','email','no_hp','jenis_kelamin','tanggal_lahir','pekerjaan','kota'];
+  $fields = ['name','email','no_hp','jenis_kelamin','tanggal_lahir','pekerjaan','kota','foto_ktp'];
   $filled = collect($fields)->filter(fn($f) => !empty($user->$f))->count();
   $pct = round(($filled / count($fields)) * 100);
 @endphp

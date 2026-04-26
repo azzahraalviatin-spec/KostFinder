@@ -4,6 +4,7 @@
 
 @section('styles')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
 <style>
 /* ══════════════════════════════════════
    HERO HEADER
@@ -54,8 +55,9 @@
 }
 .social-container a:hover { transform: scale(1.2); color: #E8401C; }
 
+
 /* Leaflet Map */
-#map { height: 200px; border-radius: 1rem; margin-top: 1rem; border: 1px solid #e5e7eb; }
+#map { height: 220px; border-radius: 1rem; margin-top: 1rem; border: 1px solid #e5e7eb; }
 
 /* Gallery Database */
 .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
@@ -99,9 +101,9 @@
                     </div>
 
                     <div class="social-container">
-                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="https://www.instagram.com/kostfinder.id?igsh=ODAwNzZvbGlpN3l0" target="_blank" title="Instagram KostFinder"><i class="bi bi-instagram"></i></a>
                         <a href="#"><i class="bi bi-telegram"></i></a>
-                        <a href="#"><i class="bi bi-tiktok"></i></a>
+                        <a href="https://www.tiktok.com/@kostfinder?_r=1&_t=ZS-95pFzTcE9WW" target="_blank" title="TikTok KostFinder"><i class="bi bi-tiktok"></i></a>
                     </div>
 
                     <div id="map"></div>
@@ -139,15 +141,15 @@
 @section('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Koordinat Sidoarjo (Banjarkemantren)
     var map = L.map('map').setView([-7.4215, 112.7212], 15);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
     L.marker([-7.4215, 112.7212]).addTo(map)
-        .bindPopup('Kantor KostFinder Sidoarjo')
+        .bindPopup('<b>Kantor KostFinder</b><br>Desa Banjarkemantren, Sidoarjo')
         .openPopup();
 </script>
 @endsection
+

@@ -132,9 +132,8 @@
 
             {{-- Foto --}}
             <div class="kost-card-img">
-              @if($kost->foto_utama_url)
-                <img src="{{ $kost->foto_utama_url }}" alt="{{ $kost->nama_kost }}">
-              @else
+            @if($kost->images->isNotEmpty())
+    <img src="{{ asset('storage/' . $kost->images->first()->image_path) }}" alt="{{ $kost->nama_kost }}"> @else
                 <div class="no-img"><i class="bi bi-house"></i></div>
               @endif
               <span class="tipe-badge">{{ ucfirst($kost->tipe_kost) }}</span>

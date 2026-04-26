@@ -74,7 +74,7 @@
     display: flex;
     align-items: center;
     gap: 1.8rem;
-    margin: 0 auto;
+    margin: 0;
     list-style: none;
     padding: 0;
     margin-bottom: 0;
@@ -107,8 +107,7 @@
 
   /* ── SEARCH BAR ── */
   #navbarSearch {
-    flex: 1;
-    max-width: 520px;
+    max-width: 440px;
     margin: 0 auto;
   }
   .kf-search-wrap {
@@ -335,9 +334,9 @@
       <i class="bi bi-list" style="font-size:1.2rem;"></i>
     </button>
 
-   <div class="navbar-collapse" id="navMenu">
-    {{-- ── SEARCH BAR (tampil di halaman Cari Kost & setelah scroll hero) ── --}}
-      <div id="navbarSearch" class="d-none position-relative">
+    <div class="navbar-collapse" id="navMenu">
+      {{-- ── SEARCH BAR (tampil di HP, sembunyi di Laptop sesuai permintaan) ── --}}
+      <div id="navbarSearch" class="d-none d-lg-none position-relative">
         <div class="kf-search-wrap">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                stroke="#a0aabf" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0;">
@@ -367,28 +366,28 @@
           </div>
 
           <div class="kf-scroll-x">
-    @foreach([
-        ['nama' => 'Surabaya',   'file' => 'surabaya.jpg'],
-        ['nama' => 'Malang',     'file' => 'malang.jpg'],
-        ['nama' => 'Sidoarjo',   'file' => 'sidoarjo.jpg'],
-        ['nama' => 'Gresik',     'file' => 'gresik.jpg'],
-        ['nama' => 'Jember',     'file' => 'jember.jpg'],
-        ['nama' => 'Kediri',     'file' => 'kediri.jpg'],
-        ['nama' => 'Banyuwangi', 'file' => 'banyuwangi.jpg'],
-        ['nama' => 'Mojokerto',  'file' => 'Mojokerto.jpg'],
-        ['nama' => 'Pasuruan', 'file' => 'pasuruan.jpg'],
-    ] as $c)
-    <div class="text-center flex-shrink-0" style="cursor:pointer;" onclick="setNavSearch('{{ $c['nama'] }}')">
-        <img src="{{ asset('images/kota/' . $c['file']) }}"
-             class="rounded-3 mb-1"
-             style="width:96px;height:58px;object-fit:cover;box-shadow:0 8px 16px rgba(15,25,35,.08);"
-             loading="lazy">
-        <div style="font-size:.72rem;font-weight:600;color:#374151;">{{ $c['nama'] }}</div>
-    </div>
-    @endforeach
-</div>
+            @foreach([
+                ['nama' => 'Surabaya',   'file' => 'surabaya.jpg'],
+                ['nama' => 'Malang',     'file' => 'malang.jpg'],
+                ['nama' => 'Sidoarjo',   'file' => 'sidoarjo.jpg'],
+                ['nama' => 'Gresik',     'file' => 'gresik.jpg'],
+                ['nama' => 'Jember',     'file' => 'jember.jpg'],
+                ['nama' => 'Kediri',     'file' => 'kediri.jpg'],
+                ['nama' => 'Banyuwangi', 'file' => 'banyuwangi.jpg'],
+                ['nama' => 'Mojokerto',  'file' => 'Mojokerto.jpg'],
+                ['nama' => 'Pasuruan', 'file' => 'pasuruan.jpg'],
+            ] as $c)
+            <div class="text-center flex-shrink-0" style="cursor:pointer;" onclick="setNavSearch('{{ $c['nama'] }}')">
+                <img src="{{ asset('images/kota/' . $c['file']) }}"
+                     class="rounded-3 mb-1"
+                     style="width:96px;height:58px;object-fit:cover;box-shadow:0 8px 16px rgba(15,25,35,.08);"
+                     loading="lazy">
+                <div style="font-size:.72rem;font-weight:600;color:#374151;">{{ $c['nama'] }}</div>
+            </div>
+            @endforeach
+          </div>
 
-<div class="d-flex gap-3 border-bottom mb-2">
+          <div class="d-flex gap-3 border-bottom mb-2">
             <button class="btn btn-link p-0 pb-2 fw-bold text-decoration-none"
                     id="tabBtnDaerah"
                     style="color:#E8401C;border-bottom:2px solid #E8401C;font-size:.82rem;border-radius:0;"
@@ -400,25 +399,25 @@
           </div>
 
           <div id="navTabDaerah" class="d-flex flex-wrap gap-2">
-          @foreach(['Surabaya','Malang','Sidoarjo','Gresik','Jember','Kediri','Banyuwangi','Mojokerto','Pasuruan'] as $d)    <span class="nav-chip" onclick="setNavSearch('{{ $d }}')">{{ $d }}</span>
-    @endforeach
-</div>
-
+            @foreach(['Surabaya','Malang','Sidoarjo','Gresik','Jember','Kediri','Banyuwangi','Mojokerto','Pasuruan'] as $d)
+              <span class="nav-chip" onclick="setNavSearch('{{ $d }}')">{{ $d }}</span>
+            @endforeach
+          </div>
 
           <div id="navTabKampus" class="d-none d-flex flex-wrap gap-2">
             @foreach(['ITS Surabaya','UNAIR','UB Malang','UIN Malang','UNEJ Jember','UNESA'] as $k)
-            <span class="nav-chip" onclick="setNavSearch('{{ $k }}')">{{ $k }}</span>
+              <span class="nav-chip" onclick="setNavSearch('{{ $k }}')">{{ $k }}</span>
             @endforeach
           </div>
         </div>
       </div>
 
-      {{-- ── NAV LINKS (default tampil, disembunyikan JS jika perlu) ── --}}
-      <ul class="kf-nav-links" id="navMenuList">
+      {{-- ── NAV LINKS (Pindah ke kanan sebelum tombol masuk) ── --}}
+      <ul class="kf-nav-links ms-auto me-lg-4" id="navMenuList">
         <li>
           <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}"
              href="{{ route('home') }}">
-            <i class="bi bi-house-door me-1 d-lg-none"></i>Home
+            <i class="bi bi-house-door me-1 d-lg-none"></i>Beranda
           </a>
         </li>
         <li>
@@ -434,16 +433,16 @@
           </a>
         </li>
         <li>
-  <a class="nav-link {{ request()->is('hubungi-kami*') ? 'active' : '' }}"
-     href="{{ route('hubungi.kami') }}">
-    <i class="bi bi-envelope me-1 d-lg-none"></i>Hubungi
-  </a>
-</li>
+          <a class="nav-link {{ request()->is('hubungi-kami*') ? 'active' : '' }}"
+             href="{{ route('hubungi.kami') }}">
+            <i class="bi bi-envelope me-1 d-lg-none"></i>Hubungi
+          </a>
+        </li>
       </ul>
 
       
       {{-- ── TOMBOL KANAN ── --}}
-      <div class="kf-btns ms-lg-auto ms-0">
+      <div class="kf-btns ms-0">
         @guest
           <a href="{{ route('login') }}" class="btn-kf-masuk">Masuk</a>
           <button class="btn-kf-daftar" data-bs-toggle="modal" data-bs-target="#modalRole">Daftar</button>
@@ -615,45 +614,34 @@
   const navLinks = document.getElementById('navMenuList');
 
   const isCariKost = {{ request()->is('cari-kost*') ? 'true' : 'false' }};
+  const isHome     = {{ request()->routeIs('home') ? 'true' : 'false' }};
   const heroEl     = document.querySelector('.hero');
 
   if (isCariKost) {
-    // Semua ukuran layar: tampilkan search, sembunyikan nav links
+    // ── Halaman Cari Kost: Tampilkan search
     if (navSrch)  navSrch.classList.remove('d-none');
-    if (navLinks) navLinks.classList.add('d-none');
 
-    // Isi search input dari URL
     const params = new URLSearchParams(window.location.search);
     const inp = document.getElementById('navSearchInput');
     if (inp) {
         if (params.get('q'))    inp.value = params.get('q');
         if (params.get('kota')) inp.value = params.get('kota');
     }
-    // Isi search input dari URL
-    const params = new URLSearchParams(window.location.search);
-    const inp = document.getElementById('navSearchInput');
-    if (inp) {
-        if (params.get('q'))    inp.value = params.get('q');
-        if (params.get('kota')) inp.value = params.get('kota');
-    }
-    else if (heroEl) {
-    // ── Halaman Home (ada .hero):
-    //    Nav links tampil, search tersembunyi → keduanya toggle saat scroll melewati hero
-    if (navLinks) navLinks.classList.remove('d-none');
-    if (navSrch)  navSrch.classList.add('d-none');
-
+  } else if (isHome && heroEl) {
+    // ── Halaman Home: Toggle saat scroll melewati hero
     window.addEventListener('scroll', function () {
-      const scrolled   = window.scrollY > 10;
-      const heroPassed = heroEl.getBoundingClientRect().bottom < 70;
+      const scrolled   = window.scrollY > 50;
+      const heroPassed = heroEl.getBoundingClientRect().bottom < 80;
 
       navbar.classList.toggle('scrolled', scrolled);
-      navSrch  && navSrch.classList.toggle('d-none', !heroPassed);
-      navLinks && navLinks.classList.toggle('d-none',  heroPassed);
+      
+      if (navSrch) {
+          if (heroPassed) navSrch.classList.remove('d-none');
+          else navSrch.classList.add('d-none');
+      }
     });
-
   } else {
-    // ── Halaman lain (Panduan, dll):
-    //    Nav links tampil, search tersembunyi, tidak ada toggle
+    // ── Halaman lain: Nav links tampil, search tersembunyi
     if (navLinks) navLinks.classList.remove('d-none');
     if (navSrch)  navSrch.classList.add('d-none');
   }

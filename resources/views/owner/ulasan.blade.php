@@ -111,7 +111,6 @@
     .reply-box { background: #f0f9ff; border-left: 3px solid #3b82f6; border-radius: 0 8px 8px 0; padding: .6rem .9rem; margin-top: .75rem; }
     .reply-label { font-size: .7rem; font-weight: 700; color: #3b82f6; margin-bottom: 3px; }
     .reply-text { font-size: .82rem; color: #334155; }
-    .pending-blur { filter: blur(4px); user-select: none; pointer-events: none; }
     .reply-form-wrap { margin-top: .8rem; }
     .reply-form-wrap .form-control { font-size: .82rem; border-color: #e4e9f0; resize: none; }
     .reply-form-wrap .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(232,64,28,.1); }
@@ -377,29 +376,44 @@
               {{-- ── TAB: PENDING ── --}}
               <div id="tab-pending" class="tab-content-pane" style="display:none;">
                 <div class="alert rounded-3 small py-2 mb-3 d-flex align-items-center gap-2"
-                  style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;">
-                  <i class="bi bi-info-circle-fill" style="color:#f59e0b;font-size:.95rem;"></i>
-                  Ulasan ini sedang ditinjau admin sebelum ditampilkan ke publik.
+                  style="background:#f0f9ff;border:1px solid #bae6fd;color:#0369a1;">
+                  <i class="bi bi-shield-check" style="color:#0ea5e9;font-size:.95rem;"></i>
+                  Ulasan baru sedang dalam tahap pengecekan kualitas sistem untuk memastikan keamanan konten.
                 </div>
 
                 @forelse($pending_reviews as $rev)
                   <div class="review-card pending-card">
                     <div class="d-flex justify-content-between align-items-start">
                       <div class="d-flex align-items-center gap-2">
-                        <div class="review-avatar" style="background:#e5e7eb;color:#6b7280;">??</div>
+                      <div class="review-avatar">{{ strtoupper(substr($rev->user->name ?? 'U', 0, 2)) }}</div>
                         <div>
-                          <div class="review-name">Nama disembunyikan</div>
+                          <div class="review-name">{{ $rev->user->name ?? 'Pengguna' }}</div>
                           <div class="review-meta"><i class="bi bi-clock me-1"></i>{{ $rev->created_at->diffForHumans() }}</div>
                         </div>
                       </div>
                       <div class="text-end flex-shrink-0 ms-2">
                         <div class="star-display">{{ str_repeat('★', $rev->rating) }}{{ str_repeat('☆', 5 - $rev->rating) }}</div>
-                        <span class="badge" style="background:#fef3c7;color:#92400e;font-size:.66rem;margin-top:3px;">Pending verifikasi</span>
+                        <span class="badge" style="background:#f0f9ff;color:#0369a1;font-size:.66rem;margin-top:3px;border:1px solid #bae6fd;">
+                          <i class="bi bi-shield-fill-exclamation me-1"></i>Sedang Ditinjau
+                        </span>
                       </div>
                     </div>
-                    <p class="review-comment pending-blur">{{ $rev->komentar }}</p>
-                    <div class="small mt-2" style="color:#d97706;">
-                      <i class="bi bi-eye-slash me-1"></i>Konten disamarkan sampai admin selesai memverifikasi
+                    <p class="review-comment">{{ $rev->komentar }}</p>
+                    <div class="alert py-1 px-2 rounded-2 mt-2 mb-0" style="background:#f8fafc; border:1px solid #e2e8f0; font-size:0.7rem; color:#64748b; width:fit-content;">
+                      <i class="bi bi-info-circle me-1"></i>Ulasan akan tampil otomatis setelah pengecekan selesai atau jika Anda membalasnya sekarang.
+                    </div>
+                    <div class="reply-form-wrap">
+                      <form action="{{ route('owner.review.reply', $rev->id) }}" method="POST">
+                        @csrf
+                        <div class="d-flex gap-2 align-items-start">
+                          <textarea name="balasan" rows="2" class="form-control form-control-sm rounded-3"
+                            placeholder="Tulis balasan & setujui ulasan ini..." required minlength="5" maxlength="500"></textarea>
+                          <div class="d-flex flex-column gap-1 flex-shrink-0">
+                            <button type="submit" class="btn-reply"><i class="bi bi-send me-1"></i>Balas & Setujui</button>
+                            <a href="{{ route('owner.review.approve', $rev->id) }}" class="btn btn-sm btn-outline-success rounded-3 fw-bold" style="font-size:.7rem;">Setujui Saja</a>
+                          </div>
+                        </div>
+                      </form>
                     </div>
                   </div>
                 @empty

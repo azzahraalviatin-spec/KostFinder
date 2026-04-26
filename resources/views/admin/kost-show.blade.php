@@ -8,17 +8,44 @@
 <div class="container-fluid">
 
     <!-- 🔙 TOMBOL KEMBALI -->
-    <div class="mb-3">
-        <a href="{{ route('admin.kosts') }}" class="btn btn-light border rounded-3">
+    <div class="mb-4">
+        <a href="{{ route('admin.kosts') }}" class="btn-kembali-gradasi">
             <i class="bi bi-arrow-left"></i> Kembali ke Monitoring Kos
         </a>
     </div>
 
     <!-- 🔥 FOTO KOS -->
-    <div class="card mb-4 overflow-hidden">
+    <div class="card mb-4 overflow-hidden border-0 shadow-sm" style="border-radius: 1.2rem;">
         <img src="{{ asset('storage/' . ($kost->foto_utama ?? 'default.jpg')) }}" 
-             class="w-100" style="height:250px;object-fit:cover;">
+             class="w-100" style="height: 450px; object-fit: cover; border-radius: 1.2rem;">
     </div>
+
+    <style>
+        .btn-kembali-gradasi {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: linear-gradient(135deg, #e8401c, #ff7043);
+            color: #fff;
+            padding: 0.6rem 1.4rem;
+            border-radius: 0.8rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 15px rgba(232, 64, 28, 0.25);
+        }
+        .btn-kembali-gradasi:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 64, 28, 0.35);
+            color: #fff;
+            filter: brightness(1.1);
+        }
+        .btn-kembali-gradasi i {
+            font-size: 1.1rem;
+        }
+    </style>
 
     <div class="row">
 

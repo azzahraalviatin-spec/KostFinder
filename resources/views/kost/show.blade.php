@@ -240,10 +240,12 @@ body { background: var(--bg); }
   $fotoUtama = $kost->foto_utama ? ltrim($kost->foto_utama, '/') : null;
   $semuaFoto = collect();
   if ($fotoUtama) $semuaFoto->push(['path' => $fotoUtama, 'label' => 'Foto Utama']);
-  foreach ($kost->images as $img) $semuaFoto->push(['path' => ltrim($img->image_path, '/'), 'label' => 'Foto Properti']);
+  foreach ($kost->images as $img) $semuaFoto->push(['path' => ltrim($img->image_path, '/'), 'label' => $img->kategori ?: 'Foto Properti']);
   foreach ($kost->rooms as $room)
     foreach ($room->images as $img)
-      $semuaFoto->push(['path' => ltrim($img->foto_path, '/'), 'label' => 'Kamar ' . $room->nomor_kamar]);
+      $semuaFoto->push(['path' => ltrim($img->foto_path, '/'), 'label' => $img->judul ?: ('Kamar ' . $room->nomor_kamar)]);
+  foreach ($kost->generalFacilities as $fac)
+    $semuaFoto->push(['path' => ltrim($fac->foto, '/'), 'label' => $fac->nama]);
   $owner = $kost->owner ?? null;
   $foto1 = $semuaFoto->get(0);
   $foto2 = $semuaFoto->get(1) ?? $semuaFoto->get(0);
@@ -575,15 +577,60 @@ body { background: var(--bg); }
         </div>
         @endif
 
-        {{-- FASILITAS UMUM --}}
-        @if($kost->fasilitas)
+        @if($kost->fasilitas || $kost->generalFacilities->count() > 0)
         <div id="sec-fasilitas-umum" class="sec mb-1">
           <div class="sec-title">🏢 Fasilitas umum</div>
-          <div class="fas-grid mb-1">
-            @foreach(explode(',', $kost->fasilitas) as $f)
+          
+          @if($kost->fasilitas)
+          @php
+            $fasArr = is_array($kost->fasilitas)
+              ? $kost->fasilitas
+              : (json_decode($kost->fasilitas, true) ?: array_map('trim', explode(',', $kost->fasilitas)));
+          @endphp
+          <div class="fas-grid mb-3">
+            @foreach($fasArr as $f)
               <div class="fas-item"><i class="bi bi-check-circle-fill" style="color:#22c55e;"></i>{{ trim($f) }}</div>
             @endforeach
           </div>
+          @endif
+
+          {{-- Galeri Fasilitas Berfoto --}}
+          @if($kost->generalFacilities->count() > 0)
+          <hr class="sec-div">
+          <div style="font-size:.82rem; font-weight:800; color:var(--dark); margin-bottom:.75rem; display:flex; align-items:center; gap:.45rem;">
+            <i class="bi bi-camera" style="color:var(--primary);"></i> Foto Fasilitas Umum
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px; margin-bottom:1rem;">
+            @foreach($kost->generalFacilities as $fac)
+              @php
+                $facIdx = $semuaFoto->search(fn($item) => str_contains($item['path'], basename($fac->foto)));
+                $facIdx = ($facIdx !== false) ? $facIdx : 0;
+              @endphp
+              <div style="border-radius:.75rem; overflow:hidden; border:1px solid var(--card-border); background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.06); cursor:pointer; transition:transform .2s, box-shadow .2s;"
+                   onclick="bukaLb({{ $facIdx }})"
+                   onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'"
+                   onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 10px rgba(0,0,0,.06)'">
+                <div style="position:relative; overflow:hidden; height:110px;">
+                  <img src="{{ asset('storage/'.$fac->foto) }}"
+                       alt="{{ $fac->nama }}"
+                       style="width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s ease;"
+                       onmouseover="this.style.transform='scale(1.05)'"
+                       onmouseout="this.style.transform='none'">
+                  <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);border-radius:999px;padding:.15rem .5rem;">
+                    <i class="bi bi-zoom-in" style="color:#fff;font-size:.6rem;"></i>
+                  </div>
+                </div>
+                <div style="padding:.55rem .65rem; border-top:1px solid #f0f3f8;">
+                  <div style="font-size:.75rem; font-weight:700; color:var(--dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:.35rem;">
+                    <i class="bi bi-tag-fill" style="color:var(--primary);font-size:.65rem;flex-shrink:0;"></i>
+                    {{ $fac->nama }}
+                  </div>
+                </div>
+              </div>
+            @endforeach
+          </div>
+          @endif
+
           @php $fasStr=strtolower($kost->fasilitas??''); $hasMotor=str_contains($fasStr,'motor')||str_contains($fasStr,'parkir'); $hasMobil=str_contains($fasStr,'mobil'); @endphp
           @if($hasMotor || $hasMobil)
           <hr class="sec-div">
@@ -960,14 +1007,17 @@ body { background: var(--bg); }
 <div id="lbOverlay" onclick="lbBg(event)">
   <div class="lb-header">
     <div class="lb-header-left">
-      <div class="lb-header-title">Foto Properti</div>
+      <div class="lb-header-title" id="lbHeaderTitle">Foto Properti</div>
       <div class="lb-header-count" id="lbTitle">1 / {{ $semuaFoto->count() }}</div>
     </div>
     <button class="lb-btn-close" onclick="lbTutup()">✕</button>
   </div>
   <div class="lb-main" id="lbMain">
     <button class="lb-nav lb-nav-prev" onclick="lbNav(-1)">‹</button>
-    <div class="lb-img-wrap"><img id="lbImg" src="" alt="" draggable="false"></div>
+    <div class="lb-img-wrap">
+      <img id="lbImg" src="" alt="" draggable="false">
+      <div id="lbCaption" style="position:absolute;bottom:20px;background:rgba(0,0,0,0.6);color:#fff;padding:6px 18px;border-radius:999px;font-size:0.85rem;font-weight:700;backdrop-filter:blur(4px);z-index:5;"></div>
+    </div>
     <button class="lb-nav lb-nav-next" onclick="lbNav(1)">›</button>
   </div>
   <div class="lb-swipe-hint">← Geser untuk navigasi →</div>
@@ -1002,6 +1052,8 @@ function lbR(){
   img.style.opacity='0';img.style.transform='scale(0.98)';
   setTimeout(()=>{img.src='{{ asset("storage") }}/'+f.path;img.style.opacity='1';img.style.transform='scale(1)';},120);
   document.getElementById('lbTitle').textContent=(lbI+1)+' / '+LBF.length;
+  document.getElementById('lbHeaderTitle').textContent = f.label;
+  document.getElementById('lbCaption').textContent = f.label;
   document.querySelectorAll('.lb-thumb').forEach((el,i)=>{el.classList.toggle('active',i===lbI);if(i===lbI)el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});});
 }
 document.addEventListener('keydown',e=>{const ov=document.getElementById('lbOverlay');if(!ov||ov.style.display==='none')return;if(e.key==='ArrowLeft')lbNav(-1);if(e.key==='ArrowRight')lbNav(1);if(e.key==='Escape')lbTutup();});

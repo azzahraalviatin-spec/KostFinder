@@ -35,14 +35,7 @@
   .kost-thumb { width:62px; height:62px; border-radius:.75rem; object-fit:cover; background:#f0f3f8; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.6rem; }
   .kost-thumb img { width:62px; height:62px; border-radius:.75rem; object-fit:cover; }
   .kost-nama { font-weight:800; font-size:1rem; color:var(--dark); margin-bottom:.2rem; }
-  .kost-sub { font-size:.78rem; color:var(--muted); display:flex; align-items:center; gap:.35rem; }
-
-  /* ── INFO ROW ── */
-  .info-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.65rem 0; border-bottom:1px solid #f8fafc; font-size:.86rem; }
-  .info-row:last-child { border-bottom:0; }
-  .info-row .lbl { color:var(--muted); display:flex; align-items:center; gap:.4rem; }
-  .info-row .lbl svg { flex-shrink:0; }
-  .info-row .val { font-weight:700; color:var(--dark); text-align:right; }
+  .kost-sub { font-size:.78rem; color:var(--muted); display:flex; align-items:center; gap:.35rem; flex-wrap:wrap; }
 
   /* ── TANGGAL CARD ── */
   .tanggal-grid { display:grid; grid-template-columns:1fr auto 1fr; gap:.75rem; align-items:center; margin-bottom:1rem; }
@@ -103,8 +96,10 @@
   .btn-bayar { background:linear-gradient(135deg,#e8401c,#ff6b3d); color:#fff; border:0; border-radius:.9rem; padding:1rem; font-weight:800; font-size:1rem; width:100%; cursor:pointer; transition:all .2s; box-shadow:0 8px 20px rgba(232,64,28,.25); display:flex; align-items:center; justify-content:center; gap:.6rem; }
   .btn-bayar:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(232,64,28,.3); }
   .btn-bayar:disabled { background:#cbd5e1; box-shadow:none; cursor:not-allowed; transform:none; }
-  .back-link { display:block; text-align:center; margin-top:.85rem; font-size:.82rem; color:#6b7280; text-decoration:none; }
-  .back-link:hover { color:var(--primary); }
+
+  /* ── BTN CANCEL ── */
+  .btn-cancel { background:#fff; color:#dc2626; border:2px solid #fecaca; border-radius:.9rem; padding:.85rem; font-weight:700; font-size:.9rem; width:100%; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:.5rem; margin-top:.65rem; }
+  .btn-cancel:hover { background:#fef2f2; border-color:#dc2626; }
 
   /* ── COUNTDOWN ── */
   .countdown-bar { background:linear-gradient(135deg,#fff5f2,#ffe4dc); border:1.5px solid #ffd0c0; border-radius:.85rem; padding:.85rem 1.1rem; margin-bottom:1rem; display:flex; align-items:center; gap:.75rem; }
@@ -112,10 +107,19 @@
   .cd-text { font-size:.8rem; color:#7c2d12; }
   .cd-time { font-size:1rem; font-weight:900; color:#e8401c; font-variant-numeric:tabular-nums; }
 
+  /* ── MODAL CANCEL ── */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:9999; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(4px); }
+  .modal-overlay.show { display:flex; }
+  .modal-box { background:#fff; border-radius:1.2rem; width:100%; max-width:420px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.2); animation:fadeIn .2s ease; }
+  .modal-head { padding:1.2rem 1.5rem; border-bottom:1px solid #f0f3f8; display:flex; justify-content:space-between; align-items:center; }
+  .modal-body { padding:1.5rem; }
+  .modal-foot { padding:1rem 1.5rem; border-top:1px solid #f0f3f8; display:flex; gap:.65rem; }
+  .alasan-item { border:1.5px solid #e4e9f0; border-radius:.65rem; padding:.65rem .9rem; cursor:pointer; margin-bottom:.45rem; font-size:.83rem; color:#444; transition:all .2s; }
+  .alasan-item:hover, .alasan-item.selected { border-color:var(--primary); background:#fff5f2; color:var(--primary); font-weight:700; }
+
   @media(max-width:576px) {
     .tanggal-grid { grid-template-columns:1fr; }
     .tgl-arrow { display:none; }
-    .metode-grid { grid-template-columns:repeat(3,1fr); }
     .step-lbl { display:none; }
     .step-line { margin:0 .4rem; }
   }
@@ -158,7 +162,7 @@
     </div>
   @endif
 
-  {{-- COUNTDOWN BATAS BAYAR --}}
+  {{-- COUNTDOWN --}}
   <div class="countdown-bar">
     <div class="cd-icon">
       <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
@@ -199,66 +203,69 @@
       </div>
     </div>
 
-    {{-- Tanggal check-in / check-out --}}
+    {{-- Tanggal --}}
     @php
       $masuk   = \Carbon\Carbon::parse($booking->tanggal_masuk);
       $selesai = \Carbon\Carbon::parse($booking->tanggal_selesai);
       $hariMasuk   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][$masuk->dayOfWeek];
       $hariSelesai = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][$selesai->dayOfWeek];
       $bulanID = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+      $labelDurasi = $booking->tipe_durasi === 'harian' ? 'Hari' : 'Bulan';
     @endphp
 
     <div class="tanggal-grid">
-      {{-- Check In --}}
       <div class="tgl-card checkin">
         <div class="tgl-badge">Check-In</div>
-        <div class="tgl-tanggal">
-          {{ $masuk->format('d') }} {{ $bulanID[$masuk->format('n')] }} {{ $masuk->format('Y') }}
-        </div>
+        <div class="tgl-tanggal">{{ $masuk->format('d') }} {{ $bulanID[$masuk->format('n')] }} {{ $masuk->format('Y') }}</div>
         <div class="tgl-jam" id="jamCheckin">--:--</div>
         <div class="tgl-hari">{{ $hariMasuk }}</div>
       </div>
-
-      {{-- Arrow --}}
       <div class="tgl-arrow">
         <div class="durasi-chip" style="flex-direction:column;gap:.1rem;padding:.5rem .65rem;">
           <span style="font-size:.65rem;font-weight:700;color:#94a3b8;">DURASI</span>
-          <span>{{ $booking->durasi_sewa }} {{ $booking->tipe_durasi === 'harian' ? 'Hari' : 'Bulan' }}</span>
+          <span>{{ $booking->durasi_sewa }} {{ $labelDurasi }}</span>
         </div>
       </div>
-
-      {{-- Check Out --}}
       <div class="tgl-card checkout">
         <div class="tgl-badge">Check-Out</div>
-        <div class="tgl-tanggal">
-          {{ $selesai->format('d') }} {{ $bulanID[$selesai->format('n')] }} {{ $selesai->format('Y') }}
-        </div>
+        <div class="tgl-tanggal">{{ $selesai->format('d') }} {{ $bulanID[$selesai->format('n')] }} {{ $selesai->format('Y') }}</div>
         <div class="tgl-jam" id="jamCheckout">--:--</div>
         <div class="tgl-hari">{{ $hariSelesai }}</div>
       </div>
     </div>
 
-    {{-- Rincian Harga --}}
+    {{-- ── RINCIAN HARGA ── --}}
     <div class="harga-section">
+      {{-- Baris harga sewa --}}
       <div class="harga-row">
-        <span class="hk">Harga Sewa</span>
+        <span class="hk">
+          Harga Sewa
+          <span style="font-size:.72rem;color:#94a3b8;">
+            ({{ $booking->durasi_sewa }} {{ $labelDurasi }})
+          </span>
+        </span>
         <span class="hv">Rp {{ number_format($booking->total_harga ?? 0, 0, ',', '.') }}</span>
       </div>
+
+      {{-- Biaya layanan --}}
       <div class="harga-row">
         <span class="hk">
           Biaya Layanan
-          <span class="fee-badge">Platform Fee 10%</span>
+        <span class="fee-badge">Platform Fee {{ $persenKomisi }}%</span>
         </span>
         <span class="hv">Rp {{ number_format($booking->komisi_admin ?? 0, 0, ',', '.') }}</span>
       </div>
+
       <hr class="harga-divider">
+
+      {{-- Total --}}
       <div class="harga-total">
         <span class="ht-label">💰 Total Transfer</span>
         <span class="ht-value">Rp {{ number_format($booking->total_bayar ?? 0, 0, ',', '.') }}</span>
       </div>
     </div>
 
-  </div>
+  </div>{{-- end card ringkasan --}}
 
   {{-- FORM PEMBAYARAN --}}
   <form action="{{ route('user.booking.bayar', $booking->id_booking) }}" method="POST" enctype="multipart/form-data" id="formBayar">
@@ -272,21 +279,22 @@
       </div>
 
       <div class="metode-grid">
-        <div class="metode-item" onclick="pilihMetode('BCA', this)">
-          <div class="metode-check">✓</div>
-          <div class="metode-logo" style="background:#006cb4;">BCA</div>
-          <div class="metode-name">Bank BCA</div>
-        </div>
-        <div class="metode-item" onclick="pilihMetode('BRI', this)">
-          <div class="metode-check">✓</div>
-          <div class="metode-logo" style="background:#003f87;">BRI</div>
-          <div class="metode-name">Bank BRI</div>
-        </div>
-        <div class="metode-item" onclick="pilihMetode('Mandiri', this)">
-          <div class="metode-check">✓</div>
-          <div class="metode-logo" style="background:#003087;">Mandiri</div>
-          <div class="metode-name">Mandiri</div>
-        </div>
+        @forelse($bankAccounts as $acc)
+          <div class="metode-item" onclick="pilihMetode('{{ $acc->id }}', this)">
+            <div class="metode-check">✓</div>
+            <div class="metode-logo" style="background:{{ in_array(strtoupper($acc->nama_bank), ['BCA','BRI','MANDIRI','BNI']) ? 'var(--dark)' : '#64748b' }};">
+              {{ strtoupper($acc->nama_bank) }}
+            </div>
+            <div class="metode-name">{{ $acc->nama_bank }}</div>
+          </div>
+        @empty
+          <div class="col-12 text-center py-3">
+            <div class="alert alert-warning border-0" style="background:#fff7ed;color:#9a3412;font-size:.82rem;border-radius:12px;">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              Pemilik kost belum mengatur metode pembayaran. Silakan hubungi pemilik kost atau tunggu beberapa saat.
+            </div>
+          </div>
+        @endforelse
       </div>
 
       <input type="hidden" name="metode_pembayaran" id="metode_pembayaran" value="{{ old('metode_pembayaran') }}">
@@ -342,25 +350,86 @@
         alt="Preview Bukti Pembayaran">
     </div>
 
-    {{-- TOMBOL BAYAR --}}
+    {{-- TOMBOL KIRIM BUKTI --}}
     <button type="submit" class="btn-bayar" id="btnBayar" disabled>
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       Kirim Bukti Pembayaran
     </button>
 
-    <a href="{{ route('kost.show', $booking->room->kost->id_kost) }}" class="back-link">
-      ← Kembali ke detail kost
-    </a>
   </form>
+
+  {{-- TOMBOL CANCEL BOOKING --}}
+  <button type="button" class="btn-cancel" onclick="bukaModalCancel()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    Batalkan Booking
+  </button>
+
+</div>{{-- end booking-wrap --}}
+
+{{-- ══════════════ MODAL CANCEL BOOKING ══════════════ --}}
+<div class="modal-overlay" id="modalCancel" onclick="if(event.target===this)tutupModalCancel()">
+  <div class="modal-box">
+
+    <div class="modal-head">
+      <div>
+        <div style="font-weight:800;font-size:.98rem;color:#dc2626;">🚫 Batalkan Booking</div>
+        <div style="font-size:.75rem;color:#888;margin-top:2px;">
+          {{ $booking->room->kost->nama_kost ?? '-' }} · Kamar {{ $booking->room->nomor_kamar ?? '-' }}
+        </div>
+      </div>
+      <button onclick="tutupModalCancel()" style="background:none;border:none;font-size:1.2rem;color:#aaa;cursor:pointer;">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p style="font-size:.82rem;color:#6b7280;margin-bottom:1rem;">
+        Setelah dibatalkan, kamar akan kembali tersedia dan kamu perlu booking ulang jika berubah pikiran.
+      </p>
+
+      <div style="font-size:.8rem;font-weight:700;color:#444;margin-bottom:.55rem;">Pilih alasan pembatalan:</div>
+
+      <div class="alasan-item" onclick="pilihAlasan('Berubah pikiran', this)">😅 Berubah pikiran</div>
+      <div class="alasan-item" onclick="pilihAlasan('Salah pilih kamar', this)">🚪 Salah pilih kamar</div>
+      <div class="alasan-item" onclick="pilihAlasan('Ada keperluan mendadak', this)">⚡ Ada keperluan mendadak</div>
+      <div class="alasan-item" onclick="pilihAlasan('Menemukan kost yang lebih cocok', this)">🏠 Lebih cocok di tempat lain</div>
+      <div class="alasan-item" onclick="pilihAlasan('Lainnya', this)">✏️ Alasan lain</div>
+
+      <div id="alasanLainWrap" style="display:none;margin-top:.5rem;">
+        <textarea id="alasanLainText" class="form-control" rows="2"
+          placeholder="Tulis alasanmu..."
+          style="font-size:.8rem;border-radius:.6rem;"
+          oninput="updateAlasanLain(this.value)"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button type="button" onclick="tutupModalCancel()"
+        style="flex:1;padding:.6rem;border-radius:.6rem;border:1.5px solid #e4e9f0;background:#fff;font-size:.83rem;font-weight:600;color:#555;cursor:pointer;">
+        Kembali
+      </button>
+
+      {{-- Form cancel --}}
+      <form id="formCancel" action="{{ route('user.booking.cancel', $booking->id_booking) }}" method="POST" style="flex:1;">
+        @csrf
+        @method('PATCH')
+        <input type="hidden" name="alasan_batal" id="alasanBatalInput">
+        <button type="submit" id="btnKonfirmasiBatal" disabled
+          style="width:100%;padding:.6rem;border-radius:.6rem;border:0;background:#dc2626;color:#fff;font-size:.83rem;font-weight:700;cursor:pointer;opacity:.5;transition:opacity .2s;">
+          🚫 Ya, Batalkan
+        </button>
+      </form>
+    </div>
+
+  </div>
 </div>
+
 @endsection
 
 @section('scripts')
 <script>
   const rekening = {
-    BCA:    { nama:'KostFinder Indonesia', nomor:'1234567890' },
-    BRI:    { nama:'KostFinder Indonesia', nomor:'0987654321' },
-    Mandiri:{ nama:'KostFinder Indonesia', nomor:'1122334455' }
+    @foreach($bankAccounts as $acc)
+      '{{ $acc->id }}': { nama: '{{ $acc->nama_pemilik }}', nomor: '{{ $acc->nomor_rekening }}', bank: '{{ $acc->nama_bank }}' },
+    @endforeach
   };
 
   let metodeTerpilih = false;
@@ -368,26 +437,21 @@
 
   /* ── JAM REALTIME ── */
   function updateJam() {
-    const now    = new Date();
-    const jam    = String(now.getHours()).padStart(2,'0');
-    const menit  = String(now.getMinutes()).padStart(2,'0');
-    const tampil = jam + ':' + menit;
-
-    // Check-in: jam sekarang
-    const elIn = document.getElementById('jamCheckin');
-    if (elIn) elIn.textContent = tampil + ' WIB';
-
-    // Check-out: jam 12:00 (standar checkout kos)
+    const now   = new Date();
+    const jam   = String(now.getHours()).padStart(2,'0');
+    const menit = String(now.getMinutes()).padStart(2,'0');
+    const elIn  = document.getElementById('jamCheckin');
     const elOut = document.getElementById('jamCheckout');
+    if (elIn)  elIn.textContent  = jam + ':' + menit + ' WIB';
     if (elOut) elOut.textContent = '12:00 WIB';
   }
   updateJam();
-  setInterval(updateJam, 30000); // update tiap 30 detik
+  setInterval(updateJam, 30000);
 
   /* ── COUNTDOWN 24 JAM ── */
-  function mulaiCountdown() {
-    const KEY = 'booking_deadline_{{ $booking->id_booking }}';
-    let deadline = localStorage.getItem(KEY);
+  (function () {
+    const KEY      = 'booking_deadline_{{ $booking->id_booking }}';
+    let   deadline = localStorage.getItem(KEY);
     if (!deadline) {
       deadline = Date.now() + 24 * 60 * 60 * 1000;
       localStorage.setItem(KEY, deadline);
@@ -396,20 +460,17 @@
 
     function tick() {
       const sisa = deadline - Date.now();
-      if (sisa <= 0) {
-        document.getElementById('countdown').textContent = 'Waktu habis!';
-        return;
-      }
+      const el   = document.getElementById('countdown');
+      if (!el) return;
+      if (sisa <= 0) { el.textContent = 'Waktu habis!'; return; }
       const j = Math.floor(sisa / 3600000);
       const m = Math.floor((sisa % 3600000) / 60000);
       const s = Math.floor((sisa % 60000) / 1000);
-      document.getElementById('countdown').textContent =
-        String(j).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+      el.textContent = String(j).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
     }
     tick();
     setInterval(tick, 1000);
-  }
-  mulaiCountdown();
+  })();
 
   /* ── PILIH METODE ── */
   function pilihMetode(metode, el) {
@@ -419,8 +480,8 @@
 
     const box = document.getElementById('rekeningBox');
     box.classList.add('show');
-    document.getElementById('rekeningNama').textContent   = rekening[metode].nama;
-    document.getElementById('rekeningNomor').textContent  = rekening[metode].nomor;
+    document.getElementById('rekeningNama').textContent  = rekening[metode].nama;
+    document.getElementById('rekeningNomor').textContent = rekening[metode].nomor;
 
     metodeTerpilih = true;
     cekFormReady();
@@ -441,15 +502,14 @@
   /* ── PREVIEW BUKTI ── */
   function previewBukti(input) {
     if (input.files && input.files[0]) {
-      const file = input.files[0];
       const reader = new FileReader();
       reader.onload = e => {
         document.getElementById('previewImg').src = e.target.result;
         document.getElementById('previewImg').style.display = 'block';
         document.getElementById('uploadArea').classList.add('has-file');
-        document.getElementById('uploadText').textContent = '✅ ' + file.name;
+        document.getElementById('uploadText').textContent = '✅ ' + input.files[0].name;
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(input.files[0]);
       buktiTerpilih = true;
       cekFormReady();
     }
@@ -469,5 +529,48 @@
       if (el) pilihMetode(old, el);
     }
   });
+
+  /* ════════════════════════════════
+     MODAL CANCEL BOOKING
+  ════════════════════════════════ */
+  function bukaModalCancel() {
+    document.getElementById('modalCancel').classList.add('show');
+    // Reset
+    document.querySelectorAll('.alasan-item').forEach(i => i.classList.remove('selected'));
+    document.getElementById('alasanBatalInput').value = '';
+    document.getElementById('alasanLainWrap').style.display = 'none';
+    setBtnCancel(false);
+  }
+
+  function tutupModalCancel() {
+    document.getElementById('modalCancel').classList.remove('show');
+  }
+
+  function pilihAlasan(alasan, el) {
+    document.querySelectorAll('.alasan-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+
+    if (alasan === 'Lainnya') {
+      document.getElementById('alasanLainWrap').style.display = 'block';
+      document.getElementById('alasanBatalInput').value = '';
+      setBtnCancel(false);
+    } else {
+      document.getElementById('alasanLainWrap').style.display = 'none';
+      document.getElementById('alasanBatalInput').value = alasan;
+      setBtnCancel(true);
+    }
+  }
+
+  function updateAlasanLain(val) {
+    document.getElementById('alasanBatalInput').value = val;
+    setBtnCancel(val.trim().length > 0);
+  }
+
+  function setBtnCancel(aktif) {
+    const btn = document.getElementById('btnKonfirmasiBatal');
+    btn.disabled  = !aktif;
+    btn.style.opacity = aktif ? '1' : '.5';
+    btn.style.cursor  = aktif ? 'pointer' : 'not-allowed';
+  }
 </script>
 @endsection

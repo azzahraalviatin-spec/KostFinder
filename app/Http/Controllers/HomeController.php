@@ -9,6 +9,7 @@ use App\Models\Favorite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -103,13 +104,15 @@ class HomeController extends Controller
         // ── Hasil akhir dengan pagination ──
         $kosts = $kostQuery->latest()->paginate(9)->withQueryString();
 
-        // ── Statistik — query ringan langsung ke DB ──
-        $stats = [
-            'total_kost'  => (clone $publishedQuery)->count(),
-            'total_kota'  => (clone $publishedQuery)->distinct('kota')->count('kota'),
-            'total_kamar' => DB::table('rooms')->count(),
-            'avg_rating'  => round(Review::avg('rating') ?? 0, 1),
-        ];
+        // ── Statistik — cache 10 menit ──
+        $stats = Cache::remember('home_stats', 600, function () use ($publishedQuery) {
+            return [
+                'total_kost'  => (clone $publishedQuery)->count(),
+                'total_kota'  => (clone $publishedQuery)->distinct('kota')->count('kota'),
+                'total_kamar' => DB::table('rooms')->count(),
+                'avg_rating'  => round(Review::avg('rating') ?? 0, 1),
+            ];
+        });
 
         // ── Opsi kota untuk dropdown filter ──
         $cityOptions = (clone $publishedQuery)
@@ -126,12 +129,13 @@ class HomeController extends Controller
             ->limit(9)
             ->get();
 
-        // ── Jumlah kost per kota — 1 query untuk semua kota sekaligus ──
-        // Ini menggantikan query di dalam @foreach di blade (yang tadinya 9x query)
-        $jumlahPerKota = Kost::where('status', 'aktif')
-            ->selectRaw('LOWER(kota) as kota_lower, COUNT(*) as total')
-            ->groupBy('kota_lower')
-            ->pluck('total', 'kota_lower');
+        // ── Jumlah kost per kota — cache 10 menit ──
+        $jumlahPerKota = Cache::remember('jumlah_per_kota', 600, function () {
+            return Kost::where('status', 'aktif')
+                ->selectRaw('LOWER(kota) as kota_lower, COUNT(*) as total')
+                ->groupBy('kota_lower')
+                ->pluck('total', 'kota_lower');
+        });
 
         // ── Favorit user — 1 query untuk semua kost sekaligus ──
         // Ini menggantikan query di dalam @foreach di blade (yang tadinya N x query)
@@ -141,38 +145,27 @@ class HomeController extends Controller
                 ->toArray()
             : [];
 
-// ── Query kamar untuk section rekomendasi (per kamar) ──
-$rooms = Room::query()
-    ->whereHas('kost', function ($q) {
-        $q->where('status', 'aktif')
-          ->whereHas('owner', function ($q2) {
-              $q2->where('status_verifikasi_identitas', 'disetujui');
-          });
-    })
-
-    ->with([
-        'mainImage',
-        'kost' => function($q) {
-            $q->select('id_kost','nama_kost','alamat','kota','tipe_kost','foto_utama')
-              ->withAvg('reviews','rating');
-        },
-    ])
-
-    ->where('status_kamar', 'tersedia')
-
-    // ✅ PINDAH KE SINI (SETELAH STATUS)
-    ->when($filters['sewa'] === 'harian', function ($q) {
-        $q->where('aktif_harian', 1)
-          ->whereNotNull('harga_harian');
-    })
-    ->when($filters['sewa'] === 'bulanan', function ($q) {
-        $q->where('aktif_bulanan', 1)
-          ->whereNotNull('harga_per_bulan');
-    })
-
-    ->latest()
-    ->limit(12)
-    ->get();
+        // ── Query kamar untuk section rekomendasi — cache 5 menit ──
+        $rooms = Cache::remember('home_rooms_reko', 300, function () {
+            return Room::query()
+                ->whereHas('kost', function ($q) {
+                    $q->where('status', 'aktif')
+                      ->whereHas('owner', function ($q2) {
+                          $q2->where('status_verifikasi_identitas', 'disetujui');
+                      });
+                })
+                ->with([
+                    'mainImage',
+                    'kost' => function($q) {
+                        $q->select('id_kost','nama_kost','alamat','kota','tipe_kost','foto_utama')
+                          ->withAvg('reviews','rating');
+                    },
+                ])
+                ->where('status_kamar', 'tersedia')
+                ->latest()
+                ->limit(12)
+                ->get();
+        });
         // ── Data gambar kota ──
         $kotaList = [
             'surabaya'   => [

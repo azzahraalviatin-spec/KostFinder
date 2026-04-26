@@ -22,6 +22,24 @@ class ProfilController extends Controller
             return response()->json(['success' => true]);
         }
 
+        // Ganti Password
+        if ($request->section === 'password') {
+            $request->validate([
+                'current_password' => 'required|current_password',
+                'password'         => 'required|string|min:8|confirmed',
+            ], [
+                'current_password.current_password' => 'Password lama tidak sesuai.',
+                'password.confirmed'                => 'Konfirmasi password baru tidak cocok.',
+                'password.min'                      => 'Password baru minimal 8 karakter.',
+            ]);
+
+            $user->update([
+                'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            ]);
+
+            return back()->with('success', 'Password berhasil diperbarui!');
+        }
+
         $request->validate([
             'name'              => 'required|string|max:255',
             'jenis_kelamin'     => 'nullable|in:laki-laki,perempuan',
@@ -38,8 +56,7 @@ class ProfilController extends Controller
 
         $data = $request->only([
             'name', 'jenis_kelamin', 'tanggal_lahir', 'no_hp',
-            'kontak_darurat', 'pekerjaan', 'instansi', 'pendidikan',
-            'status_pernikahan', 'kota',
+            'kontak_darurat', 'pekerjaan', 'instansi', 'status_pernikahan', 'kota',
         ]);
 
         // Upload foto baru

@@ -71,9 +71,9 @@
           Solusi terbaik mencari kost nyaman di Jawa Timur. Kami menghubungkan pemilik kost dengan penyewa melalui platform yang transparan dan mudah digunakan.
         </p>
         <div class="kf-social">
-          <a href="https://www.instagram.com/kostfinder.id?igsh=ODAwNzZvbGlpN3l0" target="_blank" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-          <a href="https://facebook.com/username_kamu" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-          <a href="https://www.tiktok.com/@kostfinder?_r=1&_t=ZS-95pFzTcE9WW" target="_blank" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+          <a href="{{ $siteSettings->instagram_link ?? 'https://www.instagram.com/kostfinder.id' }}" target="_blank" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="#" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+          <a href="{{ $siteSettings->tiktok_link ?? 'https://www.tiktok.com/@kostfinder' }}" target="_blank" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
         </div>
       </div>
 
@@ -110,11 +110,11 @@
         </div>
         <div class="kf-contact-item">
           <i class="bi bi-envelope"></i> 
-          <span>kostfinder@gmail.com</span>
+          <span>{{ $siteSettings->email_support ?? 'kostfinder@gmail.com' }}</span>
         </div>
         <div class="kf-contact-item">
           <i class="bi bi-telephone"></i> 
-          <span>0881036163991</span>
+          <span>{{ $siteSettings->whatsapp_cs ?? '0881036163991' }}</span>
         </div>
         <div class="kf-contact-item">
           <i class="bi bi-clock"></i> 

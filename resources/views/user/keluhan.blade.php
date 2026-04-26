@@ -5,31 +5,44 @@
 @section('styles')
 <style>
   :root { --primary:#e8401c; --dark:#1e2d3d; }
-  .page-wrap { max-width:780px; margin:0 auto; }
+  .page-wrap { max-width:1200px; margin:0 auto; }
 
   /* Header action */
   .page-header {
     display: flex; align-items: center;
-    justify-content: space-between; margin-bottom: 1.25rem;
+    justify-content: space-between; margin-bottom: 1.5rem;
   }
-  .page-header h6 { font-weight: 800; font-size: .92rem; color: var(--dark); margin: 0; }
+  .page-header h6 { font-weight: 800; font-size: 1.1rem; color: var(--dark); margin: 0; }
   .btn-tambah {
     background: var(--primary); color: #fff;
     border: 0; border-radius: .6rem;
-    padding: .45rem 1rem; font-size: .78rem; font-weight: 700;
-    cursor: pointer; display: flex; align-items: center; gap: .4rem;
-    transition: background .18s; text-decoration: none;
+    padding: .5rem 1.25rem; font-size: .85rem; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; gap: .5rem;
+    transition: all .2s; text-decoration: none;
+    box-shadow: 0 4px 12px rgba(232, 64, 28, 0.2);
   }
-  .btn-tambah:hover { background: #cb3518; color: #fff; }
+  .btn-tambah:hover { background: #cb3518; color: #fff; transform: translateY(-2px); }
+
+  /* Keluhan grid */
+  .keluhan-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
 
   /* Keluhan card */
   .keluhan-card {
-    background: #fff; border-radius: .85rem;
+    background: #fff; border-radius: 1rem;
     border: 1px solid #e4e9f0;
-    padding: 1rem 1.2rem; margin-bottom: .85rem;
-    transition: box-shadow .2s;
+    padding: 1.25rem;
+    transition: all .3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
   }
-  .keluhan-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+  .keluhan-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.08); border-color: var(--primary); }
 
   .keluhan-head { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; margin-bottom: .6rem; }
   .keluhan-kost { font-weight: 700; font-size: .88rem; color: var(--dark); }
@@ -102,48 +115,55 @@
 
   {{-- LIST KELUHAN --}}
   @if($keluhans->count())
-    @foreach($keluhans as $keluhan)
-    @php
-      $st = $keluhan->status ?? 'pending';
-      $stClass = match($st) {
-        'diproses' => 'badge-proses',
-        'proses'  => 'badge-proses',
-        'selesai' => 'badge-selesai',
-        'ditolak' => 'badge-ditolak',
-        default   => 'badge-open',
-      };
-      $stLabel = match($st) {
-        'diproses' => '🔄 Diproses',
-        'proses'  => '🔄 Diproses',
-        'selesai' => '✅ Selesai',
-        'ditolak' => '❌ Ditolak',
-        default   => '📬 Menunggu',
-      };
-    @endphp
-    <div class="keluhan-card">
-      <div class="keluhan-head">
-        <div>
-          <div class="keluhan-kost">{{ $keluhan->booking->room->kost->nama_kost ?? '-' }}</div>
-          <div class="keluhan-kamar">🚪 Kamar {{ $keluhan->booking->room->nomor_kamar ?? '-' }}</div>
+    <div class="keluhan-grid">
+      @foreach($keluhans as $keluhan)
+      @php
+        $st = $keluhan->status ?? 'pending';
+        $stClass = match($st) {
+          'diproses' => 'badge-proses',
+          'proses'  => 'badge-proses',
+          'selesai' => 'badge-selesai',
+          'ditolak' => 'badge-ditolak',
+          default   => 'badge-open',
+        };
+        $stLabel = match($st) {
+          'diproses' => '🔄 Diproses',
+          'proses'  => '🔄 Diproses',
+          'selesai' => '✅ Selesai',
+          'ditolak' => '❌ Ditolak',
+          default   => '📬 Menunggu',
+        };
+      @endphp
+      <div class="keluhan-card">
+        <div class="keluhan-head">
+          <div style="flex:1;">
+            <div class="keluhan-kost" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">{{ $keluhan->booking->room->kost->nama_kost ?? '-' }}</div>
+            <div class="keluhan-kamar">🚪 Kamar {{ $keluhan->booking->room->nomor_kamar ?? '-' }}</div>
+          </div>
+          <span class="badge-status {{ $stClass }}">{{ $stLabel }}</span>
         </div>
-        <span class="badge-status {{ $stClass }}">{{ $stLabel }}</span>
-      </div>
 
-      <div class="keluhan-judul">{{ $keluhan->jenis ?? 'Keluhan' }}</div>
-      <div class="keluhan-isi">{{ $keluhan->deskripsi ?? '-' }}</div>
-      <div class="keluhan-date">
-        <i class="bi bi-clock"></i>
-        {{ \Carbon\Carbon::parse($keluhan->created_at)->translatedFormat('d F Y, H:i') }}
-      </div>
-
-      @if($keluhan->balasan ?? null)
-        <div class="balasan-wrap">
-          <div class="balasan-label"><i class="bi bi-reply-fill me-1"></i> Balasan Owner</div>
-          <div class="balasan-text">{{ $keluhan->balasan }}</div>
+        <div class="keluhan-judul mt-2">{{ $keluhan->jenis ?? 'Keluhan' }}</div>
+        <div class="keluhan-isi flex-grow-1" style="font-size: .78rem;">{{ \Illuminate\Support\Str::limit($keluhan->deskripsi ?? '-', 80) }}</div>
+        <div class="keluhan-date">
+          <i class="bi bi-clock me-1"></i>
+          {{ \Carbon\Carbon::parse($keluhan->created_at)->translatedFormat('d M Y') }}
         </div>
-      @endif
+
+        @if($keluhan->balasan ?? null)
+          <div class="balasan-wrap mt-3">
+            <div class="balasan-label"><i class="bi bi-reply-fill me-1"></i> Balasan Owner</div>
+            <div class="balasan-text" style="font-size: .75rem;">{{ \Illuminate\Support\Str::limit($keluhan->balasan, 50) }}</div>
+          </div>
+        @endif
+      </div>
+      @endforeach
     </div>
-    @endforeach
+
+    {{-- PAGINATION --}}
+    <div class="d-flex justify-content-center mt-4 mb-5">
+      {{ $keluhans->links() }}
+    </div>
   @else
     <div class="empty-box">
       <i class="bi bi-chat-left-text"></i>

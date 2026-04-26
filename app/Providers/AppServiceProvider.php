@@ -22,5 +22,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Booking::observe(BookingObserver::class);
+        
+        // Membagikan settings ke semua view
+        \Illuminate\Support\Facades\View::share('siteSettings', \App\Models\Setting::first());
     }
 }

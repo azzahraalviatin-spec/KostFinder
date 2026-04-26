@@ -13,19 +13,25 @@ use App\Models\User;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Booking::where('user_id', auth()->id())
-            ->with(['room.kost'])
-            ->latest()
-            ->get();
+        $tab = $request->get('tab', 'semua');
 
-        return view('user.booking', compact('bookings'));
+        $query = Booking::where('user_id', auth()->id())
+            ->with(['room.kost'])
+            ->latest();
+
+        if ($tab !== 'semua') {
+            $query->where('status_booking', $tab);
+        }
+
+        $bookings = $query->paginate(4)->withQueryString();
+
+        return view('user.booking', compact('bookings', 'tab'));
     }
 
     public function store(Request $request)
     {
-        
         $request->validate([
             'room_id'           => 'required|exists:rooms,id_room',
             'tanggal_masuk'     => 'required|date|after_or_equal:today',
@@ -35,17 +41,14 @@ class BookingController extends Controller
             'metode_pembayaran' => 'nullable|string|max:100',
         ]);
 
-        // ── CEK PROFIL USER ──
         $user = auth()->user();
 
         if (empty($user->no_hp)) {
             return back()->with('error', '⚠️ Lengkapi nomor HP kamu di profil sebelum booking.');
         }
-
         if (empty($user->foto_ktp)) {
             return back()->with('error', '⚠️ Upload foto KTP kamu di profil sebelum booking.');
         }
-
         if ($user->status_verifikasi_identitas !== 'disetujui') {
             $pesan = match($user->status_verifikasi_identitas) {
                 'pending' => '⏳ Identitas kamu sedang diverifikasi admin.',
@@ -57,67 +60,64 @@ class BookingController extends Controller
 
         $room = Room::findOrFail($request->room_id);
 
-        // CEK KAMAR
         if ($room->status_kamar !== 'tersedia') {
             return back()->with('error', '❌ Kamar tidak tersedia.');
         }
 
-        // CEK DURASI TERSEDIA
         $tipeDurasi   = $request->tipe_durasi;
         $jumlahDurasi = (int) $request->jumlah_durasi;
 
         if ($tipeDurasi === 'harian' && !$room->aktif_harian) {
             return back()->with('error', '❌ Kamar ini tidak tersedia untuk sewa harian.');
         }
-
         if ($tipeDurasi === 'bulanan' && !$room->aktif_bulanan) {
             return back()->with('error', '❌ Kamar ini tidak tersedia untuk sewa bulanan.');
         }
 
-// CEK BOOKING AKTIF USER INI
-$existing = Booking::where('user_id', auth()->id())
-    ->where('room_id', $request->room_id)
-    ->whereIn('status_booking', ['pending', 'diterima'])
-    ->exists();
+        $existing = Booking::where('user_id', auth()->id())
+            ->where('room_id', $request->room_id)
+            ->whereIn('status_booking', ['pending', 'diterima'])
+            ->exists();
+        if ($existing) {
+            return back()->with('error', '❌ Kamu sudah booking kamar ini.');
+        }
 
-if ($existing) {
-    return back()->with('error', '❌ Kamu sudah booking kamar ini. Selesaikan pembayaran terlebih dahulu.');
-}
-
-// CEK KAMAR SUDAH DIPESAN USER LAIN
-$kamarDipesan = Booking::where('room_id', $request->room_id)
-    ->whereIn('status_booking', ['pending', 'diterima'])
-    ->exists();
-
-if ($kamarDipesan) {
-    return back()->with('error', '❌ Kamar ini sudah dipesan oleh pengguna lain.');
-}
+        $kamarDipesan = Booking::where('room_id', $request->room_id)
+            ->whereIn('status_booking', ['pending', 'diterima'])
+            ->exists();
+        if ($kamarDipesan) {
+            return back()->with('error', '❌ Kamar ini sudah dipesan oleh pengguna lain.');
+        }
 
         // ── HITUNG TANGGAL & HARGA ──
         $tanggalMasuk = Carbon::parse($request->tanggal_masuk);
 
-// BARU
-if ($tipeDurasi === 'harian') {
-    $tanggalSelesai = $tanggalMasuk->copy()->addDays($jumlahDurasi)->toDateString();
-    $hargaSatuan    = (int) $room->harga_harian;
-    $durasiLabel    = $jumlahDurasi;
-} else {
-    $tanggalSelesai = $tanggalMasuk->copy()->addMonths($jumlahDurasi)->toDateString();
-    $hargaSatuan    = (int) $room->harga_per_bulan;
-    $durasiLabel    = $jumlahDurasi;
-}
+        if ($tipeDurasi === 'harian') {
+            $tanggalSelesai = $tanggalMasuk->copy()->addDays($jumlahDurasi)->toDateString();
+            $hargaSatuan    = (int) $room->harga_harian;
+        } else {
+            $tanggalSelesai = $tanggalMasuk->copy()->addMonths($jumlahDurasi)->toDateString();
+            $hargaSatuan    = (int) $room->harga_per_bulan;
+        }
 
-        $totalHarga     = $hargaSatuan * $jumlahDurasi;
-        $komisiAdmin    = round($totalHarga * 0.10);
-        $totalBayar     = $totalHarga + $komisiAdmin;
+        $totalHarga = $hargaSatuan * $jumlahDurasi;
+
+        // ── FIX: Ambil komisi, pastikan > 0 baru pakai, fallback 10% ──
+        $settings     = \App\Models\Setting::first();
+        $persenKomisi = ($settings && $settings->komisi_admin > 0)
+            ? ($settings->komisi_admin / 100)
+            : 0.10;  // default 10%
+
+        $komisiAdmin     = round($totalHarga * $persenKomisi);
+        $totalBayar      = $totalHarga + $komisiAdmin;
         $pendapatanOwner = $totalHarga;
 
         $booking = Booking::create([
             'user_id'           => auth()->id(),
             'room_id'           => $request->room_id,
-           'tanggal_masuk' => $tanggalMasuk->toDateString(),
+            'tanggal_masuk'     => $tanggalMasuk->toDateString(),
             'tanggal_selesai'   => $tanggalSelesai,
-            'durasi_sewa'       => $durasiLabel,
+            'durasi_sewa'       => $jumlahDurasi,
             'tipe_durasi'       => $tipeDurasi,
             'jumlah_durasi'     => $jumlahDurasi,
             'catatan'           => $request->catatan,
@@ -132,12 +132,11 @@ if ($tipeDurasi === 'harian') {
 
         $room->update(['status_kamar' => 'terisi']);
 
-
-        // ✅ Kirim notifikasi ke admin
         $admin = User::where('role', 'admin')->first();
         if ($admin) {
             $admin->notify(new BookingBaruNotification($booking));
         }
+
         return redirect()->route('user.booking.pembayaran', $booking->id_booking)
             ->with('success', '✅ Booking berhasil! Lanjut pembayaran.');
     }
@@ -154,7 +153,36 @@ if ($tipeDurasi === 'harian') {
                 ->with('success', 'Booking sudah diproses!');
         }
 
-        return view('user.booking-bayar', compact('booking'));
+        // ── FIX: Hitung ulang komisi jika tersimpan 0 ──
+        if ($booking->komisi_admin == 0 && $booking->total_harga > 0) {
+            $settings     = \App\Models\Setting::first();
+            $persenKomisi = ($settings && $settings->komisi_admin > 0)
+                ? ($settings->komisi_admin / 100)
+                : 0.10;
+
+            $komisiAdmin = round($booking->total_harga * $persenKomisi);
+            $totalBayar  = $booking->total_harga + $komisiAdmin;
+
+            $booking->update([
+                'komisi_admin' => $komisiAdmin,
+                'total_bayar'  => $totalBayar,
+            ]);
+
+            // Refresh model agar blade dapat nilai terbaru
+            $booking->refresh();
+        }
+
+        // Ambil persen komisi dari settings
+        $settings     = \App\Models\Setting::first();
+        $persenKomisi = ($settings && $settings->komisi_admin > 0)
+            ? $settings->komisi_admin
+            : 10;
+
+        // Ambil rekening owner
+        $ownerId = $booking->room->kost->owner_id;
+        $bankAccounts = \App\Models\OwnerBankAccount::where('user_id', $ownerId)->get();
+
+        return view('user.booking-bayar', compact('booking', 'persenKomisi', 'bankAccounts'));
     }
 
     public function bayar(Request $request, $id)
@@ -171,7 +199,6 @@ if ($tipeDurasi === 'harian') {
         if (in_array($booking->status_booking, ['ditolak', 'selesai'])) {
             return back()->with('error', 'Booking tidak bisa dibayar.');
         }
-
         if ($booking->status_pembayaran !== 'belum') {
             return back()->with('error', 'Sudah bayar.');
         }
@@ -200,19 +227,18 @@ if ($tipeDurasi === 'harian') {
         }
 
         $booking->update([
-            'status_booking'    => 'ditolak',
+            'status_booking'    => 'dibatalkan',
             'status_pembayaran' => 'ditolak',
-            'alasan_batal'      => $request->alasan_batal ?? 'Dibatalkan',
+            'alasan_batal'      => $request->alasan_batal ?? 'Dibatalkan oleh User',
         ]);
 
         $booking->room->update(['status_kamar' => 'tersedia']);
-    
 
-        // ✅ Kirim notifikasi ke admin
         $admin = User::where('role', 'admin')->first();
         if ($admin) {
             $admin->notify(new BookingDibatalkanNotification($booking));
         }
+
         return back()->with('success', '✅ Booking dibatalkan.');
     }
 }

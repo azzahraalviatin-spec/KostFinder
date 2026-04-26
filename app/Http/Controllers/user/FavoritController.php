@@ -10,14 +10,21 @@ use Illuminate\Support\Facades\Auth;
 
 class FavoritController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $tab = $request->get('tab', 'favorit');
+
         $favorites = Favorite::with('kost.rooms')
             ->where('user_id', Auth::id())
             ->latest()
             ->get();
 
-        return view('user.favorit', compact('favorites'));
+        $dilihat = \App\Models\RecentlyViewedKost::with('kost.rooms')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
+        return view('user.favorit', compact('favorites', 'dilihat', 'tab'));
     }
 
     public function toggle(Request $request)

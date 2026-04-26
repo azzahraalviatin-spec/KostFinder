@@ -9,9 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('room_images', function (Blueprint $table) {
-            // Judul/label foto (contoh: "Kamar Mandi", "Lemari")
             $table->string('judul')->nullable()->after('foto_path');
-            // Tipe: 'kamar' = foto utama kamar, 'fasilitas' = foto fasilitas kamar
             $table->string('tipe_foto')->default('kamar')->after('judul');
         });
     }

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detail Kost - KostFinder</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -429,33 +430,45 @@
         <div class="col-12 col-lg-4">
           <div class="section-card p-3">
 
-            {{-- FOTO UTAMA --}}
-            @if(!empty($kost->foto_utama_url))
-              <img id="mainPreview" src="{{ $kost->foto_utama_url }}" class="main-photo mb-3">
-            @else
-              <div class="foto-placeholder mb-3" style="height:250px;">
-                <i class="bi bi-image fs-1 mb-2 opacity-50"></i>
-                <span>Belum ada foto utama kost</span>
-              </div>
-            @endif
-
-            {{-- GALERI --}}
+            {{-- FOTO UTAMA + GALERI --}}
             <div class="mb-3">
-              <div class="detail-label">Foto Properti Kost</div>
-              @if(isset($kost->images) && $kost->images->count() > 0)
-                <div class="row g-2 mt-1">
+              <div class="detail-label mb-2" style="font-size:.85rem;font-weight:800;color:var(--dark);text-transform:none;letter-spacing:0;display:flex;align-items:center;gap:.4rem;">
+                <i class="bi bi-images" style="color:var(--primary);"></i> Foto Kost
+              </div>
+              @if($kost->images->isNotEmpty())
+                {{-- Foto Utama --}}
+                <div style="position:relative;border-radius:1rem;overflow:hidden;margin-bottom:.6rem;">
+                  <img id="mainPreview"
+                       src="{{ asset('storage/' . $kost->images->first()->image_path) }}"
+                       class="main-photo"
+                       style="height:240px;">
+                  @if($kost->images->first()->kategori)
+                    <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.65),transparent);padding:.7rem .9rem;">
+                      <span style="color:#fff;font-size:.78rem;font-weight:700;"><i class="bi bi-tag-fill me-1"></i>{{ $kost->images->first()->kategori }}</span>
+                    </div>
+                  @endif
+                </div>
+                {{-- Thumbnail Galeri --}}
+                <div class="row g-2">
                   @foreach($kost->images as $img)
                     <div class="col-4">
-                      <img src="{{ asset('storage/'.$img->image_path) }}"
-                           class="thumb-photo"
-                           onclick="changeMainPhoto(this.src)">
+                      <div style="position:relative;border-radius:.75rem;overflow:hidden;cursor:pointer;" onclick="changeMainPhoto('{{ asset('storage/'.$img->image_path) }}', this)">
+                        <img src="{{ asset('storage/'.$img->image_path) }}"
+                             class="thumb-photo"
+                             style="height:80px;">
+                        @if($img->kategori)
+                          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);padding:.18rem .4rem;text-align:center;">
+                            <span style="color:#fff;font-size:.64rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;">{{ $img->kategori }}</span>
+                          </div>
+                        @endif
+                      </div>
                     </div>
                   @endforeach
                 </div>
               @else
-                <div class="foto-placeholder">
-                  <i class="bi bi-images fs-3 mb-2 opacity-50"></i>
-                  <span>Belum ada galeri foto</span>
+                <div class="foto-placeholder mb-3" style="height:200px;">
+                  <i class="bi bi-image fs-1 mb-2 opacity-50"></i>
+                  <span>Belum ada foto kost</span>
                 </div>
               @endif
             </div>
@@ -602,6 +615,38 @@
                 <div class="detail-value">{{ $kost->aturan ?? '—' }}</div>
               </div>
 
+              {{-- FOTO FASILITAS UMUM --}}
+              @if($kost->generalFacilities->isNotEmpty())
+              <div class="mt-4 pt-3 border-top">
+                <div class="detail-label mb-2" style="font-size:.82rem;font-weight:800;color:var(--dark);text-transform:none;letter-spacing:0;display:flex;align-items:center;gap:.4rem;">
+                  <i class="bi bi-camera" style="color:var(--primary);"></i> Foto Fasilitas Umum
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.65rem;">
+                  @foreach($kost->generalFacilities as $fac)
+                    <div style="position:relative;border-radius:.75rem;overflow:hidden;border:1.5px solid var(--line);background:#f8fafc;box-shadow:0 2px 10px rgba(0,0,0,.05);transition:.2s;" id="fac-item-{{ $fac->id }}"
+                         onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,.1)'"
+                         onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 10px rgba(0,0,0,.05)'">
+                      <img src="{{ asset('storage/'.$fac->foto) }}" alt="{{ $fac->nama }}"
+                           style="width:100%;height:90px;object-fit:cover;display:block;">
+                      <div style="padding:.45rem .55rem;border-top:1px solid #f0f3f8;">
+                        <div style="font-size:.72rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                          {{ $fac->nama }}
+                        </div>
+                      </div>
+                      <button type="button"
+                        onclick="hapusFasilitas({{ $fac->id }}, {{ $kost->id_kost }}, this)"
+                        style="position:absolute;top:5px;right:5px;width:26px;height:26px;border-radius:50%;background:rgba(220,38,38,.85);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.72rem;transition:.2s;opacity:0;"
+                        class="fac-del-btn"
+                        title="Hapus foto fasilitas ini">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+                  @endforeach
+                </div>
+                <small class="text-muted d-block mt-2" style="font-size:.7rem;">Hover foto untuk melihat tombol hapus. Untuk menambah foto baru, gunakan tombol Edit di atas.</small>
+              </div>
+              @endif
+
             </div>
           </div>
 
@@ -717,9 +762,28 @@
     }
 
     // ── GANTI FOTO UTAMA ──
-    function changeMainPhoto(src) {
+    function changeMainPhoto(src, thumbEl) {
       const el = document.getElementById('mainPreview');
       if (el) el.src = src;
+      // Ambil label dari thumbnail yang diklik
+      const mainWrap = el ? el.closest('div[style*="border-radius:1rem"]') || el.parentElement : null;
+      if (mainWrap) {
+        // Hapus overlay lama kalau ada
+        const oldOverlay = mainWrap.querySelector('.foto-label-overlay');
+        if (oldOverlay) oldOverlay.remove();
+        // Tambahkan overlay baru dari thumbnail
+        if (thumbEl) {
+          const thumbLabel = thumbEl.querySelector('span[style*="font-size:.64rem"]');
+          if (thumbLabel && thumbLabel.textContent.trim()) {
+            const overlay = document.createElement('div');
+            overlay.className = 'foto-label-overlay';
+            overlay.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.65),transparent);padding:.7rem .9rem;';
+            overlay.innerHTML = `<span style="color:#fff;font-size:.78rem;font-weight:700;"><i class="bi bi-tag-fill me-1"></i>${thumbLabel.textContent.trim()}</span>`;
+            mainWrap.style.position = 'relative';
+            mainWrap.appendChild(overlay);
+          }
+        }
+      }
     }
 
     // ── LEAFLET MAP ──
@@ -733,6 +797,62 @@
         .bindPopup("{{ $kost->nama_kost }}")
         .openPopup();
     @endif
+
+    // ── HOVER TAMPILKAN TOMBOL HAPUS FASILITAS ──
+    document.querySelectorAll('[id^="fac-item-"]').forEach(function(card) {
+      const btn = card.querySelector('.fac-del-btn');
+      if (!btn) return;
+      card.addEventListener('mouseenter', () => { btn.style.opacity = '1'; });
+      card.addEventListener('mouseleave', () => { btn.style.opacity = '0'; });
+    });
+
+    // ── HAPUS FASILITAS INDIVIDUAL via AJAX ──
+    async function hapusFasilitas(facId, kostId, btn) {
+      if (!confirm('Yakin hapus foto fasilitas ini?')) return;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+      try {
+        const response = await fetch(`/owner/kost/${kostId}/facility/${facId}`, {
+          method: 'DELETE',
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          const card = document.getElementById('fac-item-' + facId);
+          if (card) {
+            card.style.transition = 'all .3s ease';
+            card.style.transform  = 'scale(.8)';
+            card.style.opacity    = '0';
+            setTimeout(() => card.remove(), 300);
+          }
+          showFacToast('Foto fasilitas berhasil dihapus!', 'success');
+        } else {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-x-lg"></i>';
+          showFacToast('Gagal menghapus.', 'error');
+        }
+      } catch(e) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-x-lg"></i>';
+        showFacToast('Terjadi kesalahan.', 'error');
+      }
+    }
+
+    function showFacToast(msg, type) {
+      const existing = document.getElementById('facToast');
+      if (existing) existing.remove();
+      const t = document.createElement('div');
+      t.id = 'facToast';
+      t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:${type==='success'?'#16a34a':'#dc2626'};color:#fff;padding:.75rem 1.2rem;border-radius:.75rem;font-size:.82rem;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.2);display:flex;align-items:center;gap:.5rem;`;
+      t.innerHTML = `<i class="bi bi-${type==='success'?'check-circle-fill':'x-circle-fill'}"></i> ${msg}`;
+      document.body.appendChild(t);
+      setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2800);
+    }
   </script>
 
 </body>

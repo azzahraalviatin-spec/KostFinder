@@ -167,6 +167,22 @@
     .tips-box ul { margin: 0; padding-left: 1.1rem; }
     .tips-box ul li { font-size: .75rem; color: #0c4a6e; line-height: 1.8; }
 
+    /* ── FASILITAS FOTO ROWS ── */
+    .facility-row { display:grid; grid-template-columns:120px 1fr auto; gap:.75rem; align-items:start; background:#f8fafc; border:1px solid var(--line); border-radius:.85rem; padding:.75rem; margin-bottom:.65rem; animation: popIn .3s cubic-bezier(.34,1.56,.64,1) both; }
+    .facility-row:hover { border-color:#dce5f0; background:#fff; }
+    .facility-img-preview { width:120px; height:85px; border-radius:.6rem; overflow:hidden; background:linear-gradient(135deg,#f0f4f8,#e8edf4); border:1.5px dashed #d0d8e4; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:.35rem; cursor:pointer; position:relative; transition:.2s; }
+    .facility-img-preview:hover { border-color:var(--primary); background:#fff8f6; }
+    .facility-img-preview img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+    .facility-img-preview .upload-icon { font-size:1.3rem; color:#b0bfcc; transition:.2s; }
+    .facility-img-preview .upload-hint { font-size:.62rem; color:#b0bfcc; font-weight:600; }
+    .facility-img-preview:hover .upload-icon { color:var(--primary); }
+    .facility-right { display:flex; flex-direction:column; gap:.5rem; }
+    .facility-label-input { font-size:.82rem; border:1px solid var(--line); border-radius:.65rem; padding:.55rem .8rem; width:100%; outline:none; transition:.2s; color:var(--dark); font-weight:600; }
+    .facility-label-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(232,64,28,.1); }
+    .facility-remove-btn { width:34px; height:34px; border:none; border-radius:.6rem; background:#fef2f2; color:#dc2626; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.85rem; transition:.2s; flex-shrink:0; margin-top:0; }
+    .facility-remove-btn:hover { background:#dc2626; color:#fff; }
+    @media (max-width: 600px) { .facility-row { grid-template-columns:90px 1fr auto; } .facility-img-preview { width:90px; height:70px; } }
+
     @media (max-width: 991px) {
       .sidebar { transform: translateX(-100%); }
       .sidebar.show { transform: translateX(0); }
@@ -271,6 +287,25 @@
               </div>
             </div>
 
+            {{-- Foto Fasilitas Umum --}}
+            <div class="form-card" id="sectionFotoFasilitas">
+              <h6><i class="bi bi-camera" style="color:var(--primary)"></i> Foto Fasilitas Umum</h6>
+              <p style="font-size:.76rem;color:var(--muted);margin-top:-.5rem;margin-bottom:1rem;">Upload foto setiap fasilitas umum disertai nama/label. Foto ini akan ditampilkan di halaman detail kost agar calon penyewa bisa melihat kondisi fasilitas yang tersedia.</p>
+
+              <div id="facilityRowsContainer"></div>
+
+              <button type="button" id="btnAddFacility"
+                style="display:inline-flex;align-items:center;gap:.45rem;background:var(--primary-light);color:var(--primary);border:1.5px dashed var(--primary-mid);border-radius:.75rem;padding:.6rem 1.1rem;font-size:.8rem;font-weight:700;cursor:pointer;transition:.2s;width:100%;justify-content:center;margin-top:.5rem;"
+                onmouseover="this.style.background='#ffd0c0'" onmouseout="this.style.background='var(--primary-light)'">
+                <i class="bi bi-plus-circle-fill"></i> Tambah Foto Fasilitas
+              </button>
+
+              <div style="margin-top:.8rem;background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #16a34a;border-radius:.65rem;padding:.6rem .9rem;font-size:.73rem;color:#166534;">
+                <i class="bi bi-lightbulb-fill me-1" style="color:#16a34a;"></i>
+                <strong>Tips:</strong> Tambahkan foto dapur, area parkir, ruang santai, dll. Sertakan nama yang jelas agar calon penyewa mudah mengenali.
+              </div>
+            </div>
+
             {{-- Aturan --}}
             <div class="form-card">
               <h6><i class="bi bi-clipboard-check" style="color:var(--primary)"></i> Aturan Kost</h6>
@@ -292,6 +327,7 @@
                   <div class="drop-zone-hint"><i class="bi bi-info-circle me-1"></i>Maks. <strong>6 foto</strong> &bull; Format: JPG, PNG, WEBP &bull; Ukuran maks. <strong>2 MB</strong> per foto</div>
                 </div>
                 <input type="file" name="foto_kost[]" id="fotoInput" accept="image/jpeg,image/png,image/webp" multiple>
+                <div id="namaFotoInputs"><!-- hidden inputs nama foto akan dimasukkan di sini oleh JS --></div>
                 <div class="foto-info-bar" id="fotoInfoBar" style="display:none;">
                   <div class="foto-info-left"><i class="bi bi-images"></i><span id="fotoInfoText">0 dari 6 foto dipilih</span></div>
                   <div class="foto-counter" id="fotoDots">
@@ -366,18 +402,7 @@
 
               <hr style="border-color:#f0f3f8;margin:.5rem 0 1rem;">
 
-              {{-- Diskon --}}
-              <div class="mb-3">
-                <label class="form-label">Diskon <span style="font-size:.7rem;color:var(--muted);font-weight:500;">(opsional)</span></label>
-                <div class="input-group">
-                  <span class="input-group-text" style="font-size:.78rem;background:#f8fafd;border-color:var(--line);">Rp</span>
-                  <input type="number" name="diskon" class="form-control"
-                         placeholder="Contoh: 200000" value="{{ old('diskon') }}">
-                </div>
-                <div class="form-text" style="font-size:.72rem;color:var(--muted);">
-                  <i class="bi bi-lightning-charge me-1"></i>Kos kamu akan tampil dengan badge <strong>Diskon</strong>
-                </div>
-              </div>
+
 
               {{-- Harga harian --}}
               <div class="d-flex align-items-center justify-content-between mb-2">
@@ -742,6 +767,8 @@
 
     function renderPreviews() {
       previewGrid.innerHTML = '';
+      const namaContainer = document.getElementById('namaFotoInputs');
+      namaContainer.innerHTML = '';
       infoBar.style.display = selectedFiles.length ? 'flex' : 'none';
       infoText.textContent  = selectedFiles.length + ' dari ' + MAX_FILES + ' foto';
       for (let i = 1; i <= MAX_FILES; i++) {
@@ -749,6 +776,14 @@
         if (dot) dot.classList.toggle('filled', i <= selectedFiles.length);
       }
       selectedFiles.forEach((file, i) => {
+        // ── hidden input nama foto ──
+        const namaHidden = document.createElement('input');
+        namaHidden.type = 'hidden';
+        namaHidden.name = 'foto_kost_nama[]';
+        namaHidden.id   = 'namaFoto_' + i;
+        namaHidden.value = window._namaFotoValues ? (window._namaFotoValues[i] || '') : '';
+        namaContainer.appendChild(namaHidden);
+
         const reader = new FileReader();
         reader.onload = e => {
           const div = document.createElement('div');
@@ -765,6 +800,14 @@
             <div class="preview-info">
               <div class="preview-name">${file.name}</div>
               <div class="preview-size">${(file.size/1024/1024).toFixed(2)}MB</div>
+            </div>
+            <div style="padding:.3rem .9rem .75rem;border-top:1px solid #f0f3f8;">
+              <input type="text"
+                     id="namaFotoInput_${i}"
+                     placeholder="Nama foto, contoh: Ruang Parkir..."
+                     value="${window._namaFotoValues ? (window._namaFotoValues[i] || '') : ''}"
+                     style="width:100%;font-size:.76rem;border:1px solid #dde3ed;border-radius:.55rem;padding:.38rem .65rem;outline:none;"
+                     oninput="syncNamaFoto(${i}, this.value)">
             </div>`;
           previewGrid.appendChild(div);
         };
@@ -772,8 +815,117 @@
       });
     }
 
-    window.removeFile = function(idx) { selectedFiles.splice(idx, 1); updateInput(); renderPreviews(); };
-    window.setCover   = function(idx) { const [m] = selectedFiles.splice(idx, 1); selectedFiles.unshift(m); updateInput(); renderPreviews(); };
+    // Simpan nama ke array global saat user mengetik
+    window._namaFotoValues = [];
+    window.syncNamaFoto = function(idx, val) {
+      window._namaFotoValues[idx] = val;
+      const hidden = document.getElementById('namaFoto_' + idx);
+      if (hidden) hidden.value = val;
+    };
+
+    window.removeFile = function(idx) {
+      window._namaFotoValues.splice(idx, 1);
+      selectedFiles.splice(idx, 1);
+      updateInput();
+      renderPreviews();
+    };
+    window.setCover = function(idx) {
+      const [m] = selectedFiles.splice(idx, 1);
+      selectedFiles.unshift(m);
+      if (window._namaFotoValues) {
+        const [n] = window._namaFotoValues.splice(idx, 1);
+        window._namaFotoValues.unshift(n);
+      }
+      updateInput();
+      renderPreviews();
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    //  FOTO FASILITAS UMUM — Dynamic rows
+    // ══════════════════════════════════════════════════════════════
+    let facilityCount = 0;
+    const facilityContainer = document.getElementById('facilityRowsContainer');
+
+    document.getElementById('btnAddFacility').addEventListener('click', function() {
+      addFacilityRow();
+    });
+
+    function addFacilityRow() {
+      facilityCount++;
+      const idx = facilityCount;
+      const row = document.createElement('div');
+      row.className = 'facility-row';
+      row.id = 'fac-row-' + idx;
+      row.innerHTML = `
+        <div class="facility-img-preview" id="fac-preview-${idx}" onclick="document.getElementById('fac-file-${idx}').click()">
+          <i class="bi bi-camera-fill upload-icon"></i>
+          <span class="upload-hint">Klik upload foto</span>
+          <input type="file" name="facility_photo[]" id="fac-file-${idx}" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewFacilityPhoto(${idx}, this)" required>
+        </div>
+        <div class="facility-right">
+          <input type="text" name="facility_name[]" class="facility-label-input"
+            placeholder="Nama Fasilitas (contoh: Dapur Bersama, Area Parkir...)" required
+            style=""
+          >
+          <div style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:.35rem;">
+            <i class="bi bi-info-circle"></i> Nama ini akan muncul sebagai label di halaman detail kost
+          </div>
+        </div>
+        <button type="button" class="facility-remove-btn" onclick="removeFacilityRow(${idx})" title="Hapus">
+          <i class="bi bi-trash-fill"></i>
+        </button>
+      `;
+      facilityContainer.appendChild(row);
+      // Focus on label input
+      setTimeout(() => row.querySelector('.facility-label-input').focus(), 150);
+    }
+
+    function previewFacilityPhoto(idx, input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Ukuran foto maks 2MB!');
+        input.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById('fac-preview-' + idx);
+        if (!preview) return;
+        // Hapus icon upload
+        preview.querySelector('.upload-icon')?.remove();
+        preview.querySelector('.upload-hint')?.remove();
+        // Tambahkan img preview (atau update yang sudah ada)
+        let img = preview.querySelector('img');
+        if (!img) {
+          img = document.createElement('img');
+          preview.insertBefore(img, preview.querySelector('input'));
+        }
+        img.src = e.target.result;
+        // Tambahkan overlay edit
+        let overlay = preview.querySelector('.fac-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.className = 'fac-overlay';
+          overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s;border-radius:.6rem;';
+          overlay.innerHTML = '<i class="bi bi-pencil-fill" style="color:#fff;font-size:1rem;"></i>';
+          preview.appendChild(overlay);
+          preview.addEventListener('mouseenter', () => overlay.style.opacity = '1');
+          preview.addEventListener('mouseleave', () => overlay.style.opacity = '0');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeFacilityRow(idx) {
+      const row = document.getElementById('fac-row-' + idx);
+      if (row) {
+        row.style.transform = 'scale(.9)';
+        row.style.opacity = '0';
+        row.style.transition = 'all .25s ease';
+        setTimeout(() => row.remove(), 250);
+      }
+    }
   </script>
 </body>
 </html>

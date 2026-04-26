@@ -44,9 +44,12 @@ class DashboardController extends Controller
             ->with(['user', 'room.kost'])
             ->latest()->limit(5)->get();
 
+        $total_bank_accounts = \App\Models\OwnerBankAccount::where('user_id', $owner_id)->count();
+
         return view('owner.dashboard', compact(
             'total_kost', 'total_booking', 'booking_pending', 'kosts', 'bookings',
-            'pendapatan_bulan_ini', 'pendapatan_bulan_lalu', 'selisih_pendapatan'
+            'pendapatan_bulan_ini', 'pendapatan_bulan_lalu', 'selisih_pendapatan',
+            'total_bank_accounts'
         ));
     }
 
@@ -73,7 +76,7 @@ class DashboardController extends Controller
         ->limit(4)->get()
         ->map(fn($r) => [
             'title'    => 'Kamar ' . $r->nomor_kamar,
-            'subtitle' => $r->kost->nama_kost ?? '—',
+            'subtitle' => $r->kost->nama_kost ?? 'â€”',
             'icon'     => '??',
             'url'      => route('owner.kamar.show', $r->id_room),
         ]);

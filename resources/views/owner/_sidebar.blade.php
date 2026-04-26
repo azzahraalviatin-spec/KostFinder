@@ -53,7 +53,17 @@
 
     <a href="{{ route('owner.review.index') }}"
        class="menu-item {{ request()->routeIs('owner.review.*') ? 'active' : '' }}">
-      <i class="bi bi-star"></i><span>Ulasan Saya</span>
+      <i class="bi bi-star"></i>
+      <span>Ulasan Kost</span>
+      @php
+        $pendingReviewsCount = \App\Models\Review::whereHas('kost', fn($q) => $q->where('owner_id', auth()->id()))
+          ->where('status', 'pending')->count();
+      @endphp
+      @if($pendingReviewsCount > 0)
+        <span style="margin-left:auto;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#fff;font-size:.6rem;font-weight:700;padding:.1rem .45rem;border-radius:999px;">
+          {{ $pendingReviewsCount }}
+        </span>
+      @endif
     </a>
 
     {{-- KELUHAN -- fix pakai menu-item bukan nav-link --}}

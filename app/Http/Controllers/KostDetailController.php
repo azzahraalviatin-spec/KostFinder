@@ -88,7 +88,7 @@ return view('cari-kost', compact('kosts', 'kostsMap'));
         abort_if($kost->status != 'aktif', 404);
         abort_if($kost->owner->status_verifikasi_identitas !== 'disetujui', 404);
 
-        $kost->load(['rooms.images', 'owner', 'bookings', 'reviews' => function($q) {
+        $kost->load(['rooms.images', 'owner', 'bookings', 'generalFacilities', 'reviews' => function($q) {
             $q->where('status', 'approved')->with(['user', 'reply']);
         }]);
 

@@ -469,12 +469,16 @@
       </div>
       <div class="col-md-6">
         <label class="form-label">Kota / Kabupaten</label>
-        <select name="kota_properti" class="form-control">
+        <select name="kota_properti" class="form-select form-control" style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3e%3cpath fill=%27none%27 stroke=%27%23343a40%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m2 5 6 6 6-6%27/%3e%3c/svg%3e');">
           <option value="">-- Pilih Kota --</option>
+          @php
+            $currentKota = old('kota_properti', auth()->user()->kota_properti ?? auth()->user()->kota ?? '');
+          @endphp
           @foreach(['Surabaya','Malang','Sidoarjo','Gresik','Mojokerto','Kediri','Blitar','Madiun','Pasuruan','Probolinggo','Batu','Jember','Banyuwangi','Lumajang','Jombang','Nganjuk','Tuban','Lamongan','Bojonegoro','Pamekasan','Sampang','Sumenep','Bangkalan','Ponorogo','Magetan','Ngawi','Trenggalek','Tulungagung','Pacitan','Situbondo','Bondowoso'] as $k)
-          <option value="{{ $k }}" {{ old('kota_properti', auth()->user()->kota_properti ?? '') === $k ? 'selected' : '' }}>{{ $k }}</option>
+          <option value="{{ $k }}" {{ $currentKota === $k ? 'selected' : '' }}>{{ $k }}</option>
           @endforeach
         </select>
+        <div style="font-size:.68rem;color:#8fa3b8;margin-top:.2rem;">*Otomatis terisi sesuai data pendaftaran / profil.</div>
       </div>
       <div class="col-md-6">
         <label class="form-label">Provinsi</label>
@@ -511,6 +515,105 @@
       <button type="submit" class="btn-save"><i class="bi bi-check-lg me-1"></i> Simpan Alamat</button>
     </div>
   </form>
+</div>
+
+{{-- REKENING BANK --}}
+<div class="form-card">
+  <h6><i class="bi bi-bank" style="color:var(--primary)"></i> Daftar Rekening Bank (Maks. 5)</h6>
+  
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:.7rem;padding:.9rem;margin-bottom:1.2rem;">
+    <div style="font-size:.8rem;font-weight:700;color:#15803d;margin-bottom:.3rem;display:flex;align-items:center;gap:.4rem;">
+      <i class="bi bi-info-circle-fill"></i> Info Pencairan Dana
+    </div>
+    <div style="font-size:.76rem;color:#166534;line-height:1.55;">
+      Kamu bisa mendaftarkan hingga 5 rekening berbeda. Admin akan mengirimkan hasil sewa ke salah satu rekening yang kamu pilih saat mengajukan penarikan dana.
+    </div>
+  </div>
+
+  @if($banks->count() > 0)
+  <div class="table-responsive mb-4">
+    <table class="table table-sm" style="font-size:.85rem;">
+      <thead class="table-light">
+        <tr>
+          <th>Bank</th>
+          <th>Nomor Rekening</th>
+          <th>Atas Nama</th>
+          <th class="text-center">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach($banks as $b)
+        <tr>
+          <td class="align-middle">
+            <span class="fw-bold">{{ $b->nama_bank }}</span>
+            @if($b->is_primary) <span class="badge bg-success" style="font-size:.65rem;">Utama</span> @endif
+          </td>
+          <td class="align-middle">{{ $b->nomor_rekening }}</td>
+          <td class="align-middle">{{ $b->nama_pemilik }}</td>
+          <td class="text-center">
+            <form action="{{ route('owner.pengaturan.bank.delete', $b->id) }}" method="POST" onsubmit="return confirm('Hapus rekening ini?')">
+              @csrf @method('DELETE')
+              <button type="submit" class="btn btn-sm btn-outline-danger" style="border:none;">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        @endforeach
+      </tbody>
+    </table>
+  </div>
+  @else
+  <div class="text-center py-4" style="background:#f8fafc; border-radius:.8rem; border:1px dashed #cbd5e1; margin-bottom:1.5rem;">
+    <i class="bi bi-credit-card-2-front" style="font-size:2rem; color:#94a3b8;"></i>
+    <p class="mt-2 mb-0" style="font-size:.8rem; color:#64748b;">Belum ada rekening yang didaftarkan.</p>
+  </div>
+  @endif
+
+  @if($banks->count() < 5)
+  <div style="background:#f8fafc; padding:1.2rem; border-radius:.8rem; border:1px solid #e2e8f0;">
+    <h7 class="fw-bold d-block mb-3" style="font-size:.85rem;">+ Tambah Rekening Baru</h7>
+    <form action="{{ route('owner.pengaturan.bank.store') }}" method="POST">
+      @csrf
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nama Bank / E-Wallet</label>
+          <select name="nama_bank" class="form-select form-control" required>
+            <option value="">-- Pilih Bank --</option>
+            @foreach([
+              'Bank BCA', 'Bank Mandiri', 'Bank BRI', 'Bank BNI', 'Bank Syariah Indonesia (BSI)',
+              'Bank BTN', 'Bank CIMB Niaga', 'Bank Permata', 'Bank Danamon', 'Bank Maybank',
+              'Bank Mega', 'Bank OCBC NISP', 'Bank Panin', 'Bank Bukopin', 'Bank Jatim',
+              'Bank Jateng', 'Bank Jabar Banten (BJB)', 'Bank DKI', 'Bank Sumut', 'Bank Nagari',
+              'Bank Riau Kepri', 'Bank Sumsel Babel', 'Bank Lampung', 'Bank Kalsel', 'Bank Kalbar',
+              'Bank Kaltimtara', 'Bank Kalteng', 'Bank Sulselbar', 'Bank SulutGo', 'Bank NTB Syariah',
+              'Bank NTT', 'Bank Maluku Malut', 'Bank Papua', 'Bank Bengkulu', 'Bank Sulteng',
+              'Bank Sultra', 'Bank BTPN', 'Bank Jenius', 'Bank Neo Commerce', 'Bank Seabank',
+              'Bank Aladin', 'Bank Jago', 'DANA', 'OVO', 'GoPay', 'LinkAja', 'ShopeePay'
+            ] as $b)
+            <option value="{{ $b }}">{{ $b }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nomor Rekening / HP</label>
+          <input type="text" name="nomor_rekening" class="form-control" placeholder="Contoh: 1234567890" required>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Nama Pemilik Rekening</label>
+          <input type="text" name="nama_pemilik" class="form-control" placeholder="Sesuai buku tabungan" required>
+        </div>
+      </div>
+      <div class="mt-3">
+        <button type="submit" class="btn-save" style="background:var(--dark);"><i class="bi bi-plus-lg me-1"></i> Tambahkan Rekening</button>
+      </div>
+    </form>
+  </div>
+  @else
+  <div class="alert alert-warning" style="font-size:.8rem; border-radius:.7rem;">
+    <i class="bi bi-exclamation-triangle-fill me-1"></i> Kamu sudah mencapai batas maksimal 5 rekening. Hapus salah satu jika ingin menambah yang baru.
+  </div>
+  @endif
 </div>
 
           {{-- GANTI PASSWORD --}}

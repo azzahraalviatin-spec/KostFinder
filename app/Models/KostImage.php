@@ -12,6 +12,7 @@ class KostImage extends Model
         'kost_id',
         'image_path',
         'sort_order',
+        'kategori',
     ];
 
     public function kost()

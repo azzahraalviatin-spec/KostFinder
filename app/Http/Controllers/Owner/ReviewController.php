@@ -88,7 +88,24 @@ class ReviewController extends Controller
             'balasan'   => $request->balasan,
         ]);
 
+        // Auto approve jika masih pending
+        if ($review->status === 'pending') {
+            $review->update(['status' => 'approved']);
+            return back()->with('success', 'Balasan dikirim dan ulasan telah disetujui untuk tampil di publik!');
+        }
+
         return back()->with('success', 'Balasan berhasil dikirim!');
+    }
+
+    public function approve(Review $review)
+    {
+        if ($review->kost->owner_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $review->update(['status' => 'approved']);
+
+        return back()->with('success', 'Ulasan telah disetujui dan sekarang tampil di halaman publik!');
     }
 
     public function report(Request $request, Review $review)
