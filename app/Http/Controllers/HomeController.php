@@ -45,7 +45,10 @@ class HomeController extends Controller
             ->with(['rooms' => function ($q) {
                 $q->select('id_room', 'kost_id', 'harga_per_bulan', 'harga_harian', 'aktif_bulanan', 'aktif_harian', 'status_kamar', 'fasilitas');
             }])
-            ->withCount('rooms')
+            ->withCount(['rooms as kamar_tersedia' => function($q) {
+                $q->where('status_kamar', 'tersedia');
+            }])
+            ->withCount(['rooms as kamar_total'])
             ->withAvg('reviews', 'rating')   // rata-rata rating — dihitung di DB, tidak load semua review
             ->withCount('reviews');           // jumlah review — dihitung di DB
 

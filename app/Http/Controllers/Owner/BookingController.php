@@ -41,7 +41,10 @@ class BookingController extends Controller
         $booking = $this->findOwnerBooking($booking->getKey());
         $booking->update(['status_booking' => 'diterima']);
 
-        // 🔔 NOTIFIKASI KE USER
+        // ✅ Update status kamar jadi terisi saat booking diterima
+        $booking->room->update(['status_kamar' => 'terisi']);
+
+        // 🔔 Notifikasi ke penyewa
         $booking->user->notify(new BookingStatusNotification($booking));
 
         return back()->with('success', 'Booking berhasil diterima!');
@@ -59,7 +62,10 @@ class BookingController extends Controller
             'alasan_batal'   => $request->alasan_batal ?? 'Tidak ada alasan yang diberikan.',
         ]);
 
-        // 🔔 NOTIFIKASI KE USER
+        // ✅ Kembalikan status kamar jadi tersedia saat booking ditolak
+        $booking->room->update(['status_kamar' => 'tersedia']);
+
+        // 🔔 Notifikasi ke penyewa
         $booking->user->notify(new BookingStatusNotification($booking));
 
         return back()->with('success', 'Booking berhasil ditolak!');
@@ -69,25 +75,29 @@ class BookingController extends Controller
     {
         $booking = $this->findOwnerBooking($booking->getKey());
 
-        // ── HITUNG PENDAPATAN ──
-        // Ambil total_harga dari booking, fallback ke harga kamar × durasi
+        // Hitung total harga
         $totalHarga = $booking->total_harga
             ?? (($booking->room->harga ?? 0) * ($booking->durasi_sewa ?? 1));
 
-        // Ambil komisi dari settings, default 10% jika tidak ada
-        $settings = \App\Models\Setting::first();
-        $persenKomisi = $settings ? ($settings->komisi_admin / 100) : 0.10;
+        // Komisi 10% admin, owner dapat 90%
+        $komisiAdmin     = $totalHarga * 0.10;
+        $pendapatanOwner = $totalHarga * 0.90;
 
-        $komisiAdmin      = round($totalHarga * $persenKomisi);
-        $pendapatanOwner  = $totalHarga - $komisiAdmin;
-
+        // Update status booking + catat pendapatan
         $booking->update([
-            'status_booking'    => 'selesai',
-            'komisi_admin'      => $komisiAdmin,
-            'pendapatan_owner'  => $pendapatanOwner,
+            'status_booking'   => 'selesai',
+            'komisi_admin'     => $komisiAdmin,
+            'pendapatan_owner' => $pendapatanOwner,
         ]);
 
-        return back()->with('success', 'Booking ditandai selesai! Pendapatan Rp ' . number_format($pendapatanOwner, 0, ',', '.') . ' telah dicatat.');
+        // ✅ Update status kamar jadi terisi
+        $booking->room->update(['status_kamar' => 'terisi']);
+
+        return back()->with('success',
+            'Booking selesai! Pendapatan Rp ' .
+            number_format($pendapatanOwner, 0, ',', '.') .
+            ' (90%) berhasil dicatat!'
+        );
     }
 
     private function ownerBookingsQuery()

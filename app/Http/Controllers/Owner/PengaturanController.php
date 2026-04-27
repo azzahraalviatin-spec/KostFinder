@@ -35,7 +35,7 @@ class PengaturanController extends Controller
 'kecamatan'     => 'nullable|string|max:100',
 'kelurahan'     => 'nullable|string|max:100',
 'kode_pos'      => 'nullable|string|max:10',
-'maps_url'      => 'nullable|url|max:500',
+
         ]);
 
         // Upload foto profil
@@ -86,7 +86,7 @@ $user->provinsi      = $request->provinsi;
 $user->kecamatan     = $request->kecamatan;
 $user->kelurahan     = $request->kelurahan;
 $user->kode_pos      = $request->kode_pos;
-$user->maps_url      = $request->maps_url;
+
 $user->save();
 
         if ($adaDokumenBaru) {

@@ -14,5 +14,7 @@ class Setting extends Model
         'instagram_link',
         'tiktok_link',
         'komisi_admin',
+        'facebook_link',
+        'alamat_kantor',
     ];
-}   
+}

@@ -399,12 +399,11 @@
         
         {{-- Status Kamar --}}
         @if($kamarTotal == 0)
-            <span class="badge-kamar {{ $kost->status==='aktif' ? 'badge-tersedia':'badge-penuh' }}">
-                <i class="bi bi-{{ $kost->status==='aktif' ? 'check':'x' }}-circle-fill"></i>
-                {{ $kost->status==='aktif' ? 'Tersedia':'Penuh' }}
+            <span class="badge-kamar badge-penuh">
+                <i class="bi bi-x-circle-fill"></i> Habis
             </span>
         @elseif($kamarTersedia == 0)
-            <span class="badge-kamar badge-penuh"><i class="bi bi-x-circle-fill"></i> Penuh</span>
+            <span class="badge-kamar badge-penuh"><i class="bi bi-x-circle-fill"></i> Habis</span>
         @else
             <span class="badge-kamar badge-tersedia"><i class="bi bi-check-circle-fill"></i> {{ $kamarTersedia }} Kamar</span>
         @endif

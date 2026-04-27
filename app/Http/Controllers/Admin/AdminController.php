@@ -745,6 +745,8 @@ public function updateSettings(Request $request)
     $settings->email_support = $request->email_support;
     $settings->instagram_link = $request->instagram_link;
     $settings->tiktok_link    = $request->tiktok_link;
+    $settings->facebook_link  = $request->facebook_link;
+    $settings->alamat_kantor  = $request->alamat_kantor;
     $settings->komisi_admin   = $request->komisi_admin;
     $settings->save();
 

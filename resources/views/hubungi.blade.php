@@ -92,18 +92,27 @@
                     <div class="text-start">
                         <div class="contact-item">
                             <i class="bi bi-envelope"></i>
-                            <div><strong>Email:</strong><p>support@kostfinder.com</p></div>
+                            <div><strong>Email:</strong><p>{{ $siteSettings->email_support ?? 'support@kostfinder.com' }}</p></div>
                         </div>
                         <div class="contact-item">
                             <i class="bi bi-geo-alt"></i>
-                            <div><strong>Alamat Kantor:</strong><p>Dusun Banjar, Desa Banjarkemantren RT 01/RW 04, Kec. Buduran, Sidoarjo, 61252</p></div>
+                            <div><strong>Alamat Kantor:</strong><p>{!! nl2br(e($siteSettings->alamat_kantor ?? "Dusun Banjar, Desa Banjarkemantren RT 01/RW 04, \nKec. Buduran, Sidoarjo, 61252")) !!}</p></div>
                         </div>
                     </div>
 
                     <div class="social-container">
-                        <a href="https://www.instagram.com/kostfinder.id?igsh=ODAwNzZvbGlpN3l0" target="_blank" title="Instagram KostFinder"><i class="bi bi-instagram"></i></a>
-                        <a href="#"><i class="bi bi-telegram"></i></a>
-                        <a href="https://www.tiktok.com/@kostfinder?_r=1&_t=ZS-95pFzTcE9WW" target="_blank" title="TikTok KostFinder"><i class="bi bi-tiktok"></i></a>
+                        @if($siteSettings->instagram_link)
+                            <a href="{{ $siteSettings->instagram_link }}" target="_blank" title="Instagram KostFinder"><i class="bi bi-instagram"></i></a>
+                        @endif
+                        @if($siteSettings->facebook_link)
+                            <a href="{{ $siteSettings->facebook_link }}" target="_blank" title="Facebook KostFinder"><i class="bi bi-facebook"></i></a>
+                        @endif
+                        @if($siteSettings->tiktok_link)
+                            <a href="{{ $siteSettings->tiktok_link }}" target="_blank" title="TikTok KostFinder"><i class="bi bi-tiktok"></i></a>
+                        @endif
+                        @if($siteSettings->whatsapp_cs)
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_cs) }}" target="_blank" title="WhatsApp KostFinder"><i class="bi bi-whatsapp"></i></a>
+                        @endif
                     </div>
 
                     <div id="map"></div>
@@ -152,4 +161,4 @@
         .openPopup();
 </script>
 @endsection
-
+

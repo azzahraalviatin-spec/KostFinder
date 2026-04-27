@@ -1,252 +1,323 @@
-@extends('admin.layout')
+@extends('layouts.owner')
 
-@section('title', 'Monitoring Booking')
-@section('page_title', 'Monitoring Booking')
-@section('page_subtitle', 'Filter booking berdasarkan status dan rentang tanggal')
+@section('title', 'Kelola Booking')
 
-@section('content')
+@push('styles')
 <style>
-    .card-panel {
-        background: #fff;
-        border-radius: 1rem;
-        border: none;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        padding: 1.5rem;
-    }
-    .table thead th {
-        background: #f8fafc;
-        color: #64748b;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.05em;
-        border-top: none;
-        padding: 1rem;
-    }
-    .table tbody td {
-        padding: 1.2rem 1rem;
-        color: #334155;
-        font-size: 0.85rem;
-        border-bottom: 1px solid #f1f5f9;
-    }
-    .badge-pill {
-        padding: 0.45rem 0.8rem;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 0.68rem;
-    }
-    .btn-action {
-        width: 32px;
-        height: 32px;
+    /* ===== STAT CARDS - 5 dalam 1 baris ===== */
+    .stat-row {
         display: flex;
+        gap: .6rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: nowrap; /* paksa 1 baris */
+    }
+    .stat-card {
+        flex: 1 1 0;
+        min-width: 0;
+        border-radius: 12px;
+        padding: 1rem .6rem .8rem;
+        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        border-radius: 8px;
-        transition: all 0.2s;
-        border: none;
-        text-decoration: none;
+        gap: .45rem;
+        text-align: center;
+        transition: transform .2s, box-shadow .2s;
+        position: relative;
+        overflow: hidden;
     }
-    .btn-action:hover { transform: translateY(-2px); }
-    .btn-approve { background: #dcfce7; color: #15803d; }
-    .btn-reject { background: #fee2e2; color: #b91c1c; }
-    .btn-delete { background: #f1f5f9; color: #64748b; }
-    
-    .filter-box {
-        background: #f8fafc;
-        padding: 1.2rem;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
-        border: 1px solid #e2e8f0;
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,.15);
     }
+    .stat-card.total    { background: linear-gradient(135deg,#1e2d3d,#2d4a6b); }
+    .stat-card.pending  { background: linear-gradient(135deg,#f59e0b,#fb923c); }
+    .stat-card.diterima { background: linear-gradient(135deg,#10b981,#34d399); }
+    .stat-card.selesai  { background: linear-gradient(135deg,#64748b,#94a3b8); }
+    .stat-card.income   { background: linear-gradient(135deg,#e8401c,#ff7043); }
+
+    .stat-icon-wrap {
+        width: 34px; height: 34px;
+        border-radius: 9px;
+        background: rgba(255,255,255,.18);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; color: #fff; flex-shrink: 0;
+    }
+    .stat-num {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.1;
+        word-break: break-all;
+    }
+    .stat-num.income-num {
+        font-size: .82rem; /* lebih kecil supaya muat */
+    }
+    .stat-lbl {
+        font-size: .65rem;
+        color: rgba(255,255,255,.85);
+        font-weight: 600;
+    }
+
+    /* Responsive: di layar kecil boleh wrap */
+    @media (max-width: 600px) {
+        .stat-row { flex-wrap: wrap; }
+        .stat-card { flex: 1 1 calc(50% - .3rem); }
+        .stat-card.income { flex: 1 1 100%; }
+    }
+
+    /* ===== TABLE SECTION ===== */
+    .table-section { background:#fff; border-radius:16px; border:1px solid #e4e9f0; overflow:hidden; }
+    .table-header { padding:1rem 1.4rem; border-bottom:1px solid #f0f4f8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.75rem; }
+    .table-title { font-size:.92rem; font-weight:800; color:var(--dark); display:flex; align-items:center; gap:.5rem; }
+    .table-title-dot { width:8px; height:8px; border-radius:50%; background:var(--primary); }
+
+    .filter-wrap { display:flex; gap:.3rem; flex-wrap:wrap; background:#f1f5f9; padding:.35rem; border-radius:99px; }
+    .fpill { padding:.35rem 1rem; border-radius:99px; font-size:.72rem; font-weight:700; color:#64748b; text-decoration:none; transition:.2s; }
+    .fpill:hover { color:var(--dark); background:rgba(0,0,0,.04); }
+    .fpill.active { color:#fff; box-shadow:0 3px 10px rgba(0,0,0,.12); }
+    .fpill.active.f-semua    { background:#1e2d3d; }
+    .fpill.active.f-pending  { background:#f59e0b; }
+    .fpill.active.f-diterima { background:#10b981; }
+    .fpill.active.f-ditolak  { background:#ef4444; }
+    .fpill.active.f-selesai  { background:#64748b; }
+
+    table { width:100%; border-collapse:collapse; }
+    thead th { font-size:.67rem; font-weight:800; color:#94a3b8; letter-spacing:.08em; padding:.85rem 1rem; background:#f8fafd; border-bottom:1px solid #f0f4f8; text-transform:uppercase; }
+    tbody td { font-size:.81rem; color:#334155; padding:.85rem 1rem; border-bottom:1px solid #f8fafd; vertical-align:middle; }
+    tbody tr:last-child td { border-bottom:0; }
+    tbody tr:hover { background:#fafbfd; }
+
+    .avatar-circle { width:34px; height:34px; border-radius:50%; color:#fff; font-weight:700; font-size:.78rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .sbadge { padding:.28rem .85rem; border-radius:99px; font-size:.68rem; font-weight:700; display:inline-flex; align-items:center; gap:.35rem; white-space:nowrap; }
+    .sbadge-pending    { background:#fff7ed; color:#ea580c; }
+    .sbadge-diterima   { background:#f0fdf4; color:#16a34a; }
+    .sbadge-ditolak    { background:#fef2f2; color:#dc2626; }
+    .sbadge-selesai    { background:#f1f5f9; color:#64748b; }
+    .sbadge-dibatalkan { background:#f8fafc; color:#94a3b8; }
+    .sbadge-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+
+    .aksi-wrap { display:flex; gap:.35rem; }
+    .abtn { width:30px; height:30px; border-radius:9px; border:0; display:flex; align-items:center; justify-content:center; font-size:.82rem; cursor:pointer; transition:.15s; }
+    .abtn:hover { transform:translateY(-2px); filter:brightness(.93); }
+    .abtn-terima { background:#dcfce7; color:#16a34a; }
+    .abtn-tolak  { background:#fee2e2; color:#dc2626; }
+    .abtn-selesai{ background:#f1f5f9; color:#475569; }
+    .abtn-detail { background:#e0f2fe; color:#0369a1; }
 </style>
+@endpush
 
-<div class="card-panel">
-    <!-- 🔍 FILTER -->
-    <div class="filter-box">
-        <form method="GET" action="{{ route('admin.bookings') }}" class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label small fw-bold text-muted">Status Booking</label>
-                <select name="status" class="form-select" style="border-radius: 10px;">
-                    <option value="">Semua Status</option>
-                    <option value="pending" @selected(request('status') === 'pending')>⏳ Pending</option>
-                    <option value="diterima" @selected(request('status') === 'diterima')>✅ Diterima</option>
-                    <option value="ditolak" @selected(request('status') === 'ditolak')>❌ Ditolak</option>
-                    <option value="selesai" @selected(request('status') === 'selesai')>🏁 Selesai</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small fw-bold text-muted">Dari Tanggal</label>
-                <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control" style="border-radius: 10px;">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small fw-bold text-muted">Sampai Tanggal</label>
-                <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control" style="border-radius: 10px;">
-            </div>
-            <div class="col-md-3 d-flex align-items-end gap-2">
-                <button type="submit" class="btn btn-primary w-100 fw-bold" style="border-radius: 10px; padding: 0.6rem;">Filter</button>
-                <a href="{{ route('admin.bookings') }}" class="btn btn-outline-secondary w-100 fw-bold" style="border-radius: 10px; padding: 0.6rem;">Reset</a>
-            </div>
-        </form>
+@section('content')
+
+    @if(session('success'))
+      <div class="alert alert-success alert-dismissible fade show mb-4 border-0 shadow-sm" style="border-radius:12px;">
+        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    @endif
+
+    <div class="mb-4">
+      <h4 class="fw-bold mb-1" style="color:var(--dark);">Kelola Booking</h4>
+      <p class="text-muted small mb-0">Monitor status dan pendapatan dari penyewaan kamar Anda</p>
     </div>
 
-    <!-- 📊 TABLE -->
-    <div class="table-responsive">
-        <table class="table align-middle mb-0">
-            <thead>
-                <tr>
-                    <th width="50">No</th>
-                    <th>Penyewa</th>
-                    <th>Properti & Kamar</th>
-                    <th>Check-in</th>
-                    <th class="text-center">Durasi</th>
-                    <th>Pembayaran</th>
-                    <th>Status</th>
-                    <th class="text-end">Aksi</th>
-                </tr>
-            </thead>
+    {{-- ===== STAT CARDS (5 dalam 1 baris) ===== --}}
+    <div class="stat-row">
 
-            <tbody>
-                @forelse($bookings as $booking)
-                <tr>
-                    <td class="text-muted">{{ $loop->iteration }}</td>
-                    <td>
-                        <div class="fw-bold text-dark">{{ $booking->user->name ?? '-' }}</div>
-                        <div class="text-muted small">{{ $booking->user->email ?? '-' }}</div>
-                    </td>
-                    <td>
-                        <div class="fw-semibold text-primary">{{ $booking->room->kost->nama_kost ?? '-' }}</div>
-                        <div class="small text-muted"><i class="bi bi-door-open me-1"></i>Kamar {{ $booking->room->nomor_kamar ?? '-' }}</div>
-                    </td>
-                    <td>
-                        <div class="fw-medium"><i class="bi bi-calendar3 me-2 text-muted"></i>{{ \Carbon\Carbon::parse($booking->tanggal_masuk)->format('d M Y') }}</div>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge bg-light text-dark border">{{ (int) $booking->durasi_sewa }} bulan</span>
-                    </td>
-                    <td>
-                        @if($booking->status_pembayaran == 'belum')
-                            <span class="badge badge-pill bg-danger-subtle text-danger" style="background:#fee2e2; color:#b91c1c;">Belum Bayar</span>
-                        @elseif($booking->status_pembayaran == 'pending')
-                            <span class="badge badge-pill bg-warning-subtle text-warning text-dark" style="background:#fef9c3; color:#a16207;">Menunggu</span>
-                        @else
-                            <span class="badge badge-pill bg-success-subtle text-success" style="background:#dcfce7; color:#15803d;">Lunas</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($booking->status_booking == 'pending')
-                            <span class="badge badge-pill bg-warning text-dark" style="background:#fbbf24;">Pending</span>
-                        @elseif($booking->status_booking == 'diterima')
-                            <span class="badge badge-pill bg-success" style="background:#10b981;">Diterima</span>
-                        @elseif($booking->status_booking == 'ditolak')
-                            <span class="badge badge-pill bg-danger" style="background:#ef4444;">Ditolak</span>
-                        @elseif($booking->status_booking == 'selesai')
-                            <span class="badge badge-pill bg-primary" style="background:#3b82f6;">Selesai</span>
-                        @else
-                            <span class="badge badge-pill bg-secondary">{{ $booking->status_booking }}</span>
-                        @endif
-                    </td>
-                    <td>
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('admin.bookings.show', $booking) }}" class="btn-action btn-detail" title="Lihat Detail">
-                                <i class="bi bi-eye-fill"></i>
-                            </a>
-                            
-                            @if($booking->status_booking == 'pending')
-                                <button type="button" class="btn-action btn-approve" 
-                                        onclick="confirmAction('{{ route('admin.bookings.update-status', [$booking, 'diterima']) }}', 'Terima Booking?', 'Apakah Anda yakin ingin menyetujui pesanan kost ini?', 'PATCH', 'success')"
-                                        title="Terima">
-                                    <i class="bi bi-check-lg"></i>
-                                </button>
-                                <button type="button" class="btn-action btn-reject" 
-                                        onclick="confirmAction('{{ route('admin.bookings.update-status', [$booking, 'ditolak']) }}', 'Tolak Booking?', 'Apakah Anda yakin ingin menolak pesanan kost ini?', 'PATCH', 'danger')"
-                                        title="Tolak">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="8" class="text-center py-5 text-muted">
-                        <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
-                        Belum ada data booking yang ditemukan.
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+      {{-- Total --}}
+      <div class="stat-card total">
+        <div class="stat-icon-wrap"><i class="bi bi-journal-text"></i></div>
+        <div class="stat-num">{{ $allBookings->count() }}</div>
+        <div class="stat-lbl">Total</div>
+      </div>
 
-    <!-- 🔢 PAGINATION -->
-    <div class="mt-4">
-        {{ $bookings->links() }}
-    </div>
-</div>
+      {{-- Pending --}}
+      <div class="stat-card pending">
+        <div class="stat-icon-wrap"><i class="bi bi-hourglass-split"></i></div>
+        <div class="stat-num">{{ $allBookings->where('status_booking','pending')->count() }}</div>
+        <div class="stat-lbl">Pending</div>
+      </div>
 
-{{-- ── MODAL KONFIRMASI GLOBAL ── --}}
-@if(!View::hasSection('has_confirm_modal'))
-@section('has_confirm_modal', true)
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 1.2rem;">
-            <div class="modal-body p-4 text-center">
-                <div id="confirmIconWrap" class="mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; border-radius: 50%;">
-                    <i id="confirmIcon" class="fs-2"></i>
-                </div>
-                <h5 id="confirmTitle" class="fw-bold mb-2"></h5>
-                <p id="confirmMessage" class="text-muted small mb-4"></p>
-                
-                <form id="confirmForm" method="POST">
-                    @csrf
-                    <input type="hidden" name="_method" id="confirmMethod" value="POST">
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-light w-100 fw-bold" data-bs-dismiss="modal" style="border-radius: 10px; padding: 0.6rem;">Batal</button>
-                        <button type="submit" id="confirmSubmitBtn" class="btn w-100 fw-bold" style="border-radius: 10px; padding: 0.6rem;">Ya, Lanjutkan</button>
-                    </div>
-                </form>
-            </div>
+      {{-- Diterima --}}
+      <div class="stat-card diterima">
+        <div class="stat-icon-wrap"><i class="bi bi-check2-circle"></i></div>
+        <div class="stat-num">{{ $allBookings->where('status_booking','diterima')->count() }}</div>
+        <div class="stat-lbl">Diterima</div>
+      </div>
+
+      {{-- Selesai --}}
+      <div class="stat-card selesai">
+        <div class="stat-icon-wrap"><i class="bi bi-flag-fill"></i></div>
+        <div class="stat-num">{{ $allBookings->where('status_booking','selesai')->count() }}</div>
+        <div class="stat-lbl">Selesai</div>
+      </div>
+
+      {{-- Pendapatan --}}
+      <div class="stat-card income">
+        <div class="stat-icon-wrap"><i class="bi bi-wallet2"></i></div>
+        <div class="stat-num income-num">
+          Rp{{ number_format($allBookings->where('status_booking','selesai')->sum('pendapatan_owner'),0,',','.') }}
         </div>
+        <div class="stat-lbl">Pendapatan</div>
+      </div>
+
     </div>
-</div>
 
-<script>
-    function confirmAction(url, title, message, method, type) {
-        const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-        const form = document.getElementById('confirmForm');
-        const titleEl = document.getElementById('confirmTitle');
-        const msgEl = document.getElementById('confirmMessage');
-        const methodInput = document.getElementById('confirmMethod');
-        const submitBtn = document.getElementById('confirmSubmitBtn');
-        const iconWrap = document.getElementById('confirmIconWrap');
-        const icon = document.getElementById('confirmIcon');
+    {{-- ===== TABLE SECTION ===== --}}
+    <div class="table-section shadow-sm">
+      <div class="table-header">
+        <div class="table-title">
+          <div class="table-title-dot"></div>
+          Daftar Booking
+        </div>
+        <div class="filter-wrap">
+          <a href="?status=semua"    class="fpill f-semua    {{ $activeStatus=='semua'   ?'active':'' }}">Semua</a>
+          <a href="?status=pending"  class="fpill f-pending  {{ $activeStatus=='pending' ?'active':'' }}">Pending</a>
+          <a href="?status=diterima" class="fpill f-diterima {{ $activeStatus=='diterima'?'active':'' }}">Diterima</a>
+          <a href="?status=ditolak"  class="fpill f-ditolak  {{ $activeStatus=='ditolak' ?'active':'' }}">Ditolak</a>
+          <a href="?status=selesai"  class="fpill f-selesai  {{ $activeStatus=='selesai' ?'active':'' }}">Selesai</a>
+        </div>
+      </div>
 
-        form.action = url;
-        titleEl.innerText = title;
-        msgEl.innerText = message;
-        methodInput.value = method;
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:46px; text-align:center;">#</th>
+              <th>Penyewa & Kamar</th>
+              <th>Durasi</th>
+              <th>Total Bayar</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            @forelse($bookings as $i => $booking)
+              <tr>
+                <td style="text-align:center; color:var(--muted); font-weight:700;">{{ $i + 1 }}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-circle" style="background:hsl({{ ($booking->user_id * 40) % 360 }}, 60%, 50%)">
+                      {{ strtoupper(substr($booking->user->name ?? 'U', 0, 1)) }}
+                    </div>
+                    <div>
+                      <div class="fw-bold text-dark" style="font-size:.82rem;">{{ $booking->user->name ?? 'User' }}</div>
+                      <div class="text-muted" style="font-size:.72rem;">Kamar {{ $booking->room->nomor_kamar ?? '-' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="fw-semibold">{{ $booking->jumlah_durasi }} {{ ucfirst($booking->tipe_durasi) }}</div>
+                  <div class="text-muted" style="font-size:.72rem;">
+                    {{ \Carbon\Carbon::parse($booking->tanggal_masuk)->format('d M') }} –
+                    {{ \Carbon\Carbon::parse($booking->tanggal_selesai)->format('d M Y') }}
+                  </div>
+                </td>
+                <td>
+                  <div class="fw-bold text-dark">Rp{{ number_format($booking->total_bayar, 0, ',', '.') }}</div>
+                  <div class="text-muted" style="font-size:.72rem;">Via {{ $booking->metode_pembayaran ?: '-' }}</div>
+                </td>
+                <td>
+                  <span class="sbadge sbadge-{{ $booking->status_booking }}">
+                    <div class="sbadge-dot"></div>
+                    {{ ucfirst($booking->status_booking) }}
+                  </span>
+                </td>
+                <td>
+                  <div class="aksi-wrap">
+                    @if($booking->status_booking === 'pending')
+                      <form action="{{ route('owner.booking.terima', $booking->id_booking) }}" method="POST">
+                        @csrf @method('PATCH')
+                        <button type="submit" class="abtn abtn-terima" title="Terima"><i class="bi bi-check-lg"></i></button>
+                      </form>
+                      <button type="button" class="abtn abtn-tolak js-btn-tolak" data-id="{{ $booking->id_booking }}" title="Tolak">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    @endif
 
-        // Reset classes
-        submitBtn.className = 'btn w-100 fw-bold';
-        iconWrap.className = 'mb-3 mx-auto d-flex align-items-center justify-content-center';
-        icon.className = 'bi fs-2';
+                    @if($booking->status_booking === 'diterima')
+                      <button type="button" class="abtn abtn-selesai js-btn-selesai" data-id="{{ $booking->id_booking }}" title="Tandai Selesai">
+                        <i class="bi bi-flag"></i>
+                      </button>
+                    @endif
 
-        if (type === 'danger') {
-            submitBtn.classList.add('btn-danger');
-            iconWrap.style.backgroundColor = '#fee2e2';
-            icon.classList.add('bi-exclamation-triangle', 'text-danger');
-        } else if (type === 'success') {
-            submitBtn.classList.add('btn-success');
-            iconWrap.style.backgroundColor = '#dcfce7';
-            icon.classList.add('bi-patch-check', 'text-success');
-        } else if (type === 'warning') {
-            submitBtn.classList.add('btn-warning');
-            iconWrap.style.backgroundColor = '#fef9c3';
-            icon.classList.add('bi-hourglass-split', 'text-warning');
-        }
+                    <a href="{{ route('owner.booking.show', $booking->id_booking) }}" class="abtn abtn-detail" title="Detail">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="6">
+                  <div class="text-center py-5">
+                    <i class="bi bi-inbox text-muted" style="font-size:2.8rem; opacity:.3;"></i>
+                    <p class="text-muted mt-2 mb-0 small">Belum ada data booking dengan status ini.</p>
+                  </div>
+                </td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-        modal.show();
-    }
-</script>
-@endif
+    {{-- ===== MODAL TOLAK ===== --}}
+    <div class="modal fade" id="tolakModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <form id="tolakForm" method="POST" class="modal-content border-0 rounded-4 shadow">
+          @csrf @method('PATCH')
+          <div class="modal-body p-4 text-center">
+            <div class="mb-3 text-danger"><i class="bi bi-exclamation-octagon" style="font-size:3rem;"></i></div>
+            <h5 class="fw-bold mb-1">Tolak Pesanan?</h5>
+            <p class="text-muted small mb-3">Berikan alasan mengapa Anda menolak pesanan ini.</p>
+            <textarea name="alasan_batal" class="form-control rounded-3" rows="3"
+              placeholder="Contoh: Kamar sedang dalam perbaikan..." required></textarea>
+            <div class="d-flex gap-2 mt-4">
+              <button type="button" class="btn btn-light w-100 fw-bold py-2 rounded-3" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-danger w-100 fw-bold py-2 rounded-3">Ya, Tolak</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {{-- ===== MODAL SELESAI ===== --}}
+    <div class="modal fade" id="selesaiModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <form id="selesaiForm" method="POST" class="modal-content border-0 rounded-4 shadow">
+          @csrf @method('PATCH')
+          <div class="modal-body p-4 text-center">
+            <div class="mb-3 text-success"><i class="bi bi-check2-circle" style="font-size:3rem;"></i></div>
+            <h5 class="fw-bold mb-1">Tandai Selesai?</h5>
+            <p class="text-muted small mb-3">
+              Pesanan akan dianggap selesai dan <strong>pendapatan akan langsung tercatat</strong> ke sistem.
+            </p>
+            <div class="d-flex gap-2 mt-2">
+              <button type="button" class="btn btn-light w-100 fw-bold py-2 rounded-3" data-bs-dismiss="modal">Belum</button>
+              <button type="submit" class="btn btn-success w-100 fw-bold py-2 rounded-3">Ya, Selesai</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
 @endsection
+
+@push('scripts')
+<script>
+  document.querySelectorAll('.js-btn-tolak').forEach(btn => {
+    btn.addEventListener('click', function () {
+      document.getElementById('tolakForm').action = `/owner/booking/${this.dataset.id}/tolak`;
+      new bootstrap.Modal(document.getElementById('tolakModal')).show();
+    });
+  });
+
+  document.querySelectorAll('.js-btn-selesai').forEach(btn => {
+    btn.addEventListener('click', function () {
+      document.getElementById('selesaiForm').action = `/owner/booking/${this.dataset.id}/selesai`;
+      new bootstrap.Modal(document.getElementById('selesaiModal')).show();
+    });
+  });
+</script>
+@endpush

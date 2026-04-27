@@ -62,7 +62,13 @@ class KostDetailController extends Controller
             default    => $query->orderBy('created_at', 'desc'),
         };
 
-        $kosts = $query->with(['images', 'rooms'])->paginate(12)->withQueryString();
+        $kosts = $query->with(['images', 'rooms'])
+            ->withCount(['rooms as kamar_tersedia' => function($q) {
+                $q->where('status_kamar', 'tersedia');
+            }])
+            ->withCount(['rooms as kamar_total'])
+            ->paginate(12)
+            ->withQueryString();
 
         // Untuk maps: ambil semua (max 100) tanpa pagination
 $kostsMapRaw = (clone $query)->limit(100)

@@ -251,7 +251,7 @@
       <div class="harga-row">
         <span class="hk">
           Biaya Layanan
-        <span class="fee-badge">Platform Fee {{ $persenKomisi }}%</span>
+        <span class="fee-badge">Admin Fee</span>
         </span>
         <span class="hv">Rp {{ number_format($booking->komisi_admin ?? 0, 0, ',', '.') }}</span>
       </div>

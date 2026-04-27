@@ -134,6 +134,95 @@ body { background: var(--bg); }
 .btn-hubungi { border:2px solid var(--primary); color:var(--primary); background:#fff; border-radius:999px; padding:.36rem 1rem; font-size:.78rem; font-weight:700; cursor:pointer; transition:all .2s; }
 .btn-hubungi:hover { background:var(--primary-light); }
 
+/* ══ STICKY BOTTOM BAR (MOBILE) ══ */
+.sticky-bottom-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  border-top: 1px solid var(--card-border);
+  padding: .75rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  z-index: 1000;
+  box-shadow: 0 -4px 18px rgba(0,0,0,.1);
+  padding-bottom: calc(.75rem + env(safe-area-inset-bottom));
+}
+.sbb-price {
+  flex: 1;
+  min-width: 0;
+}
+.sbb-price .val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--primary);
+  display: block;
+}
+.sbb-price .lbl {
+  font-size: .68rem;
+  color: var(--text-muted);
+}
+.sbb-btn-tanya {
+  height: 44px;
+  width: 44px;
+  border-radius: .65rem;
+  border: 1.5px solid var(--primary);
+  background: #fff;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sbb-btn-sewa {
+  height: 44px;
+  padding: 0 1.5rem;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: .65rem;
+  font-weight: 700;
+  font-size: .88rem;
+  flex: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+@media (min-width: 992px) {
+  .sticky-bottom-bar { display: none !important; }
+}
+@media (max-width: 991px) {
+  .u-bottom-nav, .kf-footer { display: none !important; } /* Sembunyikan global nav & footer */
+}
+
+/* ══ REVIEW IMPROVEMENTS ══ */
+.aspect-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: .6rem 1.2rem;
+  flex: 1;
+}
+.aspect-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+}
+.aspect-lbl { font-size: .75rem; color: #555; font-weight: 600; white-space: nowrap; }
+.aspect-bar-bg { background: #eef2f6; height: 6px; border-radius: 10px; flex: 1; position: relative; }
+.aspect-bar-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 10px; background: #f59e0b; }
+.aspect-val { font-size: .72rem; color: #888; width: 22px; text-align: right; font-weight: 700; }
+
+.review-user-name { font-weight: 800; font-size: .88rem; color: var(--dark); }
+.review-date { font-size: .7rem; color: var(--text-muted); }
+.review-text { font-size: .84rem; color: #444; line-height: 1.6; margin-top: .4rem; }
+.review-photos { display: flex; gap: .5rem; margin-top: .6rem; }
+.review-photo-item { width: 70px; height: 70px; border-radius: .5rem; overflow: hidden; border: 1px solid #eee; cursor: pointer; }
+.review-photo-item img { width: 100%; height: 100%; object-fit: cover; }
+
 /* REKOM */
 .rekom-track { display:flex; gap:.75rem; overflow-x:auto; padding-bottom:.3rem; scrollbar-width:none; }
 .rekom-track::-webkit-scrollbar { display:none; }
@@ -253,7 +342,12 @@ body { background: var(--bg); }
   $ikonFas = ['kasur'=>'bi-moon-stars','ac'=>'bi-thermometer-snow','kipas'=>'bi-wind','tv'=>'bi-tv','kamar mandi dalam'=>'bi-droplet','kamar mandi luar'=>'bi-droplet-half','air panas'=>'bi-fire','meja'=>'bi-easel','lemari'=>'bi-archive','wifi'=>'bi-wifi','motor'=>'bi-scooter','mobil'=>'bi-car-front','dapur'=>'bi-cup-hot','laundry'=>'bi-bag','mushola'=>'bi-building','cctv'=>'bi-camera-video','kulkas'=>'bi-snow','tempat tidur'=>'bi-moon-stars'];
 @endphp
 
-<div style="min-height:100vh; padding-bottom:4rem;">
+<div class="content-wrapper-detail" style="min-height:100vh; padding-bottom:4rem;">
+<style>
+  @media (max-width: 991px) {
+    .content-wrapper-detail { padding-bottom: 160px !important; }
+  }
+</style>
 
   {{-- BREADCRUMB --}}
   <div style="background:#fff;border-bottom:1px solid var(--card-border);padding:.5rem 0;margin-bottom:0;">
@@ -707,39 +801,65 @@ body { background: var(--bg); }
         <div id="sec-review" class="sec mb-1">
           <div class="sec-title">⭐ Review</div>
           @if($kost->reviews->count() > 0)
-            @php $avg=round($kost->reviews->avg('rating'),1); $total=$kost->reviews->count(); @endphp
-            <div class="rating-summary">
-              <div class="text-center" style="min-width:75px;">
-                <div class="rating-big">{{ $avg }}</div>
-                <div style="font-size:.85rem;color:#f59e0b;margin:.15rem 0;">@for($i=1;$i<=5;$i++)<i class="bi bi-star{{ $i<=$avg?'-fill':'' }}"></i>@endfor</div>
-                <div style="font-size:.7rem;color:#888;">{{ $total }} ulasan</div>
-              </div>
-              <div style="flex:1;">
-                @for($s=5;$s>=1;$s--)
-                  @php $c=$kost->reviews->where('rating',$s)->count(); $p=$total>0?($c/$total)*100:0; @endphp
-                  <div class="d-flex align-items-center gap-2 mb-1">
-                    <span style="font-size:.7rem;color:#666;width:10px;">{{ $s }}</span>
-                    <i class="bi bi-star-fill" style="color:#f59e0b;font-size:.62rem;flex-shrink:0;"></i>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width:{{ $p }}%;"></div></div>
-                    <span style="font-size:.68rem;color:#888;width:14px;">{{ $c }}</span>
+            @php 
+              $avg=round($kost->reviews->avg('rating'),1); 
+              $total=$kost->reviews->count(); 
+              // Mapping DB columns to the 6 slots in screenshot
+              $aspects = [
+                ['label' => 'Kebersihan',      'val' => round($kost->reviews->avg('rating_kebersihan'), 1) ?: 0],
+                ['label' => 'Kenyamanan',      'val' => round($kost->reviews->avg('rating_lokasi'), 1) ?: 0],
+                ['label' => 'Keamanan',        'val' => round($kost->reviews->avg('rating_lokasi'), 1) ?: 0],
+                ['label' => 'Harga',           'val' => round($kost->reviews->avg('rating_harga'), 1) ?: 0],
+                ['label' => 'Fasilitas Kamar', 'val' => round($kost->reviews->avg('rating_fasilitas'), 1) ?: 0],
+                ['label' => 'Fasilitas Umum',  'val' => round($kost->reviews->avg('rating_fasilitas'), 1) ?: 0],
+              ];
+            @endphp
+            <div class="rating-summary" style="background:#fff; border:1px solid #eee; box-shadow:none; flex-direction:column; align-items:stretch; gap:1.2rem; padding:1.25rem;">
+              <div class="d-flex align-items-center gap-4 flex-wrap flex-md-nowrap">
+                <div class="text-center" style="min-width:110px; border-right:1px solid #eee; padding-right:1.5rem;">
+                  <div class="rating-big" style="font-size:3.5rem; margin-bottom:.1rem; color:var(--dark);">{{ $avg }}</div>
+                  <div style="font-size:1.1rem;color:#f59e0b;margin-bottom:.3rem;">@for($i=1;$i<=5;$i++)<i class="bi bi-star{{ $i<=$avg?'-fill':'' }}"></i>@endfor</div>
+                  <div style="font-size:.75rem;color:#888;font-weight:600;">({{ $total }} review)</div>
+                </div>
+                <div class="aspect-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                  @foreach($aspects as $a)
+                  <div class="aspect-item mb-1">
+                    <span class="aspect-lbl" style="width:100px;">{{ $a['label'] }}</span>
+                    <div class="aspect-bar-bg" style="height:4px;">
+                      <div class="aspect-bar-fill" style="width:{{ ($a['val']/5)*100 }}%; height:4px; background:var(--dark);"></div>
+                    </div>
+                    <span class="aspect-val" style="color:var(--dark);">{{ number_format($a['val'], 1) }}</span>
                   </div>
-                @endfor
+                  @endforeach
+                </div>
               </div>
             </div>
             @foreach($kost->reviews->sortByDesc('created_at')->take(5) as $rv)
             <div class="review-card">
-              <div class="d-flex gap-2">
-                <div class="review-ava">
+              <div class="d-flex gap-3">
+                <div class="review-ava" style="width:40px; height:40px; background:#f0f4f8; color:var(--primary); font-size:.9rem; border:1px solid #e4e9f0;">
                   @if($rv->user && $rv->user->foto_profil)<img src="{{ asset('storage/'.$rv->user->foto_profil) }}" style="width:100%;height:100%;object-fit:cover;" alt="">
                   @else{{ strtoupper(substr($rv->user->name ?? 'A', 0, 1)) }}@endif
                 </div>
                 <div style="flex:1;">
-                  <div class="d-flex justify-content-between">
-                    <span style="font-weight:700;font-size:.82rem;">{{ $rv->user->name ?? 'Anonim' }}</span>
-                    <span style="font-size:.69rem;color:#bbb;">{{ $rv->created_at->diffForHumans() }}</span>
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div>
+                      <div class="review-user-name">{{ $rv->user->name ?? 'Anonim' }}</div>
+                      <div class="review-date">{{ $rv->created_at->diffForHumans() }}</div>
+                    </div>
+                    <div style="font-size:.75rem;color:#f59e0b;">@for($i=1;$i<=5;$i++)<i class="bi bi-star{{ $i<=$rv->rating?'-fill':'' }}"></i>@endfor</div>
                   </div>
-                  <div style="font-size:.76rem;color:#f59e0b;margin:.18rem 0;">@for($i=1;$i<=5;$i++)<i class="bi bi-star{{ $i<=$rv->rating?'-fill':'' }}"></i>@endfor</div>
-                  @if($rv->komentar)<p style="font-size:.79rem;color:#555;margin:0;line-height:1.55;">{{ $rv->komentar }}</p>@endif
+                  @if($rv->komentar)<p class="review-text">{{ $rv->komentar }}</p>@endif
+
+                  @if($rv->foto_review)
+                    <div class="review-photos">
+                      @foreach($rv->foto_review as $foto)
+                        <div class="review-photo-item" onclick="bukaLbCustom('{{ asset('storage/'.$foto) }}', 'Foto Review')">
+                          <img src="{{ asset('storage/'.$foto) }}" alt="Review">
+                        </div>
+                      @endforeach
+                    </div>
+                  @endif
                   
                   @if($rv->reply)
                   <div style="background:#f8fafc; border-left:3px solid var(--primary); padding:10px 12px; margin-top:12px; border-radius:6px;">
@@ -1033,11 +1153,77 @@ body { background: var(--bg); }
   </div>
 </div>
 
+{{-- ══ STICKY BOTTOM BAR (MOBILE) ══ --}}
+<div class="sticky-bottom-bar" style="flex-direction:column; align-items:stretch; gap:6px; padding:10px 16px;">
+  <!-- Owner Info Line -->
+  <div class="d-flex align-items-center justify-content-between mb-1">
+    <div class="d-flex align-items-center gap-2">
+       <div style="width:28px; height:28px; border-radius:50%; overflow:hidden; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:800; border:1px solid #eee;">
+          @if($owner && $owner->foto_profil)<img src="{{ asset('storage/'.$owner->foto_profil) }}" style="width:100%;height:100%;object-fit:cover;">
+          @else{{ strtoupper(substr($owner->name ?? 'P', 0, 1)) }}@endif
+       </div>
+       <span style="font-weight:700; font-size:.8rem; color:#333;">{{ $owner->name ?? 'Pemilik' }}</span>
+       <i class="bi bi-patch-check-fill text-primary" style="font-size:.7rem;"></i>
+    </div>
+    <div style="font-size:.68rem; color:var(--text-muted);">Tanya pemilik via Chat</div>
+  </div>
+
+  <div style="background:linear-gradient(90deg, #fff3e0, #fff); color:#e65100; font-size:.68rem; font-weight:700; padding:8px 12px; border-radius:8px; margin-bottom:4px; border:1px solid #ffe0b2; display:flex; align-items:center; gap:8px;">
+    <i class="bi bi-fire" style="font-size:1rem;"></i>
+    <span>Sedang populer! {{ rand(8, 25) }} orang mengajukan survei hari ini</span>
+  </div>
+  
+  <div class="d-flex align-items-center justify-content-between mt-1">
+     <div class="sbb-price">
+        <span class="val" style="font-size:1.2rem;">Rp {{ number_format($kost->harga_mulai,0,',','.') }}<span style="font-size:.7rem; font-weight:400; color:#888;"> /bulan</span></span>
+        <span class="lbl" style="color:var(--primary); font-weight:700; font-size:.68rem; cursor:pointer;" onclick="scrollToBooking()">Estimasi pembayaran <i class="bi bi-chevron-right" style="font-size:.6rem;"></i></span>
+     </div>
+     <div class="d-flex gap-2">
+        <button class="sbb-btn-tanya" onclick="alert('Fitur chat segera hadir!')" style="width:48px; height:46px; border-radius:10px;">
+           <i class="bi bi-chat-dots" style="font-size:1.3rem;"></i>
+        </button>
+        <button class="sbb-btn-sewa" onclick="scrollToBooking()" style="height:46px; border-radius:10px; padding:0 1.5rem; font-size:.9rem; font-weight:800;">Ajukan Sewa</button>
+     </div>
+  </div>
+</div>
+
 @endsection
 
 @section('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+function scrollToBooking() {
+  const el = document.getElementById('frmBooking') || document.getElementById('sec-review');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function bukaLbCustom(url, label) {
+  const img = document.getElementById('lbImg');
+  const caption = document.getElementById('lbCaption');
+  const title = document.getElementById('lbHeaderTitle');
+  
+  document.getElementById('lbOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  
+  img.src = url;
+  caption.textContent = label;
+  title.textContent = label;
+  
+  // Sembunyikan thumb dan nav internal lightbox
+  document.querySelector('.lb-thumbs-wrap').style.display = 'none';
+  document.querySelectorAll('.lb-nav').forEach(n => n.style.display = 'none');
+  document.getElementById('lbTitle').style.display = 'none';
+}
+
+function lbTutup() {
+  document.getElementById('lbOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+  // Restore
+  document.querySelector('.lb-thumbs-wrap').style.display = 'block';
+  document.querySelectorAll('.lb-nav').forEach(n => n.style.display = 'flex');
+  document.getElementById('lbTitle').style.display = 'block';
+}
+
 /* ═══ LIGHTBOX ═══ */
 const LBF = @json($semuaFoto->values());
 let lbI=0, lbTouchStartX=0;

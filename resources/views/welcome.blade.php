@@ -510,9 +510,18 @@
       </div>
     </div>
     <div class="promo-track" id="promoTrack" style="cursor:grab;">
-      <article class="promo-card"><img src="{{ asset('images/promo/promo-1.jpg') }}" alt="Promo 1" onerror="this.parentElement.innerHTML='<div class=\'promo-empty\'>🎉 Promo Segera Hadir</div>'"></article>
-      <article class="promo-card"><img src="{{ asset('images/promo/promo-2.jpg') }}" alt="Promo 2" onerror="this.parentElement.innerHTML='<div class=\'promo-empty\'>🎁 Iklan Kost Tersedia</div>'"></article>
-      <article class="promo-card"><img src="{{ asset('images/promo/promo-3.jpg') }}" alt="Promo 3" onerror="this.parentElement.innerHTML='<div class=\'promo-empty\'>✨ Promo Menarik</div>'"></article>
+      <article class="promo-card" onclick="window.location.href='{{ route('carikos') }}'">
+        <img src="{{ asset('images/promo/promo-1.png') }}" alt="Promo 1">
+      </article>
+      <article class="promo-card" onclick="window.location.href='{{ route('carikos') }}'">
+        <img src="{{ asset('images/promo/promo-2.png') }}" alt="Promo 2">
+      </article>
+      <article class="promo-card" onclick="window.location.href='{{ route('carikos') }}'">
+        <img src="{{ asset('images/promo/promo-3.png') }}" alt="Promo 3">
+      </article>
+      <article class="promo-card" onclick="window.location.href='{{ route('carikos') }}'">
+        <img src="{{ asset('images/promo/Temukan kost nyaman di Jawa Timur.png') }}" alt="Promo 4">
+      </article>
     </div>
   </div>
 </section>

@@ -102,13 +102,13 @@ class BookingController extends Controller
 
         $totalHarga = $hargaSatuan * $jumlahDurasi;
 
-        // ── FIX: Ambil komisi, pastikan > 0 baru pakai, fallback 10% ──
+        // ── FIX: Ambil Biaya Layanan Flat (Bukan Persen Lagi) ──
         $settings     = \App\Models\Setting::first();
-        $persenKomisi = ($settings && $settings->komisi_admin > 0)
-            ? ($settings->komisi_admin / 100)
-            : 0.10;  // default 10%
+        $biayaLayanan = ($settings && $settings->komisi_admin > 0)
+            ? (int) $settings->komisi_admin
+            : 15000;  // Default 15rb jika kosong
 
-        $komisiAdmin     = round($totalHarga * $persenKomisi);
+        $komisiAdmin     = $biayaLayanan;
         $totalBayar      = $totalHarga + $komisiAdmin;
         $pendapatanOwner = $totalHarga;
 
@@ -153,14 +153,14 @@ class BookingController extends Controller
                 ->with('success', 'Booking sudah diproses!');
         }
 
-        // ── FIX: Hitung ulang komisi jika tersimpan 0 ──
+        // ── FIX: Hitung ulang komisi flat jika tersimpan 0 ──
         if ($booking->komisi_admin == 0 && $booking->total_harga > 0) {
             $settings     = \App\Models\Setting::first();
-            $persenKomisi = ($settings && $settings->komisi_admin > 0)
-                ? ($settings->komisi_admin / 100)
-                : 0.10;
+            $biayaLayanan = ($settings && $settings->komisi_admin > 0)
+                ? (int) $settings->komisi_admin
+                : 15000;
 
-            $komisiAdmin = round($booking->total_harga * $persenKomisi);
+            $komisiAdmin = $biayaLayanan;
             $totalBayar  = $booking->total_harga + $komisiAdmin;
 
             $booking->update([

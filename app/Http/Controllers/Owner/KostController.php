@@ -230,7 +230,15 @@ class KostController extends Controller
             'status'      => $request->status ?? $kost->status,
         ]);
 
-        // ✅ Upload foto baru → hapus semua lama dulu
+        // ✅ Update label untuk foto yang sudah ada
+        if ($request->filled('existing_foto_nama')) {
+            foreach ($request->existing_foto_nama as $id => $nama) {
+                KostImage::where('id', $id)->update(['kategori' => $nama]);
+            }
+        }
+
+        // ✅ Upload foto baru (Jika ada file baru diupload, ini akan mengganti semua foto lama sesuai logic aslimu)
+        // Note: Sebaiknya ke depan ini diubah ke sistem append, tapi kita ikuti flow aslimu dulu.
         if ($request->hasFile('foto_kost')) {
             foreach ($kost->images as $img) {
                 if ($img->image_path && Storage::disk('public')->exists($img->image_path)) {

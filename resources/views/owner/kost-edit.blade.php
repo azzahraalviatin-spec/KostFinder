@@ -253,35 +253,6 @@
               </div>
             </div>
             
-            {{-- Fasilitas Berfoto --}}
-            <div class="form-card">
-              <h6><i class="bi bi-camera" style="color:var(--primary)"></i> Fasilitas Umum Berfoto</h6>
-              <p style="font-size:.76rem;color:var(--muted);margin-top:-.5rem;margin-bottom:.85rem;">Upload foto fasilitas umum beserta namanya (Misal: Foto Dapur, Judul: "Dapur Bersama").</p>
-              
-              {{-- List yang sudah ada --}}
-              <div id="facilityGallery" class="row g-3 mb-3">
-                @foreach($kost->generalFacilities as $fac)
-                  <div class="col-6 col-md-4 facility-item">
-                    <div class="card h-100 border-0 shadow-sm overflow-hidden" style="border-radius:.8rem; background:#f8fafc;">
-                      <img src="{{ asset('storage/'.$fac->foto) }}" class="card-img-top" style="height:100px; object-fit:cover;">
-                      <div class="card-body p-2 d-flex justify-content-between align-items-center">
-                        <span class="fw-bold" style="font-size:.72rem;">{{ $fac->nama }}</span>
-                        <div class="form-check form-switch p-0 m-0">
-                          <input type="checkbox" name="hapus_fasilitas[]" value="{{ $fac->id }}" class="btn-check" id="del_fac_{{ $fac->id }}">
-                          <label class="btn btn-sm btn-outline-danger py-0 px-1" for="del_fac_{{ $fac->id }}" style="font-size:.65rem;"><i class="bi bi-trash"></i></label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                @endforeach
-              </div>
-
-              {{-- Tombol Tambah --}}
-              <div id="newFacilityContainer"></div>
-              <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addNewFacilityRow()" style="border-radius:.5rem; font-size:.78rem; font-weight:700;">
-                <i class="bi bi-plus-lg me-1"></i> Tambah Foto Fasilitas
-              </button>
-            </div>
 
             {{-- Aturan --}}
             <div class="form-card">
@@ -290,9 +261,9 @@
                         placeholder="Contoh: Tidak boleh membawa tamu menginap, jam malam 22.00...">{{ old('aturan', $kost->aturan) }}</textarea>
             </div>
 
-            {{-- Foto Properti --}}
-          <div class="form-card">
-  <h6><i class="bi bi-images" style="color:var(--primary)"></i> Foto Properti Kost</h6>
+            {{-- Foto Galeri (Properti & Fasilitas) --}}
+            <div class="form-card">
+              <h6><i class="bi bi-images" style="color:var(--primary)"></i> Galeri Foto (Properti & Fasilitas)</h6>
  
   <div class="upload-section">
  
@@ -300,7 +271,7 @@
     @if($kost->images && $kost->images->count() > 0)
       <div class="mb-3">
         <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;">
-          Foto Saat Ini ({{ $kost->images->count() }} foto) — Klik 🗑️ untuk hapus satu foto
+          Foto Saat Ini ({{ $kost->images->count() }} foto) — Berikan label/judul untuk setiap foto
         </div>
  
         {{-- Grid foto existing --}}
@@ -332,6 +303,14 @@
               <img src="{{ asset('storage/'.$img->image_path) }}"
                    alt="Foto {{ $i + 1 }}"
                    style="width:100%;height:120px;object-fit:cover;display:block;">
+              
+              <div class="p-2 bg-white">
+                <input type="text" name="existing_foto_nama[{{ $img->id }}]" 
+                       class="form-control form-control-sm" 
+                       placeholder="Label (Contoh: Dapur)" 
+                       style="font-size:.7rem; height:30px; border-radius:.4rem;"
+                       value="{{ $img->kategori }}">
+              </div>
             </div>
           @endforeach
         </div>
@@ -339,8 +318,7 @@
         {{-- Info --}}
         <div style="margin-top:.65rem;background:#fff8f2;border:1px solid #ffd0c0;border-left:3px solid var(--primary);border-radius:.65rem;padding:.6rem .9rem;font-size:.75rem;color:#9a3412;">
           <i class="bi bi-info-circle me-1"></i>
-          Upload foto baru di bawah untuk <strong>menambah</strong> foto (maks. 6 total).
-          Atau klik tombol 🗑️ merah untuk hapus foto satu per satu.
+          Berikan <strong>label/judul</strong> pada setiap foto agar penyewa tahu itu foto area apa (misal: "Dapur", "Tampak Depan").
         </div>
       </div>
     @else
@@ -609,9 +587,14 @@
               <button type="button" class="btn-remove" data-idx="${index}"><i class="bi bi-x-lg"></i></button>
               ${index !== 0 ? `<button type="button" class="btn-set-cover" data-idx="${index}"><i class="bi bi-star"></i> Cover</button>` : ''}
             </div>
-            <div class="preview-info">
-              <div class="preview-name" title="${file.name}">${file.name}</div>
-              <div class="preview-size">${(file.size/1024/1024).toFixed(2)} MB</div>
+            </div>
+            <div class="preview-info" style="flex-direction:column; align-items:stretch; gap:4px;">
+              <input type="text" name="foto_kost_nama[]" class="form-control form-control-sm" 
+                     placeholder="Beri label (Dapur, dll)" style="font-size:.72rem; border-radius:.4rem; height:28px;">
+              <div class="d-flex justify-content-between">
+                <div class="preview-name" title="${file.name}">${file.name}</div>
+                <div class="preview-size">${(file.size/1024/1024).toFixed(2)} MB</div>
+              </div>
             </div>`;
           previewGrid.appendChild(card);
           card.querySelector('.btn-remove').addEventListener('click', function() {

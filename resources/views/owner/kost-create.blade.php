@@ -287,24 +287,6 @@
               </div>
             </div>
 
-            {{-- Foto Fasilitas Umum --}}
-            <div class="form-card" id="sectionFotoFasilitas">
-              <h6><i class="bi bi-camera" style="color:var(--primary)"></i> Foto Fasilitas Umum</h6>
-              <p style="font-size:.76rem;color:var(--muted);margin-top:-.5rem;margin-bottom:1rem;">Upload foto setiap fasilitas umum disertai nama/label. Foto ini akan ditampilkan di halaman detail kost agar calon penyewa bisa melihat kondisi fasilitas yang tersedia.</p>
-
-              <div id="facilityRowsContainer"></div>
-
-              <button type="button" id="btnAddFacility"
-                style="display:inline-flex;align-items:center;gap:.45rem;background:var(--primary-light);color:var(--primary);border:1.5px dashed var(--primary-mid);border-radius:.75rem;padding:.6rem 1.1rem;font-size:.8rem;font-weight:700;cursor:pointer;transition:.2s;width:100%;justify-content:center;margin-top:.5rem;"
-                onmouseover="this.style.background='#ffd0c0'" onmouseout="this.style.background='var(--primary-light)'">
-                <i class="bi bi-plus-circle-fill"></i> Tambah Foto Fasilitas
-              </button>
-
-              <div style="margin-top:.8rem;background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #16a34a;border-radius:.65rem;padding:.6rem .9rem;font-size:.73rem;color:#166534;">
-                <i class="bi bi-lightbulb-fill me-1" style="color:#16a34a;"></i>
-                <strong>Tips:</strong> Tambahkan foto dapur, area parkir, ruang santai, dll. Sertakan nama yang jelas agar calon penyewa mudah mengenali.
-              </div>
-            </div>
 
             {{-- Aturan --}}
             <div class="form-card">
@@ -313,9 +295,9 @@
                         placeholder="Contoh: Tidak boleh membawa tamu menginap, jam malam 22.00...">{{ old('aturan') }}</textarea>
             </div>
 
-            {{-- Foto --}}
+            {{-- Galeri Foto --}}
             <div class="form-card">
-              <h6><i class="bi bi-images" style="color:var(--primary)"></i> Foto Properti Kost</h6>
+              <h6><i class="bi bi-images" style="color:var(--primary)"></i> Galeri Foto (Properti & Fasilitas)</h6>
               <div class="upload-section">
                 <div class="drop-zone" id="dropZone">
                   <div class="drop-zone-icon"><i class="bi bi-cloud-arrow-up-fill"></i></div>
@@ -327,7 +309,7 @@
                   <div class="drop-zone-hint"><i class="bi bi-info-circle me-1"></i>Maks. <strong>6 foto</strong> &bull; Format: JPG, PNG, WEBP &bull; Ukuran maks. <strong>2 MB</strong> per foto</div>
                 </div>
                 <input type="file" name="foto_kost[]" id="fotoInput" accept="image/jpeg,image/png,image/webp" multiple>
-                <div id="namaFotoInputs"><!-- hidden inputs nama foto akan dimasukkan di sini oleh JS --></div>
+                <div id="namaFotoInputs"></div>
                 <div class="foto-info-bar" id="fotoInfoBar" style="display:none;">
                   <div class="foto-info-left"><i class="bi bi-images"></i><span id="fotoInfoText">0 dari 6 foto dipilih</span></div>
                   <div class="foto-counter" id="fotoDots">
@@ -797,7 +779,17 @@
               <button type="button" class="btn-remove" onclick="removeFile(${i})"><i class="bi bi-x-lg"></i></button>
               ${i !== 0 ? `<button type="button" class="btn-set-cover" onclick="setCover(${i})"><i class="bi bi-star"></i> Cover</button>` : ''}
             </div>
-            <div class="preview-info">
+            <div class="preview-info" style="flex-direction:column; align-items:stretch; gap:6px;">
+              <input type="text" 
+                     class="form-control form-control-sm" 
+                     placeholder="Label (Contoh: Dapur, Parkir)" 
+                     style="font-size:.72rem; border-radius:.4rem; height:30px;"
+                     oninput="updateFotoNama(${i}, this.value)">
+              <div class="d-flex justify-content-between">
+                <div class="preview-name" title="${file.name}">${file.name}</div>
+                <div class="preview-size">${(file.size/1024/1024).toFixed(2)} MB</div>
+              </div>
+            </div>`;
               <div class="preview-name">${file.name}</div>
               <div class="preview-size">${(file.size/1024/1024).toFixed(2)}MB</div>
             </div>

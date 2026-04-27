@@ -100,6 +100,20 @@
                                     <input type="url" name="tiktok_link" class="form-control rounded-end-3" placeholder="https://tiktok.com/@..." value="{{ $settings->tiktok_link ?? '' }}">
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Link Facebook</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-facebook text-primary"></i></span>
+                                    <input type="url" name="facebook_link" class="form-control rounded-end-3" placeholder="https://facebook.com/..." value="{{ $settings->facebook_link ?? '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label text-muted small fw-bold">Alamat Kantor (Footer)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-geo-alt text-danger"></i></span>
+                                    <textarea name="alamat_kantor" class="form-control rounded-end-3" rows="3" placeholder="Masukkan alamat lengkap untuk footer...">{{ $settings->alamat_kantor ?? '' }}</textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -138,12 +152,12 @@
                         <h6 class="fw-bold mb-0"><i class="bi bi-cash-coin me-2"></i>Pengaturan Bisnis</h6>
                     </div>
                     <div class="card-body p-4">
-                        <label class="form-label text-muted small fw-bold">Komisi Admin Platform (%)</label>
+                        <label class="form-label text-muted small fw-bold">Biaya Layanan Platform (Rp)</label>
                         <div class="input-group mb-2">
-                            <input type="number" name="komisi_admin" step="0.01" class="form-control fs-4 fw-bold text-primary" value="{{ $settings->komisi_admin ?? 0 }}">
-                            <span class="input-group-text bg-primary text-white border-0 fw-bold">%</span>
+                            <span class="input-group-text bg-primary text-white border-0 fw-bold">Rp</span>
+                            <input type="number" name="komisi_admin" class="form-control fs-4 fw-bold text-primary" value="{{ (int)($settings->komisi_admin ?? 0) }}">
                         </div>
-                        <p class="text-muted small">Potongan otomatis dari total transaksi booking setiap kos.</p>
+                        <p class="text-muted small">Biaya tetap yang kaka dapet dari setiap transaksi booking (Flat Fee).</p>
                     </div>
                 </div>
 

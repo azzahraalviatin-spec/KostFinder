@@ -496,20 +496,7 @@
         <label class="form-label">Kode Pos</label>
         <input type="text" name="kode_pos" class="form-control" placeholder="Contoh: 61234" value="{{ old('kode_pos', auth()->user()->kode_pos ?? '') }}">
       </div>
-      <div class="col-12">
-        <label class="form-label">Tautan Google Maps <span style="color:#8fa3b8;font-weight:400;">(opsional)</span></label>
-        <div class="input-group">
-          <span class="input-group-text" style="font-size:.82rem;"><i class="bi bi-map"></i></span>
-          <input type="url" name="maps_url" class="form-control" placeholder="https://maps.google.com/..." value="{{ old('maps_url', auth()->user()->maps_url ?? '') }}">
-        </div>
-        @if(auth()->user()->maps_url ?? false)
-        <div class="mt-2">
-          <a href="{{ auth()->user()->maps_url }}" target="_blank" style="font-size:.78rem;color:var(--primary);font-weight:600;">
-            <i class="bi bi-box-arrow-up-right me-1"></i>Lihat di Google Maps
-          </a>
-        </div>
-        @endif
-      </div>
+
     </div>
     <div class="mt-3">
       <button type="submit" class="btn-save"><i class="bi bi-check-lg me-1"></i> Simpan Alamat</button>
