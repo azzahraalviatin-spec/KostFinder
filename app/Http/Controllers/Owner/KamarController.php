@@ -35,6 +35,9 @@ class KamarController extends Controller
         $validated = $request->validate([
             'kost_id'                   => 'required|exists:kosts,id_kost',
             'nomor_kamar'               => 'nullable|string|max:50',
+            'nomor_kamar_prefix'        => 'nullable|string|max:30',
+            'jumlah_kamar'              => 'nullable|integer|min:1|max:50',
+            'mode_massal'               => 'nullable|in:0,1',
             'harga_per_bulan'           => 'nullable|integer|min:0',
             'harga_harian'              => 'nullable|integer|min:0',
             'status_kamar'              => 'required|in:tersedia,terisi',
@@ -47,7 +50,6 @@ class KamarController extends Controller
             'fasilitas.*'               => 'string',
             'foto_kamar'                => 'nullable|array',
             'foto_kamar.*'              => 'image|mimes:jpg,jpeg,png,webp|max:5120',
-            // Foto fasilitas kamar
             'foto_fasilitas'            => 'nullable|array',
             'foto_fasilitas.*.file'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'foto_fasilitas.*.judul'    => 'nullable|string|max:100',
@@ -57,6 +59,61 @@ class KamarController extends Controller
             ->where('owner_id', auth()->id())
             ->firstOrFail();
 
+        $isMassal = ($request->input('mode_massal') == '1');
+
+        if ($isMassal) {
+            // ── MODE MASSAL: buat banyak kamar sekaligus ──
+            $prefix  = $request->input('nomor_kamar_prefix', '');
+            $jumlah  = (int) ($request->input('jumlah_kamar', 1));
+            $jumlah  = max(1, min(50, $jumlah));
+
+            $baseData = [
+                'kost_id'         => $kost->id_kost,
+                'harga_per_bulan' => $validated['harga_per_bulan'] ?? 0,
+                'harga_harian'    => $validated['harga_harian'] ?? null,
+                'aktif_bulanan'   => $request->has('aktif_bulanan') ? 1 : 0,
+                'aktif_harian'    => $request->has('aktif_harian') ? 1 : 0,
+                'status_kamar'    => $validated['status_kamar'],
+                'tipe_kamar'      => $validated['tipe_kamar'] ?? null,
+                'ukuran'          => $validated['ukuran'] ?? null,
+                'deskripsi'       => $validated['deskripsi'] ?? null,
+                'aturan_kamar'    => $validated['aturan_kamar'] ?? null,
+                'listrik'         => $validated['listrik'] ?? null,
+                'fasilitas'       => $validated['fasilitas'] ?? null,
+            ];
+
+            // Upload foto sekali untuk kamar pertama, lalu copy path-nya ke kamar lain
+            $fotoPaths = [];
+            if ($request->hasFile('foto_kamar')) {
+                foreach ($request->file('foto_kamar') as $file) {
+                    $fotoPaths[] = $file->store('kamar', 'public');
+                }
+            }
+
+            for ($i = 1; $i <= $jumlah; $i++) {
+                $room = Room::create(array_merge($baseData, [
+                    'nomor_kamar' => $prefix . $i,
+                ]));
+
+                // Attach foto (shared path) ke setiap kamar
+                foreach ($fotoPaths as $idx => $path) {
+                    RoomImage::create([
+                        'room_id'   => $room->id_room,
+                        'foto_path' => $path,
+                        'judul'     => null,
+                        'tipe_foto' => 'kamar',
+                        'is_utama'  => ($idx === 0),
+                    ]);
+                }
+
+                $this->syncFasilitasImages($room, $request);
+            }
+
+            return redirect()->route('owner.kamar.index')
+                ->with('success', "✅ {$jumlah} kamar berhasil dibuat sekaligus!");
+        }
+
+        // ── MODE NORMAL: buat 1 kamar ──
         $room = Room::create([
             'kost_id'         => $kost->id_kost,
             'nomor_kamar'     => $validated['nomor_kamar'] ?? $validated['tipe_kamar'],
@@ -73,10 +130,7 @@ class KamarController extends Controller
             'fasilitas'       => $validated['fasilitas'] ?? null,
         ]);
 
-        // Upload foto kamar (tipe: kamar)
         $this->syncRoomImages($room, $request, false);
-
-        // Upload foto fasilitas kamar (tipe: fasilitas)
         $this->syncFasilitasImages($room, $request);
 
         return redirect()->route('owner.kamar.index')->with('success', 'Kamar berhasil ditambahkan.');
@@ -94,11 +148,9 @@ class KamarController extends Controller
                 : explode(',', $kost->fasilitas);
         }
 
-        // Pisahkan foto kamar dan foto fasilitas kamar
-        $fotoKamar     = $kamar->images->where('tipe_foto', 'kamar');
-        $fotoFasilitas = $kamar->images->where('tipe_foto', 'fasilitas');
+        $fotoKamar = $kamar->images->where('tipe_foto', 'kamar');
 
-        return view('owner.kamar-show', compact('kamar', 'kost', 'fotoKamar', 'fotoFasilitas'));
+        return view('owner.kamar-show', compact('kamar', 'kost', 'fotoKamar'));
     }
 
     public function edit(Room $kamar)

@@ -81,7 +81,20 @@ class AdminController extends Controller
             'topKosts',
             'notifications',
             'recentActivities'
-        ));
+        ))->with([
+            // Individual vars used directly in blade
+            'total_kost'           => $summary['total_kosts'],
+            'total_booking'        => $summary['total_bookings'],
+            'total_users'          => $summary['total_users'],
+            'total_owners'         => $summary['total_owners'],
+            'booking_pending'      => Booking::where('status_booking','pending')->count(),
+            'booking_selesai'      => Booking::where('status_booking','selesai')->count(),
+            'kosts'                => collect(),   // admin tidak punya kost sendiri
+            'chartLabels'          => $monthlyLabels,
+            'chartData'            => $monthlyTotals,
+            'pendapatan_bulan_ini' => 0,
+            'selisih_pendapatan'   => 0,
+        ]);
     }
 
     public function users(Request $request)
@@ -375,7 +388,15 @@ class AdminController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.bookings', compact('bookings'));
+        $allBookings = Booking::with(['user:id,name', 'room.kost'])
+            ->when(in_array($status, ['pending', 'diterima', 'ditolak', 'selesai'], true), fn($q) => $q->where('status_booking', $status))
+            ->when($startDate, fn($q) => $q->whereDate('tanggal_masuk', '>=', $startDate))
+            ->when($endDate,   fn($q) => $q->whereDate('tanggal_masuk', '<=', $endDate))
+            ->get();
+
+        $activeStatus = in_array($status, ['pending','diterima','ditolak','selesai']) ? $status : 'semua';
+
+        return view('admin.bookings', compact('bookings', 'allBookings', 'activeStatus'));
     }
 
     public function reports()

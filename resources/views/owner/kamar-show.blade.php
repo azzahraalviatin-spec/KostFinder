@@ -215,48 +215,6 @@
         </div>
 
       </div>
-    </div>{{-- end row --}}
-
-    {{-- ========== FOTO FASILITAS KAMAR (full width di bawah) ========== --}}
-    <div class="card-box mt-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="mb-0">
-          <i class="bi bi-camera"></i> Foto Fasilitas Kamar
-        </h6>
-        <a href="{{ route('owner.kamar.edit', $kamar->id_room) }}"
-           class="btn btn-sm fw-600"
-           style="background:var(--primary);color:#fff;font-size:.75rem;border-radius:7px;font-weight:600;">
-          <i class="bi bi-pencil me-1"></i> Edit / Tambah Foto
-        </a>
-      </div>
-
-      <p class="text-muted mb-3" style="font-size:.78rem;">
-        Hover foto untuk melihat tombol hapus. Untuk menambah foto baru, gunakan tombol Edit di atas.
-      </p>
-
-      @if($fotoFasilitas && $fotoFasilitas->count())
-        <div class="fas-grid">
-          @foreach($fotoFasilitas as $img)
-          <div class="fas-card">
-            <img src="{{ asset('storage/' . ltrim($img->foto_path, '/')) }}"
-                 alt="{{ $img->judul ?? 'Fasilitas' }}">
-            <div class="fas-label">{{ $img->judul ?: 'Tanpa Judul' }}</div>
-          </div>
-          @endforeach
-        </div>
-      @else
-        <div class="fas-empty">
-          <i class="bi bi-images"></i>
-          <p class="small mb-0">Belum ada foto fasilitas kamar.</p>
-          <a href="{{ route('owner.kamar.edit', $kamar->id_room) }}"
-             class="btn btn-sm mt-2"
-             style="background:var(--primary);color:#fff;font-size:.75rem;border-radius:7px;">
-            <i class="bi bi-plus me-1"></i> Tambah Foto Fasilitas
-          </a>
-        </div>
-      @endif
-    </div>
-
   </div>{{-- end content-area --}}
 
   {{-- Modal konfirmasi hapus --}}

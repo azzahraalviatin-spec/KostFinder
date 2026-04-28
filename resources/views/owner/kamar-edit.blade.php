@@ -57,7 +57,19 @@
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Tipe Kamar</label>
-                  <input type="text" name="tipe_kamar" class="form-control" value="{{ old('tipe_kamar', $kamar->tipe_kamar) }}">
+                  @php $currentTipe = old('tipe_kamar', $kamar->tipe_kamar); @endphp
+                  <select name="tipe_kamar" class="form-select">
+                    <option value="">-- Pilih Tipe Kamar --</option>
+                    <option value="Standard" {{ $currentTipe == 'Standard' ? 'selected' : '' }}>🏠 Standard — Paling dasar, harga terjangkau</option>
+                    <option value="Menengah" {{ $currentTipe == 'Menengah' ? 'selected' : '' }}>🏡 Menengah — Fasilitas lebih lengkap</option>
+                    <option value="Superior" {{ $currentTipe == 'Superior' ? 'selected' : '' }}>✨ Superior — Nyaman & premium</option>
+                    <option value="Deluxe"   {{ $currentTipe == 'Deluxe'   ? 'selected' : '' }}>💎 Deluxe — Mewah & luas</option>
+                    <option value="VIP"      {{ $currentTipe == 'VIP'      ? 'selected' : '' }}>👑 VIP — Paling eksklusif</option>
+                    {{-- Fallback kalau data lama tidak ada di list --}}
+                    @if($currentTipe && !in_array($currentTipe, ['Standard','Menengah','Superior','Deluxe','VIP']))
+                      <option value="{{ $currentTipe }}" selected>{{ $currentTipe }}</option>
+                    @endif
+                  </select>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Ukuran Kamar (PxL)</label>
@@ -76,6 +88,11 @@
                 <label class="form-label">Deskripsi Kamar</label>
                 <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi', $kamar->deskripsi) }}</textarea>
               </div>
+              <div class="mt-3">
+                <label class="form-label"><i class="bi bi-clipboard-check me-1" style="color:var(--primary)"></i>Peraturan Kamar</label>
+                <textarea name="aturan_kamar" class="form-control" rows="3" placeholder="Contoh: Tidak boleh merokok, jam malam 22.00, tamu dilarang menginap...">{{ old('aturan_kamar', $kamar->aturan_kamar) }}</textarea>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;"><i class="bi bi-info-circle me-1"></i>Aturan khusus yang berlaku di kamar ini</div>
+              </div>
             </div>
 
             {{-- FASILITAS KAMAR --}}
@@ -83,10 +100,33 @@
               <h6><i class="bi bi-check2-square" style="color:var(--primary)"></i> Fasilitas Kamar</h6>
               @php $fasilitasList = is_array($kamar->fasilitas) ? $kamar->fasilitas : []; @endphp
               <div class="row g-2">
-                @foreach(['AC', 'Kamar Mandi Dalam', 'Kasur/Springbed', 'Lemari Baju', 'Meja & Kursi', 'TV', 'Water Heater', 'WiFi Kamar', 'Bantal', 'Jendela'] as $f)
+                @foreach([
+                  '🛏️ Kasur/Springbed',
+                  '🛏️ Bantal',
+                  '🛏️ Guling',
+                  '🌬️ AC',
+                  '❄️ Kipas Angin',
+                  '🚿 Kamar Mandi Dalam',
+                  '🚿 Water Heater',
+                  '🗄️ Lemari Baju',
+                  '🪑 Meja & Kursi Belajar',
+                  '📺 TV',
+                  '📶 WiFi Kamar',
+                  '🔌 Stop Kontak',
+                  '🪟 Jendela',
+                  '🪞 Cermin',
+                  '👔 Gantungan Baju',
+                  '🧹 Sapu & Pel',
+                  '🗑️ Tempat Sampah',
+                  '🔐 Kunci Pintu / Gembok',
+                  '🧴 Rak Sepatu',
+                  '💡 Lampu Belajar',
+                ] as $f)
                   <div class="col-6 col-md-4">
                     <div class="form-check p-2 border rounded-3" style="font-size:.8rem; background:#f8fafc;">
-                      <input class="form-check-input ms-0 me-2" type="checkbox" name="fasilitas[]" value="{{ $f }}" id="f_{{ $loop->index }}" {{ in_array($f, $fasilitasList) ? 'checked' : '' }}>
+                      <input class="form-check-input ms-0 me-2" type="checkbox" name="fasilitas[]" value="{{ $f }}"
+                             id="f_{{ $loop->index }}"
+                             {{ in_array($f, $fasilitasList) ? 'checked' : '' }}>
                       <label class="form-check-label" for="f_{{ $loop->index }}">{{ $f }}</label>
                     </div>
                   </div>

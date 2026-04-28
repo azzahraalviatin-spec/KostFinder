@@ -4,21 +4,22 @@
 
 @push('styles')
 <style>
-    /* STAT CARDS (Square Style) */
-    .stat-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:.75rem; margin-bottom:1.5rem; }
-    .stat-card { border-radius:12px; padding:1.2rem .5rem; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.6rem; position:relative; overflow:hidden; transition: transform .2s; min-height: 110px; text-align: center; }
-    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,.1); }
-    .stat-card::after { content:''; position:absolute; right:-5px; top:-5px; width:45px; height:45px; border-radius:50%; opacity:.1; background:#fff; }
-    
-    .stat-card.total  { background:linear-gradient(135deg,#1e2d3d,#2d4a6b); }
-    .stat-card.pending { background:linear-gradient(135deg,#f59e0b,#fb923c); }
-    .stat-card.diterima { background:linear-gradient(135deg,#10b981,#34d399); }
-    .stat-card.selesai { background:linear-gradient(135deg,#64748b,#94a3b8); }
-    .stat-card.income { background:linear-gradient(135deg,#e8401c,#ff7043); }
+    /* STAT CARDS (Compact Horizontal) */
+    .stat-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:.65rem; margin-bottom:1.5rem; }
+    .stat-card { border-radius:12px; padding:.85rem 1rem; display:flex; flex-direction:row; align-items:center; gap:.75rem; position:relative; overflow:hidden; transition:transform .2s, box-shadow .2s; cursor:default; border:none; }
+    .stat-card:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,.15); }
+    .stat-card::before { content:''; position:absolute; right:-12px; bottom:-12px; width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,.1); pointer-events:none; }
 
-    .stat-icon-wrap { width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:#fff; flex-shrink:0; }
-    .stat-num { font-size:1.3rem; font-weight:800; color:#fff; line-height:1.1; word-break: break-all; }
-    .stat-lbl { font-size:.68rem; color:rgba(255,255,255,.85); font-weight:600; margin-top:2px; }
+    .stat-card.total   { background:linear-gradient(135deg,#1e2d3d,#2d4a6b); }
+    .stat-card.pending  { background:linear-gradient(135deg,#f59e0b,#fb923c); }
+    .stat-card.diterima { background:linear-gradient(135deg,#10b981,#34d399); }
+    .stat-card.selesai  { background:linear-gradient(135deg,#64748b,#94a3b8); }
+    .stat-card.income   { background:linear-gradient(135deg,#e8401c,#ff7043); }
+
+    .stat-icon-wrap { width:40px; height:40px; min-width:40px; border-radius:10px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:#fff; flex-shrink:0; }
+    .stat-body { display:flex; flex-direction:column; gap:.05rem; min-width:0; flex:1; }
+    .stat-num { font-size:1.2rem; font-weight:800; color:#fff; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .stat-lbl { font-size:.68rem; color:rgba(255,255,255,.85); font-weight:600; white-space:nowrap; }
 
     /* TABLE STYLES */
     .table-section { background:#fff; border-radius:16px; border:1px solid #e4e9f0; overflow:hidden; }
@@ -73,32 +74,42 @@
         <p class="text-muted small mb-0">Monitor status dan pendapatan dari penyewaan kamar Anda</p>
       </div>
 
-      {{-- STAT CARDS (5 Squares) --}}
+      {{-- STAT CARDS (Compact Horizontal) --}}
       <div class="stat-grid">
         <div class="stat-card total">
           <div class="stat-icon-wrap"><i class="bi bi-journal-text"></i></div>
-          <div class="stat-num">{{ $allBookings->count() }}</div>
-          <div class="stat-lbl">Total</div>
+          <div class="stat-body">
+            <div class="stat-num">{{ $allBookings->count() }}</div>
+            <div class="stat-lbl">Total</div>
+          </div>
         </div>
         <div class="stat-card pending">
           <div class="stat-icon-wrap"><i class="bi bi-hourglass-split"></i></div>
-          <div class="stat-num">{{ $allBookings->where('status_booking','pending')->count() }}</div>
-          <div class="stat-lbl">Pending</div>
+          <div class="stat-body">
+            <div class="stat-num">{{ $allBookings->where('status_booking','pending')->count() }}</div>
+            <div class="stat-lbl">Pending</div>
+          </div>
         </div>
         <div class="stat-card diterima">
           <div class="stat-icon-wrap"><i class="bi bi-check2-circle"></i></div>
-          <div class="stat-num">{{ $allBookings->where('status_booking','diterima')->count() }}</div>
-          <div class="stat-lbl">Diterima</div>
+          <div class="stat-body">
+            <div class="stat-num">{{ $allBookings->where('status_booking','diterima')->count() }}</div>
+            <div class="stat-lbl">Diterima</div>
+          </div>
         </div>
         <div class="stat-card selesai">
           <div class="stat-icon-wrap"><i class="bi bi-flag-fill"></i></div>
-          <div class="stat-num">{{ $allBookings->where('status_booking','selesai')->count() }}</div>
-          <div class="stat-lbl">Selesai</div>
+          <div class="stat-body">
+            <div class="stat-num">{{ $allBookings->where('status_booking','selesai')->count() }}</div>
+            <div class="stat-lbl">Selesai</div>
+          </div>
         </div>
         <div class="stat-card income">
           <div class="stat-icon-wrap"><i class="bi bi-wallet2"></i></div>
-          <div class="stat-num" style="font-size:1.05rem;">Rp{{ number_format($allBookings->where('status_booking','selesai')->sum('pendapatan_owner'),0,',','.') }}</div>
-          <div class="stat-lbl">Pendapatan</div>
+          <div class="stat-body">
+            <div class="stat-num" style="font-size:.92rem;">Rp{{ number_format($allBookings->where('status_booking','selesai')->sum('pendapatan_owner'),0,',','.') }}</div>
+            <div class="stat-lbl">Pendapatan</div>
+          </div>
         </div>
       </div>
 
