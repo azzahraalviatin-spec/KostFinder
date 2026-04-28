@@ -149,16 +149,19 @@
 
   /* ══ REKOMENDASI — 4 KOLOM GRID ══ */
   .reco-section { background:#f7f4f1;padding:3rem 0; }
-  .reco-track {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+.reco-track {
+  display: flex;        /* ubah ke flex */
+  overflow-x: auto;     /* biar bisa geser */
+  gap: 1rem;
     gap: 1rem;
     overflow-x: auto;
     scrollbar-width: none;
     padding-bottom: .5rem;
   }
   .reco-track::-webkit-scrollbar { display:none; }
-  .reco-item { min-width:0; }
+.reco-item {
+  flex: 0 0 25%;   /* bikin 4 card muat 1 layar */
+}
 
   .kost-card {
     background:#fff; border-radius:.9rem; overflow:hidden;
