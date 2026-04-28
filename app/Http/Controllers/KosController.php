@@ -83,9 +83,9 @@ if ($request->aturan) {
             return [
                 'id'     => $k->id_kost,
                 'nama'   => $k->nama_kost,
+                'alamat' => $k->alamat,
                 'kota'   => $k->kota,
                 'harga'  => $k->harga_mulai,
-                'alamat' => $k->alamat,
                 'lat'    => $k->latitude  ?? null,
                 'lng'    => $k->longitude ?? null,
                 'url'    => route('kost.show', $k->id_kost),

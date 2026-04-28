@@ -189,17 +189,19 @@
         }
         .marker-price.active { background:var(--primary); color:#fff; transform:scale(1.1); }
 
-        .leaflet-popup-content-wrapper { border-radius:16px !important; box-shadow:0 8px 24px rgba(0,0,0,.15) !important; border:none !important; padding:0 !important; overflow:hidden; }
-        .leaflet-popup-content { margin:0 !important; min-width:200px; }
-        .popup-img { width:100%; height:110px; object-fit:cover; display:block; }
-        .popup-img-placeholder { width:100%; height:80px; background:linear-gradient(135deg,#e2e8f0,#cbd5e1); display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:1.5rem; }
-        .popup-body { padding:12px 14px; }
-        .popup-nama  { font-weight:700; font-size:.9rem; color:#1e293b; margin-bottom:2px; }
-        .popup-kota  { font-size:.76rem; color:#64748b; margin-bottom:6px; }
-        .popup-harga { color:var(--primary); font-weight:800; font-size:1rem; margin-bottom:10px; }
-        .popup-harga small { font-weight:400; color:#94a3b8; font-size:.72rem; }
-        .popup-link  { display:block; text-align:center; background:var(--primary); color:#fff; border-radius:10px; padding:7px 0; font-size:.82rem; font-weight:600; text-decoration:none; }
-        .popup-link:hover { background:var(--primary-dark); color:#fff; }
+        .leaflet-popup-content-wrapper { border-radius:16px !important; box-shadow:0 12px 30px rgba(0,0,0,0.18) !important; border:none !important; padding:0 !important; overflow:hidden; }
+        .leaflet-popup-content { margin:0 !important; min-width:220px; }
+        .popup-img { width:100%; height:130px; object-fit:cover; display:block; transition: transform 0.3s; }
+        .popup-img:hover { transform: scale(1.05); }
+        .popup-img-placeholder { width:100%; height:130px; background:linear-gradient(135deg,#f1f5f9,#e2e8f0); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; font-size:2rem; gap:4px; }
+        .popup-img-placeholder span { font-size: .7rem; font-weight: 500; }
+        .popup-body { padding:14px; }
+        .popup-nama  { font-weight:700; font-size:.95rem; color:#1e293b; margin-bottom:2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .popup-alamat  { font-size:.78rem; color:#64748b; margin-bottom:8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+        .popup-harga { color:var(--primary); font-weight:800; font-size:1.1rem; margin-bottom:12px; }
+        .popup-harga small { font-weight:400; color:#94a3b8; font-size:.75rem; }
+        .popup-link  { display:block; text-align:center; background:var(--primary); color:#fff; border-radius:12px; padding:9px 0; font-size:.85rem; font-weight:700; text-decoration:none; transition: all 0.2s; box-shadow: 0 4px 12px rgba(232, 87, 42, 0.2); }
+        .popup-link:hover { background:var(--primary-dark); color:#fff; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(232, 87, 42, 0.3); }
 
         .empty-state { text-align:center; padding:60px 20px; }
         .empty-state i { font-size:3.5rem; color:#cbd5e1; margin-bottom:16px; display:block; }
@@ -400,12 +402,12 @@
         {{-- Status Kamar --}}
         @if($kamarTotal == 0)
             <span class="badge-kamar badge-penuh">
-                <i class="bi bi-x-circle-fill"></i> Habis
+                <i class="bi bi-x-circle-fill"></i> Kamar Tidak Tersedia
             </span>
         @elseif($kamarTersedia == 0)
-            <span class="badge-kamar badge-penuh"><i class="bi bi-x-circle-fill"></i> Habis</span>
+            <span class="badge-kamar badge-penuh"><i class="bi bi-x-circle-fill"></i> Kamar Tidak Tersedia</span>
         @else
-            <span class="badge-kamar badge-tersedia"><i class="bi bi-check-circle-fill"></i> {{ $kamarTersedia }} Kamar</span>
+            <span class="badge-kamar badge-tersedia"><i class="bi bi-check-circle-fill"></i> Sisa Kamar {{ $kamarTersedia }}</span>
         @endif
     </div>
 </div>
@@ -654,26 +656,63 @@
     function addMarker(kost, lat, lng) {
         const icon = L.divIcon({
             className: '',
-            html: `<div class="marker-price" onclick="markerClick(${kost.id})">${formatRp(kost.harga)}</div>`,
+            html: `<div class="marker-price" id="marker-${kost.id}" onclick="markerClick(${kost.id})">${formatRp(kost.harga)}</div>`,
             iconAnchor: [32, 14],
         });
 
-        const fotoUrl = kost.foto ? `/storage/${kost.foto}` : '';
         const imgHtml = kost.foto 
-            ? `<img src="${fotoUrl}" class="popup-img" style="width:100%;height:110px;object-fit:cover;display:block" onerror="this.src='https://placehold.co/200x110?text=No+Photo'">`
-            : `<div style="background:#eee;height:80px;display:flex;align-items:center;justify-content:center"><i class="bi bi-house-fill"></i></div>`;
+            ? `<img src="${kost.foto}" class="popup-img" onerror="this.parentElement.innerHTML='<div class=\"popup-img-placeholder\"><i class=\"bi bi-image\"></i><span>Foto tidak tersedia</span></div>'">`
+            : `<div class="popup-img-placeholder"><i class="bi bi-house-fill"></i><span>Belum ada foto</span></div>`;
 
         const m = L.marker([lat, lng], { icon }).addTo(map);
         
-        m.bindPopup(`
+        const popupContent = `
             <div class="leaflet-popup-custom">
                 ${imgHtml}
-                <div class="popup-body" style="padding:10px">
-                    <div style="font-weight:700;font-size:.9rem">${kost.nama}</div>
-                    <div style="color:#e8572a;font-weight:800">${formatRp(kost.harga)}/bln</div>
-                    <a href="/kost/${kost.id}" style="display:block;text-align:center;background:#e8572a;color:#fff;padding:5px;border-radius:8px;text-decoration:none;font-size:.8rem;margin-top:8px">Lihat Detail</a>
+                <div class="popup-body">
+                    <div class="popup-nama">${kost.nama}</div>
+                    <div class="popup-alamat">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                        ${kost.alamat}, ${kost.kota}
+                    </div>
+                    <div class="popup-harga">
+                        ${formatRp(kost.harga)}<small>/bulan</small>
+                    </div>
+                    <a href="${kost.url}" class="popup-link">Lihat Detail</a>
                 </div>
-            </div>`, { maxWidth: 220 });
+            </div>`;
+
+        m.bindPopup(popupContent, { 
+            maxWidth: 240,
+            offset: [0, -10]
+        });
+
+        // Hover events
+        let closeTimeout;
+        m.on('mouseover', function(e) {
+            clearTimeout(closeTimeout);
+            this.openPopup();
+            document.getElementById(`marker-${kost.id}`)?.classList.add('active');
+        });
+        
+        m.on('mouseout', function(e) {
+            closeTimeout = setTimeout(() => {
+                this.closePopup();
+                document.getElementById(`marker-${kost.id}`)?.classList.remove('active');
+            }, 300); // Beri waktu 300ms untuk pindah ke popup
+        });
+
+        // Pastikan popup tetap terbuka saat mouse di atas popup itu sendiri
+        m.getPopup().on('mouseover', function() {
+            clearTimeout(closeTimeout);
+        });
+
+        m.getPopup().on('mouseout', function() {
+            closeTimeout = setTimeout(() => {
+                m.closePopup();
+                document.getElementById(`marker-${kost.id}`)?.classList.remove('active');
+            }, 300);
+        });
 
         markers[kost.id] = m;
         allBounds.push([lat, lng]);

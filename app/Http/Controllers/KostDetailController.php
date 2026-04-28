@@ -47,9 +47,11 @@ class KostDetailController extends Controller
         }
 
         if ($request->filled('aturan')) {
-            foreach ($request->aturan as $a) {
-                $query->whereJsonContains('aturan', $a);
-            }
+            $query->where(function ($q) use ($request) {
+                foreach ($request->aturan as $a) {
+                    $q->where('aturan', 'like', '%' . $a . '%');
+                }
+            });
         }
 
         if ($request->filled('q_aturan')) {
@@ -72,18 +74,19 @@ class KostDetailController extends Controller
 
         // Untuk maps: ambil semua (max 100) tanpa pagination
 $kostsMapRaw = (clone $query)->limit(100)
-->get(['id_kost','nama_kost','alamat','kota','harga_mulai','tipe_kost','latitude','longitude']);
+->get(['id_kost','nama_kost','alamat','kota','harga_mulai','tipe_kost','latitude','longitude', 'foto_utama']);
 
 $kostsMap = $kostsMapRaw->map(fn($k) => [
 'id'    => $k->id_kost,
 'nama'  => $k->nama_kost,
-'alamat'=> $k->alamat . ', ' . $k->kota,
+'alamat'=> $k->alamat,
 'kota'  => $k->kota,
 'harga' => $k->harga_mulai,
 'tipe'  => $k->tipe_kost,
 'lat'   => $k->latitude,
 'lng'   => $k->longitude,
 'url'   => route('kost.show', $k->id_kost),
+'foto'  => $k->foto_utama ? asset('storage/' . $k->foto_utama) : null,
 ]);
 
 return view('cari-kost', compact('kosts', 'kostsMap'));
@@ -99,10 +102,10 @@ return view('cari-kost', compact('kosts', 'kostsMap'));
         }]);
 
         if (auth()->check()) {
-            \App\Models\RecentlyViewedKost::updateOrCreate(
-                ['user_id' => auth()->id(), 'kost_id' => $kost->id_kost],
-                ['updated_at' => now()]
+            $viewedKost = \App\Models\RecentlyViewedKost::firstOrCreate(
+                ['user_id' => auth()->id(), 'kost_id' => $kost->id_kost]
             );
+            $viewedKost->touch();
         }
 
         $viewed = session('recently_viewed', []);

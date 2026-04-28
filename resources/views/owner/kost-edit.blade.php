@@ -81,6 +81,42 @@
     .form-check-label { font-size: .82rem; font-weight: 600; color: #344054; cursor: pointer; }
     #map { height: 300px; border-radius: .8rem; border: 1px solid var(--line); overflow: hidden; }
 
+    /* Map status bar */
+    .map-status-bar {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .55rem .85rem;
+      border-radius: .65rem;
+      font-size: .78rem; font-weight: 600;
+      margin-bottom: .6rem;
+      transition: all .3s;
+    }
+    .map-status-bar.detecting { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .map-status-bar.success   { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .map-status-bar.warning   { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .map-status-bar.info      { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+    /* Koordinat display */
+    .koordinat-box {
+      display: flex; gap: .5rem; margin-top: .6rem;
+    }
+    .koordinat-item {
+      flex: 1; background: #f8fafc; border: 1px solid var(--line);
+      border-radius: .65rem; padding: .5rem .75rem;
+    }
+    .koordinat-item label { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 2px; }
+    .koordinat-item span { font-size: .8rem; font-weight: 700; color: var(--dark); font-family: monospace; }
+
+    /* Tombol refresh lokasi */
+    .btn-refresh-map {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: var(--primary-light); color: var(--primary);
+      border: 1px solid var(--primary-mid);
+      border-radius: .65rem; padding: .45rem .9rem;
+      font-size: .78rem; font-weight: 700;
+      cursor: pointer; transition: .2s; margin-top: .6rem;
+    }
+    .btn-refresh-map:hover { background: var(--primary-mid); }
+
     .btn-submit { background: linear-gradient(135deg,#e8401c,#ff7043); color: #fff; font-weight: 700; border: 0; border-radius: .75rem; padding: .7rem 1.5rem; font-size: .88rem; cursor: pointer; box-shadow: 0 6px 16px rgba(232,64,28,.22); transition: .2s; display: inline-flex; align-items: center; gap: .4rem; }
     .btn-submit:hover { background: linear-gradient(135deg,#cb3518,#e8401c); transform: translateY(-1px); }
     .owner-footer { background: #fff; border-top: 1px solid var(--line); padding: .9rem 1.5rem; text-align: center; color: var(--muted); font-size: .76rem; }
@@ -453,20 +489,37 @@
             {{-- Peta --}}
             <div class="form-card">
               <h6><i class="bi bi-geo-alt" style="color:var(--primary)"></i> Lokasi di Peta</h6>
-              <p style="font-size:.75rem;color:var(--muted);margin-bottom:.7rem;">Klik peta untuk mengubah lokasi kost</p>
+              <p style="font-size:.75rem;color:var(--muted);margin-bottom:.7rem;">Klik peta atau geser pin untuk mengubah lokasi kost</p>
+              
+              {{-- Status bar geocoding --}}
+              <div class="map-status-bar info" id="mapStatusBar">
+                <i class="bi bi-info-circle" id="mapStatusIcon"></i>
+                <span id="mapStatusText">Lokasi kost saat ini</span>
+              </div>
+
               <div id="map"></div>
-              <div class="row g-2 mt-2">
-                <div class="col-6">
-                  <label class="form-label">Latitude</label>
-                  <input type="text" name="latitude" id="latitude" class="form-control"
-                         placeholder="-7.2575" value="{{ old('latitude', $kost->latitude) }}">
+
+              {{-- Koordinat display --}}
+              <div class="koordinat-box">
+                <div class="koordinat-item">
+                  <label>Latitude</label>
+                  <span id="latDisplay">{{ $kost->latitude ?? '—' }}</span>
                 </div>
-                <div class="col-6">
-                  <label class="form-label">Longitude</label>
-                  <input type="text" name="longitude" id="longitude" class="form-control"
-                         placeholder="112.7521" value="{{ old('longitude', $kost->longitude) }}">
+                <div class="koordinat-item">
+                  <label>Longitude</label>
+                  <span id="lngDisplay">{{ $kost->longitude ?? '—' }}</span>
                 </div>
               </div>
+
+              {{-- Tombol Deteksi GPS --}}
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                <button type="button" class="btn-refresh-map" onclick="getLocationGPS()" style="background: #e0f2fe; color: #0369a1; border-color: #bae6fd;">
+                  <i class="bi bi-geo-fill"></i> Gunakan GPS Saya
+                </button>
+              </div>
+
+              <input type="hidden" name="latitude"  id="latitude"  value="{{ old('latitude',  $kost->latitude  ?? '') }}">
+              <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', $kost->longitude ?? '') }}">
             </div>
 
           </div>
@@ -511,20 +564,71 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
+    const latDisplay = document.getElementById('latDisplay');
+    const lngDisplay = document.getElementById('lngDisplay');
     let marker = null;
 
     function setMarker(lat, lng) {
-      latInput.value = Number(lat).toFixed(7);
-      lngInput.value = Number(lng).toFixed(7);
+      const la = Number(lat).toFixed(7);
+      const ln = Number(lng).toFixed(7);
+      latInput.value = la;
+      lngInput.value = ln;
+      if (latDisplay) latDisplay.textContent = Number(lat).toFixed(5);
+      if (lngDisplay) lngDisplay.textContent = Number(lng).toFixed(5);
+      
       if (marker) marker.setLatLng([lat, lng]);
-      else marker = L.marker([lat, lng]).addTo(map).bindPopup('Lokasi kost');
+      else marker = L.marker([lat, lng], { draggable: true }).addTo(map).bindPopup('Lokasi kost kamu');
+      
+      marker.on('dragend', function() {
+        const pos = marker.getLatLng();
+        setMarker(pos.lat, pos.lng);
+        setMapStatus('success', 'bi-check-circle', 'Koordinat diperbarui dari pin', false);
+      });
+      
       marker.openPopup();
     }
 
+    function setMapStatus(type, icon, text, spinning) {
+      const bar  = document.getElementById('mapStatusBar');
+      const ico  = document.getElementById('mapStatusIcon');
+      const txt  = document.getElementById('mapStatusText');
+      if(!bar) return;
+      bar.className = 'map-status-bar ' + type;
+      ico.className = 'bi ' + icon;
+      ico.style.animation = spinning ? 'spin .8s linear infinite' : 'none';
+      txt.textContent = text;
+    }
+
+    function getLocationGPS() {
+      if (!navigator.geolocation) {
+        return setMapStatus('warning', 'bi-exclamation-triangle', 'Browser tidak mendukung GPS', false);
+      }
+      setMapStatus('detecting', 'bi-arrow-repeat', 'Mendeteksi titik koordinat GPS kamu...', true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setMarker(lat, lng);
+          map.setView([lat, lng], 17);
+          setMapStatus('success', 'bi-check-circle-fill', 'Lokasi GPS berhasil dideteksi ✓', false);
+        },
+        (error) => {
+          let msg = 'Gagal mendeteksi lokasi';
+          if (error.code === 1) msg = 'Izin lokasi ditolak browser';
+          else if (error.code === 2) msg = 'Lokasi tidak tersedia/sinyal lemah';
+          else if (error.code === 3) msg = 'Waktu deteksi habis (timeout)';
+          setMapStatus('warning', 'bi-exclamation-triangle', msg, false);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
     setMarker(initLat, initLng);
-    map.on('click', e => { setMarker(e.latlng.lat, e.latlng.lng); map.setView([e.latlng.lat, e.latlng.lng], 15); });
-    latInput.addEventListener('change', () => { const la=+latInput.value, ln=+lngInput.value; if(isFinite(la)&&isFinite(ln)){setMarker(la,ln);map.setView([la,ln],15);} });
-    lngInput.addEventListener('change', () => { const la=+latInput.value, ln=+lngInput.value; if(isFinite(la)&&isFinite(ln)){setMarker(la,ln);map.setView([la,ln],15);} });
+    map.on('click', e => { 
+      setMarker(e.latlng.lat, e.latlng.lng); 
+      map.setView([e.latlng.lat, e.latlng.lng], 15); 
+      setMapStatus('success', 'bi-geo-alt-fill', 'Lokasi dipilih manual dari peta', false);
+    });
     setTimeout(() => map.invalidateSize(), 300);
 
     // ── UPLOAD FOTO ──

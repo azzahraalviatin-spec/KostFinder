@@ -456,9 +456,14 @@
               </div>
 
               {{-- Tombol refresh lokasi dari alamat --}}
-              <button type="button" class="btn-refresh-map" onclick="geocodeFromOwnerAddress()">
-                <i class="bi bi-arrow-clockwise"></i> Deteksi ulang dari alamat
-              </button>
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                <button type="button" class="btn-refresh-map" onclick="getLocationGPS()" style="background: #e0f2fe; color: #0369a1; border-color: #bae6fd;">
+                  <i class="bi bi-geo-fill"></i> Gunakan GPS Saya
+                </button>
+                <button type="button" class="btn-refresh-map" onclick="geocodeFromOwnerAddress()">
+                  <i class="bi bi-arrow-clockwise"></i> Dari Alamat
+                </button>
+              </div>
 
               {{-- Hidden inputs untuk form submit --}}
               <input type="hidden" name="latitude"  id="latitude"  value="{{ old('latitude',  auth()->user()->latitude  ?? '') }}">
@@ -667,7 +672,36 @@
       setMarker(DEFAULT_LAT, DEFAULT_LNG);
       map.setView([DEFAULT_LAT, DEFAULT_LNG], 10);
       setMapStatus('warning', 'bi-exclamation-triangle',
-        'Lokasi tidak terdeteksi otomatis. Klik peta untuk pilih manual.', false);
+        'Lokasi tidak terdeteksi otomatis. Gunakan tombol GPS atau klik peta.', false);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  ✅ LOKASI GPS PERANGKAT
+    // ══════════════════════════════════════════════════════════════
+    function getLocationGPS() {
+      if (!navigator.geolocation) {
+        return setMapStatus('warning', 'bi-exclamation-triangle', 'Browser tidak mendukung GPS', false);
+      }
+
+      setMapStatus('detecting', 'bi-arrow-repeat', 'Mendeteksi titik koordinat GPS kamu...', true);
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setMarker(lat, lng);
+          map.setView([lat, lng], 17);
+          setMapStatus('success', 'bi-check-circle-fill', 'Lokasi GPS berhasil dideteksi ✓', false);
+        },
+        (error) => {
+          let msg = 'Gagal mendeteksi lokasi';
+          if (error.code === 1) msg = 'Izin lokasi ditolak browser';
+          else if (error.code === 2) msg = 'Lokasi tidak tersedia/sinyal lemah';
+          else if (error.code === 3) msg = 'Waktu deteksi habis (timeout)';
+          setMapStatus('warning', 'bi-exclamation-triangle', msg, false);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -779,19 +813,9 @@
               <button type="button" class="btn-remove" onclick="removeFile(${i})"><i class="bi bi-x-lg"></i></button>
               ${i !== 0 ? `<button type="button" class="btn-set-cover" onclick="setCover(${i})"><i class="bi bi-star"></i> Cover</button>` : ''}
             </div>
-            <div class="preview-info" style="flex-direction:column; align-items:stretch; gap:6px;">
-              <input type="text" 
-                     class="form-control form-control-sm" 
-                     placeholder="Label (Contoh: Dapur, Parkir)" 
-                     style="font-size:.72rem; border-radius:.4rem; height:30px;"
-                     oninput="updateFotoNama(${i}, this.value)">
-              <div class="d-flex justify-content-between">
-                <div class="preview-name" title="${file.name}">${file.name}</div>
-                <div class="preview-size">${(file.size/1024/1024).toFixed(2)} MB</div>
-              </div>
-            </div>`;
-              <div class="preview-name">${file.name}</div>
-              <div class="preview-size">${(file.size/1024/1024).toFixed(2)}MB</div>
+            <div class="preview-info">
+              <div class="preview-name" title="${file.name}">${file.name}</div>
+              <div class="preview-size">${(file.size/1024/1024).toFixed(2)} MB</div>
             </div>
             <div style="padding:.3rem .9rem .75rem;border-top:1px solid #f0f3f8;">
               <input type="text"
